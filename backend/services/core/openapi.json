@@ -153,6 +153,70 @@
         }
       }
     },
+    "/api/auth/socket_auth": {
+      "post": {
+        "tags": [
+          "v1",
+          "Auth"
+        ],
+        "summary": "Authenticate user via access token or api key",
+        "operationId": "socket_auth_api_auth_socket_auth_post",
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Api Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/user/": {
       "post": {
         "tags": [

@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "FastAPI Debug Gateway Service",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--host", "0.0.0.0", "--port", "9000"],
+      "cwd": "${workspaceFolder}/gateway",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/gateway/.env",
+      "python": "${workspaceFolder}/genassist_env/bin/python",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/gateway"
+      }
+    },
+    {
+      "name": "FastAPI Debug Core Service",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/services/core",
+      "program": "${workspaceFolder}/services/core/run.py",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/services/core/.env",
+      "python": "${workspaceFolder}/genassist_env/bin/python",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/services/core"
+      }
+    },
+    {
+      "name": "FastAPI Debug WebSocket Service",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--host", "0.0.0.0", "--port", "8002"],
+      "cwd": "${workspaceFolder}/services/websocket",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/services/websocket/.env",
+      "python": "${workspaceFolder}/genassist_env/bin/python",
+      "justMyCode": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/services/websocket"
+      }
+    }
+  ]
+}

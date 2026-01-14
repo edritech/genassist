@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Core Service",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/start-core-svc.sh",
+      "args": ["${input:serviceMode}"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Start Core Service (dev)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/start-core-svc.sh",
+      "args": ["dev"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "serviceMode",
+      "description": "Service mode",
+      "default": "dev",
+      "type": "pickString",
+      "options": ["dev", "prod", "uvicorn"]
+    }
+  ]
+}

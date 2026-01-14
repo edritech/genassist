@@ -1,0 +1,28 @@
+# Shared module dependencies
+# Core dependencies for shared utilities
+
+# FastAPI and async support
+fastapi>=0.104.0
+starlette>=0.27.0
+
+# Redis support
+redis>=5.0.0
+aioredis>=2.0.0
+
+# Authentication
+PyJWT>=2.8.0
+python-jose[cryptography]>=3.3.0
+
+# Data validation and settings
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# WebSocket support
+websockets>=12.0
+
+# Logging
+structlog>=23.0.0
+
+# HTTP clients for internal service communication
+httpx>=0.25.0
+requests>=2.31.0

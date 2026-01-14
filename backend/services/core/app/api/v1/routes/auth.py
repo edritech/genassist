@@ -86,3 +86,27 @@ async def change_password(
     await user_service.update_user_password(user.id, new_hashed)
 
     return {"message": "Password changed successfully"}
+
+
+@router.post("/socket_auth", summary="Authenticate user via access token or api key")
+async def socket_auth(
+    access_token: Optional[str] = None,
+    api_key: Optional[str] = None,
+    auth_service: AuthService = Injected(AuthService),
+):
+    if access_token:
+        user = await auth_service.decode_jwt(access_token)
+        return {
+            "principal": user,
+            "user_id": user.id,
+            "permissions": user.permissions,
+        }
+    elif api_key:
+        user = await auth_service.authenticate_api_key(api_key)
+        return {
+            "principal": user,
+            "user_id": user.user.id,
+            "permissions": user.permissions,
+        }
+    else:
+        raise AppException(status_code=401, error_key=ErrorKey.NOT_AUTHENTICATED)
