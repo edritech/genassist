@@ -41,16 +41,38 @@ async def forward_request(
     body=None,
     params=None,
     headers=None,
+    files=None,
+    data=None,
 ):
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        # Add origin host header to the request
+        host = service_url.split("://")[1].split("/")[0]
+        headers["host"] = host.lower()
+
         url = f"{service_url}{path}"
-        response = await client.request(
-            method,
-            url,
-            json=body,
-            params=params,
-            headers=headers,
-        )
+
+        # Prepare request kwargs - only include parameters that are actually set
+        request_kwargs = {
+            "method": method,
+            "url": url,
+            "params": params,
+            "headers": headers,
+        }
+
+        # Only add body parameters if they're set (httpx doesn't like None values)
+        if files is not None:
+            # Multipart form data with files
+            request_kwargs["files"] = files
+            if data is not None:
+                request_kwargs["data"] = data
+        elif data is not None:
+            # URL-encoded form data
+            request_kwargs["data"] = data
+        elif body is not None:
+            # JSON body
+            request_kwargs["json"] = body
+
+        response = await client.request(**request_kwargs)
         return response
 
 
@@ -283,7 +305,8 @@ async def health_check():
 
 
 @app.api_route(
-    "/{service}/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"]
+    "/{service}/{path:path}",
+    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 )
 async def gateway(service: str, path: str, request: Request):
     services = load_services()
@@ -291,12 +314,6 @@ async def gateway(service: str, path: str, request: Request):
         raise HTTPException(status_code=404, detail="Service not found")
 
     service_url = services[service]
-
-    # Get body if exists
-    try:
-        body = await request.json()
-    except Exception:
-        body = None
 
     # Get query parameters
     try:
@@ -307,11 +324,118 @@ async def gateway(service: str, path: str, request: Request):
     # Get headers
     headers = dict(request.headers)
 
+    # Check content type to determine how to read the body
+    content_type = headers.get("content-type", "").lower()
+    body = None
+    files = None
+    data = None
+
+    # Handle multipart/form-data (includes file uploads)
+    if "multipart/form-data" in content_type:
+        try:
+            form = await request.form()
+            # Convert FormData to separate files and data for httpx
+            files_dict = {}
+            data_dict = {}
+
+            for key, value in form.items():
+                # Check if it's a file (UploadFile)
+                if hasattr(value, "read"):
+                    # It's a file upload - read the file content
+                    file_content = await value.read()
+                    # httpx expects: (filename, file_content, content_type) or (filename, file_content)
+                    if value.content_type:
+                        files_dict[key] = (
+                            value.filename or key,
+                            file_content,
+                            value.content_type,
+                        )
+                    else:
+                        files_dict[key] = (value.filename or key, file_content)
+                else:
+                    # Regular form field
+                    data_dict[key] = value
+
+            # Set files and data for httpx
+            files = files_dict if files_dict else None
+            data = data_dict if data_dict else None
+
+            # Remove Content-Type and Content-Length headers for multipart
+            # httpx will set them correctly with the proper boundary
+            if "content-type" in headers:
+                del headers["content-type"]
+            if "content-length" in headers:
+                del headers["content-length"]
+        except Exception as e:
+            logger.warning(f"Failed to parse form data: {e}", exc_info=True)
+            files = None
+            data = None
+
+    # Handle JSON body (only if not multipart)
+    elif "application/json" in content_type:
+        try:
+            body = await request.json()
+            # Remove Content-Length header - httpx will recalculate it
+            if "content-length" in headers:
+                del headers["content-length"]
+        except Exception:
+            body = None
+
+    # Handle application/x-www-form-urlencoded
+    elif "application/x-www-form-urlencoded" in content_type:
+        try:
+            form = await request.form()
+            data = dict(form)
+            # Remove Content-Length header - httpx will recalculate it
+            if "content-length" in headers:
+                del headers["content-length"]
+        except Exception:
+            data = None
+
     response = await forward_request(
-        service_url, request.method, f"/{path}", body, params, headers
+        service_url, request.method, f"/{path}", body, params, headers, files, data
     )
 
-    return JSONResponse(status_code=response.status_code, content=response.json())
+    # Handle response content - check if it's JSON or empty
+    content_type = response.headers.get("content-type", "").lower()
+
+    # Filter out hop-by-hop headers that shouldn't be forwarded
+    response_headers = {}
+    hop_by_hop_headers = {
+        "connection",
+        "keep-alive",
+        "proxy-authenticate",
+        "proxy-authorization",
+        "te",
+        "trailers",
+        "transfer-encoding",
+        "upgrade",
+    }
+    for key, value in response.headers.items():
+        if key.lower() not in hop_by_hop_headers:
+            response_headers[key] = value
+
+    # Try to parse JSON if content-type indicates JSON or if there's content
+    if response.content:
+        try:
+            # Try to parse as JSON first
+            content = response.json()
+        except (json.JSONDecodeError, ValueError):
+            # If JSON parsing fails, check content type
+            if "application/json" in content_type:
+                # Expected JSON but parsing failed - return error info
+                content = {"error": "Invalid JSON response", "text": response.text}
+            else:
+                # Not JSON, return as text wrapped in dict for JSONResponse
+                content = {"text": response.text} if response.text else {}
+    else:
+        # No content (e.g., 204 No Content, 307 redirect after following)
+        content = {}
+
+    # Return response with appropriate headers
+    return JSONResponse(
+        status_code=response.status_code, content=content, headers=response_headers
+    )
 
 
 @app.websocket("/{service}/{path:path}")
@@ -339,11 +463,16 @@ async def websocket_gateway(service: str, path: str, websocket: WebSocket):
 
 
 if __name__ == "__main__":
+    # Load environment variables
+    load_dotenv()
+
+    PORT = os.getenv("PORT", 8000)
+
     # Run the application directly
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=9000,
+        port=PORT,
         reload=True,
         log_level="info",
         access_log=True,

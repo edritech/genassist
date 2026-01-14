@@ -184,7 +184,7 @@ async def broadcast_message(
 
         # Determine broadcast method
         settings = get_settings()
-        broadcast_method = "redis" if settings.redis.url else "local"
+        broadcast_method = "redis" if settings.redis_url else "local"
 
         # Log the broadcast
         logger.info(
@@ -240,7 +240,7 @@ async def get_broadcast_stats(
         # Get Redis information if available
         redis_info = {}
         settings = get_settings()
-        if settings.redis.url:
+        if settings.redis_url:
             try:
                 from app.cache.redis_manager import get_redis_manager
 
@@ -259,7 +259,7 @@ async def get_broadcast_stats(
             "redis": redis_info,
             "broadcast": {
                 "supported_methods": ["redis", "local"],
-                "current_method": "redis" if settings.redis.url else "local",
+                "current_method": "redis" if settings.redis_url else "local",
                 "message_types": [
                     "message",
                     "update",

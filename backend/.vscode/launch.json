@@ -6,14 +6,14 @@
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
-      "args": ["app.main:app", "--host", "0.0.0.0", "--port", "9000"],
-      "cwd": "${workspaceFolder}/gateway",
+      "args": ["app.main:app", "--host", "0.0.0.0", "--port", "8000"],
+      "cwd": "${workspaceFolder}/services/gateway",
       "console": "integratedTerminal",
-      "envFile": "${workspaceFolder}/gateway/.env",
+      "envFile": "${workspaceFolder}/services/gateway/.env",
       "python": "${workspaceFolder}/genassist_env/bin/python",
       "justMyCode": false,
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/gateway"
+        "PYTHONPATH": "${workspaceFolder}/services/gateway"
       }
     },
     {

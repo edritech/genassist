@@ -299,7 +299,7 @@ async def root():
         "status": "running",
         "endpoints": {
             "websocket": f"ws://{settings.host}:{settings.port}",
-            "health": settings.service_urls.health_check_path,
+            "health": settings.health_check_path,
             "docs": "/docs",
         },
     }
@@ -325,10 +325,10 @@ async def info():
             "environment": settings.ENV,
         },
         "configuration": {
-            "multi_tenant_enabled": settings.multi_tenant.enabled,
-            "redis_enabled": bool(settings.redis.url),
-            "websocket_compression": settings.websocket.enable_compression,
-            "max_connections_per_user": settings.websocket.max_connections_per_user,
+            "multi_tenant_enabled": settings.multi_tenant_enabled,
+            "redis_enabled": bool(settings.redis_url),
+            "websocket_compression": settings.websocket_enable_compression,
+            "max_connections_per_user": settings.max_connections_per_user,
         },
         "connections": stats,
         "endpoints": {
@@ -336,8 +336,8 @@ async def info():
                 "conversation": "ws://localhost:8002/api/conversations/ws/{{conversation_id}}",
                 "dashboard": "ws://localhost:8002/api/conversations/dashboard/list",
             },
-            "health": settings.service_urls.health_check_path,
-            "metrics": settings.service_urls.metrics_path,
+            "health": settings.health_check_path,
+            "metrics": settings.metrics_path,
         },
     }
 
@@ -351,6 +351,6 @@ if __name__ == "__main__":
         host=settings.host,
         port=settings.port,
         reload=settings.debug,
-        log_level=settings.logging.level.lower(),
+        log_level=settings.log_level.lower(),
         access_log=True,
     )

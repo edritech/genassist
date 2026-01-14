@@ -213,7 +213,7 @@ async def readiness_check():
     try:
         # Check if Redis is available (if configured)
         settings = get_settings()
-        if settings.redis.url:
+        if settings.redis_url:
             redis_connected = await check_redis_health()
             if not redis_connected:
                 raise HTTPException(
@@ -237,7 +237,7 @@ async def readiness_check():
             "checks": {
                 "redis": (
                     "pass"
-                    if not settings.redis.url or await check_redis_health()
+                    if not settings.redis_url or await check_redis_health()
                     else "fail"
                 ),
                 "connection_manager": "pass",
@@ -277,7 +277,7 @@ async def check_redis_health() -> bool:
     """
     try:
         settings = get_settings()
-        if not settings.redis.url:
+        if not settings.redis_url:
             # Redis is not configured, consider this healthy
             return True
 
@@ -298,7 +298,7 @@ async def check_redis_health_detailed() -> tuple[bool, Dict[str, Any]]:
     """
     try:
         settings = get_settings()
-        if not settings.redis.url:
+        if not settings.redis_url:
             return True, {"configured": False, "message": "Redis not configured"}
 
         redis_manager = get_redis_manager()

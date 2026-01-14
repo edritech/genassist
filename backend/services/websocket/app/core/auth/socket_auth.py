@@ -16,13 +16,13 @@ def _get_gateway() -> CoreAuthGateway:
     global _gateway
     if _gateway is None:
         _gateway = CoreAuthGateway(
-            core_base_url=_settings.core_service.base_url,
-            internal_api_key=_settings.core_service.internal_api_key,
-            timeout=_settings.core_service.timeout,
+            core_base_url=_settings.core_service_base_url,
+            internal_api_key=_settings.internal_api_key,
+            timeout=_settings.core_service_timeout,
         )
 
         logger.info(
-            f"CoreAuthGateway initialized with base URL: {_settings.core_service.base_url}"
+            f"CoreAuthGateway initialized with base URL: {_settings.core_service_base_url}"
         )
     return _gateway
 

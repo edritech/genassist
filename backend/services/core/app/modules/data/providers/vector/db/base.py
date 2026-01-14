@@ -10,7 +10,7 @@ from app.core.tenant_scope import get_tenant_context
 from ....schema_utils import VECTOR_DEFAULTS
 
 DEFAULT_HOST = os.getenv("CHROMA_HOST", "localhost")
-DEFAULT_PORT = int(os.getenv("CHROMA_PORT", 8005))
+DEFAULT_PORT = os.getenv("CHROMA_PORT", 8005)
 
 
 class VectorDBConfig(BaseModel):
