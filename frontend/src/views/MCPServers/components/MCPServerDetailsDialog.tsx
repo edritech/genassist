@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,16 +32,7 @@ export function MCPServerDetailsDialog({
   const [loading, setLoading] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen && serverId) {
-      fetchServerDetails();
-    } else {
-      setServer(null);
-      setCopiedField(null);
-    }
-  }, [serverId, isOpen]);
-
-  const fetchServerDetails = async () => {
+  const fetchServerDetails = useCallback(async () => {
     if (!serverId) return;
     setLoading(true);
     try {
@@ -53,7 +44,17 @@ export function MCPServerDetailsDialog({
     } finally {
       setLoading(false);
     }
-  };
+  }, [serverId, onOpenChange]);
+
+  useEffect(() => {
+    if (isOpen && serverId) {
+      fetchServerDetails();
+    } else {
+      setServer(null);
+      setCopiedField(null);
+    }
+  }, [serverId, isOpen, fetchServerDetails]);
+
 
   const copyToClipboard = async (text: string, fieldName: string) => {
     try {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getAuthMe } from "@/services/auth";
 import { getUser } from "@/services/users";
 import { createApiKey, updateApiKey } from "@/services/apiKeys";
@@ -32,48 +32,7 @@ export function ApiKeyDialogLogic({
   const [userId, setUserId] = useState<string | null>(null);
   const [hasGeneratedKey, setHasGeneratedKey] = useState(false);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const me = await getAuthMe();
-        setUserId(me.id);
-
-        const fullUser = await getUser(me.id);
-        setAvailableRoles(fullUser.roles || []);
-
-        if (mode === "edit" && apiKeyToEdit) {
-          setDialogMode("edit");
-          setName(apiKeyToEdit.name || "");
-          setIsActive(apiKeyToEdit.is_active === 1);
-          setSelectedRoles(
-            apiKeyToEdit.roles?.map((r) => r.id) || apiKeyToEdit.role_ids || []
-          );
-          setGeneratedKey(apiKeyToEdit.key_val);
-          setHasGeneratedKey(true);
-        } else {
-          setDialogMode("create");
-          setName("");
-          setIsActive(true);
-          setSelectedRoles([]);
-          setHasGeneratedKey(false);
-          setGeneratedKey(null);
-        }
-      } catch (error) {
-        toast.error("Failed to fetch user information.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isOpen) {
-      setLoading(true);
-      fetchUserData();
-    } else {
-      resetForm();
-    }
-  }, [isOpen, mode, apiKeyToEdit]);
-
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setName("");
     setSelectedRoles([]);
     setIsActive(true);
@@ -83,15 +42,15 @@ export function ApiKeyDialogLogic({
     setAvailableRoles([]);
     setUserId(null);
     setHasGeneratedKey(false);
-  };
+  }, [mode]);
 
-  const toggleRole = (roleId: string) => {
+  const toggleRole = useCallback((roleId: string) => {
     setSelectedRoles((prev) =>
       prev.includes(roleId)
         ? prev.filter((id) => id !== roleId)
         : [...prev, roleId]
     );
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,6 +134,48 @@ export function ApiKeyDialogLogic({
   const toggleKeyVisibility = () => {
     setIsKeyVisible(!isKeyVisible);
   };
+
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const me = await getAuthMe();
+        setUserId(me.id);
+
+        const fullUser = await getUser(me.id);
+        setAvailableRoles(fullUser.roles || []);
+
+        if (mode === "edit" && apiKeyToEdit) {
+          setDialogMode("edit");
+          setName(apiKeyToEdit.name || "");
+          setIsActive(apiKeyToEdit.is_active === 1);
+          setSelectedRoles(
+            apiKeyToEdit.roles?.map((r) => r.id) || apiKeyToEdit.role_ids || []
+          );
+          setGeneratedKey(apiKeyToEdit.key_val);
+          setHasGeneratedKey(true);
+        } else {
+          setDialogMode("create");
+          setName("");
+          setIsActive(true);
+          setSelectedRoles([]);
+          setHasGeneratedKey(false);
+          setGeneratedKey(null);
+        }
+      } catch (error) {
+        toast.error("Failed to fetch user information.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      setLoading(true);
+      fetchUserData();
+    } else {
+      resetForm();
+    }
+  }, [isOpen, mode, apiKeyToEdit, resetForm]);
 
   return {
     name,
