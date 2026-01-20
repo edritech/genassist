@@ -39,7 +39,7 @@ export const deleteWorkflow = (id: string) =>
 
 // Test a workflow configuration with a test message
 export interface WorkflowTestPayload {
-  input_data: Record<string, any>;
+  input_data: Record<string, unknown>;
   workflow: Workflow;
 }
 
@@ -47,11 +47,11 @@ export interface WorkflowTestResponse {
   status: string;
   input: string;
   output: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface NodeTestPayload {
-  input_data: Record<string, any>;
+  input_data: Record<string, unknown>;
   node_type: string;
   node_config: NodeData;
 }
@@ -83,7 +83,7 @@ export const testWorkflow = (testData: WorkflowTestPayload) =>
     testData as unknown as Record<string, unknown>
   );
 
-export const generatePythonTemplate = (schema: any, prompt?: string) =>
+export const generatePythonTemplate = (schema: Record<string, unknown>, prompt?: string) =>
   apiRequest<{ template: string }>("POST", `${BASE}/generate-python-template`, {
     parameters_schema: schema,
     prompt,

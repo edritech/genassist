@@ -15,7 +15,7 @@ import { MetricsDataPoint } from "@/interfaces/analytics.interface";
 import {
   usePermissions,
   useIsLoadingPermissions,
-} from "@/context/PermissionContext";
+} from "@/shared/permissions";
 import { Skeleton } from "@/components/skeleton";
 import { CardHeader } from "@/components/CardHeader";
 

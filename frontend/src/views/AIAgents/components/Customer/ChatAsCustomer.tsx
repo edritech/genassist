@@ -32,7 +32,7 @@ export default function ChatAsCustomer() {
     name: "Genassist",
     description: "Support",
   });
-  const [metadata, setMetadata] = useState<Record<string, any>>({});
+  const [metadata, setMetadata] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     if (!agentId) {
@@ -48,8 +48,8 @@ export default function ChatAsCustomer() {
 
         const key = await getAgentIntegrationKey(agentId);
         setApiKey(key);
-      } catch (err: any) {
-        setError(err.message || "Failed to initialize chat");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to initialize chat");
         setTimeout(() => navigate("/ai-agents"), 2000);
       }
     })();

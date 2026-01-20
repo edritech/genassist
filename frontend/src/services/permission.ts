@@ -3,12 +3,8 @@ import { Permission } from "@/interfaces/permission.interface";
 import toast from "react-hot-toast";
 
 export const getAllPermissions = async (): Promise<Permission[]> => {
-  try {
-    const data = await apiRequest<Permission[]>("GET", "/permissions/");
-    return data || [];
-  } catch (error) {
-    throw error;
-  }
+  const data = await apiRequest<Permission[]>("GET", "/permissions/");
+  return data || [];
 };
 
 export const getRolePermissions = async (roleId: string): Promise<string[]> => {
@@ -18,7 +14,7 @@ export const getRolePermissions = async (roleId: string): Promise<string[]> => {
       `/roles/${roleId}`
     );
     return permissionsData.permissions || [];
-  } catch (error) {
+  } catch {
     return [];
   }
 };
@@ -36,7 +32,7 @@ export const getPermissionsByRoleId = async (
       .map((rp) => rp.permission_id);
 
     return permissionIds;
-  } catch (error) {
+  } catch {
     return [];
   }
 };
@@ -50,7 +46,7 @@ export const getRolePermissionLinksByRoleId = async (
     >("GET", "/role-permissions");
 
     return rolePermissions.filter((rp) => rp.role_id === roleId);
-  } catch (error) {
+  } catch {
     return [];
   }
 };
@@ -84,8 +80,8 @@ export const saveRolePermissions = async (
     );
 
     await Promise.all([...addPromises, ...deletePromises]);
-    
-  } catch (error) {
+
+  } catch {
     toast.error("Failed to update role permissions.");
   }
 };

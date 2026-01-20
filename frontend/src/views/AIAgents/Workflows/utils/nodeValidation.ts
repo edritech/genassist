@@ -8,7 +8,7 @@ function isEmptyValue(value: unknown): boolean {
 }
 
 export function getEmptyRequiredFields(
-  data: Record<string, any>,
+  data: Record<string, unknown>,
   schemas: FieldSchema[]
 ): string[] {
   if (!schemas || schemas.length === 0) return [];

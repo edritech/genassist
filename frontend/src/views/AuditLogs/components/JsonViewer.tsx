@@ -12,7 +12,7 @@ const CollapsibleJSON = ({
   level = 0,
   label,
 }: {
-  value: any;
+  value: unknown;
   expanded: boolean;
   level?: number;
   label?: string;

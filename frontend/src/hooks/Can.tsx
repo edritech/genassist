@@ -1,5 +1,5 @@
-import React, { ReactNode } from "react";
-import { usePermissions } from "../context/PermissionContext";
+import React, { type ReactNode } from "react";
+import { usePermissions } from "@/shared/permissions";
 
 interface CanProps {
   permissions: string[];

@@ -148,7 +148,7 @@ export const ActiveConversations = () => {
     };
 
     loadInitialConversations();
-  }, [sentimentFilter, categoryFilter]); // Reload when filters change
+  }, [sentimentFilter, categoryFilter, includeFeedbackFilter]); // Reload when filters change
 
   // Merge WebSocket updates with existing conversations
   useEffect(() => {
@@ -181,7 +181,7 @@ export const ActiveConversations = () => {
       }
     };
     if (resyncHint > 0) sync();
-  }, [resyncHint, sentimentFilter, categoryFilter]);
+  }, [resyncHint, sentimentFilter, categoryFilter, includeFeedbackFilter]);
 
   // Poll backend every 5s
   useEffect(() => {

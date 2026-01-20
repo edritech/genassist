@@ -80,7 +80,7 @@ export const NodeConfigDialog: React.FC<WorkflowNodesDialogProps> = ({
     if (isOpen) {
       setInitialNodeName(data?.name);
     }
-  }, [isOpen]);
+  }, [isOpen, data?.name]);
 
   // Debug logging for props
   React.useEffect(() => {}, [nodeId, nodeType, data, isOpen]);

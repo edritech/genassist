@@ -80,12 +80,3 @@ export function FeatureFlagMenuItem({
     ? React.cloneElement(children as React.ReactElement, rest) 
     : <>{children}</>;
 }
-
-/**
- * Hook to check if variant matches specified value
- */
-export function useFeatureVariant(flagKey: string, expectedVariant: string): boolean {
-  const { getFeatureItem } = useFeatureFlag();
-  const item = getFeatureItem(flagKey);
-  return item?.variant === expectedVariant;
-} 

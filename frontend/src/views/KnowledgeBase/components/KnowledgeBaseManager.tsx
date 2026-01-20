@@ -61,7 +61,7 @@ interface KnowledgeItem {
   files?: string[];
   rag_config?: LegacyRagConfig;
   url?: string;
-  extra_metadata?: Record<string, any>;
+  extra_metadata?: Record<string, unknown>;
   processing_filter?: string | null;
   llm_analyst_id?: string | null;
   processing_mode?: string | null;
@@ -396,10 +396,10 @@ const KnowledgeBaseManager: React.FC = () => {
         }
 
         dataToSubmit.files = uploadResults.map(
-          (result: any) => result.file_path
+          (result: { file_path: string }) => result.file_path
         );
         dataToSubmit.content = `Files: ${uploadResults
-          .map((r: any) => r.original_filename)
+          .map((r: { original_filename: string }) => r.original_filename)
           .join(", ")}`;
       }
 
@@ -1050,7 +1050,7 @@ const KnowledgeBaseManager: React.FC = () => {
                   showOnlyRequired={true}
                   knowledgeId={editingItem?.id}
                   initialLegraFinalize={Boolean(
-                    (editingItem as any)?.legra_finalize
+                    (editingItem as KnowledgeItem & { legra_finalize?: boolean })?.legra_finalize
                   )}
                 />
               </div>

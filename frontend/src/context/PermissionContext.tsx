@@ -1,27 +1,13 @@
 import React, {
-  ReactNode,
-  createContext,
-  useContext,
   useState,
   useEffect,
 } from "react";
 import { apiRequest } from "@/config/api";
 import { isServerDown } from "@/config/serverStatus";
 import { isAuthenticated } from "@/services/auth";
+import { PermissionProviderProps } from "@/shared/permissions";
+import { PermissionContext } from "@/shared/permissions";
 
-interface PermissionContextType {
-  permissions: string[];
-  isLoading: boolean;
-  refreshPermissions: () => Promise<void>;
-}
-
-interface PermissionProviderProps {
-  children: ReactNode;
-}
-
-const PermissionContext = createContext<PermissionContextType | undefined>(
-  undefined
-);
 
 export const PermissionProvider: React.FC<PermissionProviderProps> = ({
   children,
@@ -71,32 +57,4 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({
       {children}
     </PermissionContext.Provider>
   );
-};
-
-export const usePermissions = (): string[] => {
-  const context = useContext(PermissionContext);
-  if (!context) {
-    throw new Error("usePermissions must be used within a PermissionProvider");
-  }
-  return context.permissions;
-};
-
-export const useIsLoadingPermissions = (): boolean => {
-  const context = useContext(PermissionContext);
-  if (!context) {
-    throw new Error(
-      "useIsLoadingPermissions must be used within a PermissionProvider"
-    );
-  }
-  return context.isLoading;
-};
-
-export const useRefreshPermissions = (): (() => Promise<void>) => {
-  const context = useContext(PermissionContext);
-  if (!context) {
-    throw new Error(
-      "useRefreshPermissions must be used within a PermissionProvider"
-    );
-  }
-  return context.refreshPermissions;
 };

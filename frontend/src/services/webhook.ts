@@ -8,72 +8,48 @@ import {
 const BASE = "webhooks";
 
 export const getAllWebhooks = async (): Promise<Webhook[]> => {
-  try {
-    const data = await apiRequest<Webhook[]>("GET", `${BASE}`);
-    if (!data || !Array.isArray(data)) {
-      return [];
-    }
-    return data;
-  } catch (error) {
-    throw error;
+  const data = await apiRequest<Webhook[]>("GET", `${BASE}`);
+  if (!data || !Array.isArray(data)) {
+    return [];
   }
+  return data;
 };
 
 export const getWebhook = async (id: string): Promise<Webhook | null> => {
-  try {
-    const data = await apiRequest<Webhook>("GET", `${BASE}/${id}`);
-    return data ?? null;
-  } catch (error) {
-    throw error;
-  }
+  const data = await apiRequest<Webhook>("GET", `${BASE}/${id}`);
+  return data ?? null;
 };
 
 export const createWebhook = async (
   webhookData: WebhookCreatePayload
 ): Promise<Webhook> => {
-  try {
-    const response = await apiRequest<Webhook>("POST", `${BASE}`, webhookData as unknown as Record<string, unknown>);
-    if (!response) throw new Error("Failed to create webhook");
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  const response = await apiRequest<Webhook>("POST", `${BASE}`, webhookData as unknown as Record<string, unknown>);
+  if (!response) throw new Error("Failed to create webhook");
+  return response;
 };
 
 export const updateWebhook = async (
   id: string,
   webhookData: WebhookUpdatePayload
 ): Promise<Webhook> => {
-  try {
-    const response = await apiRequest<Webhook>("PUT", `${BASE}/${id}`, webhookData as unknown as Record<string, unknown>);
-    if (!response) throw new Error("Failed to update webhook");
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  const response = await apiRequest<Webhook>("PUT", `${BASE}/${id}`, webhookData as unknown as Record<string, unknown>);
+  if (!response) throw new Error("Failed to update webhook");
+  return response;
 };
 
 export const deleteWebhook = async (id: string): Promise<void> => {
-  try {
-    await apiRequest("DELETE", `${BASE}/${id}`);
-  } catch (error) {
-    throw error;
-  }
+  await apiRequest("DELETE", `${BASE}/${id}`);
 };
 
 export const executeWebhook = async (
   id: string,
-  payload: any,
+  payload: Record<string, unknown>,
   method: "POST" | "GET" = "POST"
-): Promise<any> => {
-  try {
-    const url = `${BASE}/${id}/execute-workflow`;
-    if (method === "POST") {
-      return await apiRequest("POST", url, payload);
-    } else {
-      return await apiRequest("GET", url, payload);
-    }
-  } catch (error) {
-    throw error;
+): Promise<unknown> => {
+  const url = `${BASE}/${id}/execute-workflow`;
+  if (method === "POST") {
+    return await apiRequest("POST", url, payload);
+  } else {
+    return await apiRequest("GET", url, payload);
   }
 };

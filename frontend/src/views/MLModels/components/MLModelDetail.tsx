@@ -92,7 +92,7 @@ const MLModelDetail: React.FC = () => {
       fetchPipelineRuns();
       fetchWorkflows();
     }
-  }, [id]);
+  });
 
   const fetchModel = async () => {
     if (!id) return;

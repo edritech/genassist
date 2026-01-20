@@ -3,13 +3,12 @@ import { fetchTranscript, fetchTranscripts } from "@/services/transcripts";
 import {
   BackendTranscript,
   Transcript,
-  TranscriptEntry,
 } from "@/interfaces/transcript.interface";
 import {
   processApiResponse,
   transformTranscript,
 } from "../helpers/transformers";
-import { usePermissions } from "@/context/PermissionContext";
+import { usePermissions } from "@/shared/permissions";
 
 interface UseTranscriptDataOptions {
   id?: string;

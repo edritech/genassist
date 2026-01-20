@@ -256,7 +256,7 @@ export interface TrainModelNodeData extends BaseNodeData {
     | "other";
   targetColumn: string; // Target variable column name
   featureColumns: string[]; // Feature column names
-  modelParameters: Record<string, any>; // Model-specific parameters
+  modelParameters: Record<string, unknown>; // Model-specific parameters
   validationSplit: number; // Train/validation split ratio
 }
 

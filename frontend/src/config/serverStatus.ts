@@ -5,7 +5,9 @@ let status: ServerStatus = { down: false };
 const emit = () => {
   try {
     window.dispatchEvent(new CustomEvent<ServerStatus>('server:status', { detail: { ...status } }));
-  } catch {}
+  } catch {
+    // Silently ignore dispatch errors
+  }
 };
 
 export const getServerStatus = (): ServerStatus => ({ ...status });

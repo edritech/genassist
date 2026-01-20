@@ -39,7 +39,7 @@ export function MCPServerDetailsDialog({
       setServer(null);
       setCopiedField(null);
     }
-  }, [isOpen, serverId]);
+  }, [serverId, isOpen]);
 
   const fetchServerDetails = async () => {
     if (!serverId) return;

@@ -67,7 +67,7 @@ export const DynamicRagField: React.FC<DynamicRagFieldProps> = ({
               disabled={disabled}
             />
             <span className="text-sm text-gray-500">
-              {Boolean(value) ? "Enabled" : "Disabled"}
+              {value ? "Enabled" : "Disabled"}
             </span>
           </div>
         );

@@ -299,7 +299,9 @@ function TranscriptDialogContent({
       setUserFeedback(latest);
       try {
         feedbackCacheRef.current.set(transcript.id, latest);
-      } catch {}
+      } catch {
+        // Silently ignore cache errors
+      }
     } else if (transcript?.id) {
       const cached = feedbackCacheRef.current.get(transcript.id) || null;
       if (cached) setUserFeedback(cached);
@@ -327,7 +329,9 @@ function TranscriptDialogContent({
               const parsed = JSON.parse(f);
               if (Array.isArray(parsed))
                 fb = parsed as ConversationFeedbackEntry[];
-            } catch {}
+            } catch {
+              // Silently ignore JSON parse errors
+            }
           } else if (Array.isArray(f)) {
             fb = f as ConversationFeedbackEntry[];
           }
@@ -337,9 +341,13 @@ function TranscriptDialogContent({
           setUserFeedback(latest);
           try {
             feedbackCacheRef.current.set(transcript.id, latest);
-          } catch {}
+          } catch {
+            // Silently ignore cache errors
+          }
         }
-      } catch {}
+      } catch {
+        // Silently ignore API errors when fetching feedback
+      }
     })();
   }, [isOpen, transcript?.id, userFeedback]);
 
@@ -503,7 +511,9 @@ function TranscriptDialogContent({
               transcript.feedback = [userFeedback];
             }
           }
-        } catch {}
+        } catch {
+          // Silently ignore feedback preservation errors
+        }
 
         const now = Date.now();
         const conversationCreateTime = transcript.create_time
@@ -523,9 +533,9 @@ function TranscriptDialogContent({
         if (refetchConversations) {
           refetchConversations();
         }
-      } else {
       }
-    } catch (error) {
+    } catch {
+      // Silently ignore takeover errors
     } finally {
       setLoading(false);
     }
@@ -616,7 +626,9 @@ function TranscriptDialogContent({
             transcript.feedback = [newFeedback];
           }
           feedbackCacheRef.current.set(transcript.id, newFeedback);
-        } catch {}
+        } catch {
+          // Silently ignore feedback cache errors
+        }
         setFeedbackType(null);
         setFeedbackMessage("");
         toast.success("Feedback submitted successfully.");

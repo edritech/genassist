@@ -28,25 +28,25 @@ export const updateTool = (id: string, tool: Partial<Tool>) =>
 export const deleteTool = (id: string) =>
   apiRequest<void>("DELETE", `${BASE}/${id}`);
 
-export const testPythonCode = (code: string, params: any) =>
-  apiRequest<{ result: any }>(
+export const testPythonCode = (code: string, params: Record<string, unknown>) =>
+  apiRequest<{ result: unknown }>(
     "POST",
     `${BASE}/python/test`,
     { code, params }
   );
 
-export const testPythonCodeWithSchema = (code: string, params: any, schema: any) =>
+export const testPythonCodeWithSchema = (code: string, params: Record<string, unknown>, schema: Record<string, unknown>) =>
   apiRequest<{
-    result: any;
-    original_params: any;
-    validated_params: any;
+    result: unknown;
+    original_params: Record<string, unknown>;
+    validated_params: Record<string, unknown>;
   }>(
     "POST",
     `${BASE}/python/test-with-schema`,
     { code, params, schema }
   );
 
-export const generatePythonTemplate = (schema: any) =>
+export const generatePythonTemplate = (schema: Record<string, unknown>) =>
   apiRequest<{ template: string }>(
     "POST",
     `${BASE}/python/generate-template`,

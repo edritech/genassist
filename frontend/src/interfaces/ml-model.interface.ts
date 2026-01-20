@@ -12,5 +12,5 @@ export interface MLModel {
   [key: string]: unknown;
 }
 
-export interface MLModelFormData extends Omit<MLModel, 'created_at' | 'updated_at'> {}
+export type MLModelFormData = Omit<MLModel, 'created_at' | 'updated_at'>
 

@@ -5,7 +5,7 @@ import { ParameterBadges } from "../components/custom/ParameterSection";
 
 export interface NodeContentRow {
   label: string;
-  value: any;
+  value: string | Record<string, unknown> | null | undefined;
   placeholder?: string;
   isSelection?: boolean;
   isTextArea?: boolean;
@@ -17,8 +17,8 @@ interface NodeContentProps {
   data: NodeContentRow[];
 }
 
-const simplifyParamNames = (params) => {
-  return Object.entries(params).reduce((acc, [key, value]) => {
+const simplifyParamNames = (params: Record<string, unknown>): Record<string, unknown> => {
+  return Object.entries(params).reduce((acc: Record<string, unknown>, [key, value]) => {
     const prefix = "direct_input.parameters.";
     const newKey = key.startsWith(prefix) ? key.replace(prefix, "") : key;
     acc[newKey] = value;
@@ -26,35 +26,33 @@ const simplifyParamNames = (params) => {
   }, {});
 };
 
-const replaceSessionVars = (params) => {
-  const result = {};
+const replaceSessionVars = (params: Record<string, unknown>): Record<string, unknown> => {
+  const result: Record<string, unknown> = {};
   let count = 0;
-  let value = null;
 
-  Object.entries(params).forEach(([key, value]) => {
+  Object.entries(params).forEach(([key, val]) => {
     if (key.startsWith("session.")) {
       count += 1;
-      value = value;
     } else {
-      result[key] = value;
+      result[key] = val;
     }
   });
 
   if (count > 0) {
-    const key =
+    const sessionKey =
       count === 1 ? "1 session variable" : `${count} session variables`;
-    result[key] = value;
+    result[sessionKey] = null;
   }
 
   return result;
 };
 
-const transformParams = (params) => {
+const transformParams = (params: Record<string, unknown>): Record<string, unknown> => {
   return replaceSessionVars(simplifyParamNames(params));
 };
 
 export const NodeContent: React.FC<NodeContentProps> = ({ data }) => {
-  const renderRow = (row) => {
+  const renderRow = (row: NodeContentRow) => {
     if (row.areDynamicVars) {
       if (
         row.value &&

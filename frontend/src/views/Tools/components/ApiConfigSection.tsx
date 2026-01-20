@@ -9,25 +9,27 @@ import {
 import { Input } from "@/components/input";
 import { ToolSection } from "../components/ToolSection"; 
 
+import { ToolParameter } from "@/interfaces/tool.interface";
+
 interface ApiConfigSectionProps {
   endpoint: string;
   setEndpoint: (v: string) => void;
   method: string;
   setMethod: (v: string) => void;
-  headers: any[];
-  setHeaders: React.Dispatch<React.SetStateAction<any[]>>;
-  queryParams: any[];
-  setQueryParams: React.Dispatch<React.SetStateAction<any[]>>;
-  bodyParams: any[];
-  setBodyParams: React.Dispatch<React.SetStateAction<any[]>>;
+  headers: ToolParameter[];
+  setHeaders: React.Dispatch<React.SetStateAction<ToolParameter[]>>;
+  queryParams: ToolParameter[];
+  setQueryParams: React.Dispatch<React.SetStateAction<ToolParameter[]>>;
+  bodyParams: ToolParameter[];
+  setBodyParams: React.Dispatch<React.SetStateAction<ToolParameter[]>>;
   headersTab: string;
   setHeadersTab: (v: string) => void;
   queryTab: string;
   setQueryTab: (v: string) => void;
   bodyTab: string;
   setBodyTab: (v: string) => void;
-  addItem: (setter: any, sample: any) => void;
-  removeItem: (setter: any, id: string) => void;
+  addItem: (setter: React.Dispatch<React.SetStateAction<ToolParameter[]>>, sample: { name: string; value: string }) => void;
+  removeItem: (setter: React.Dispatch<React.SetStateAction<ToolParameter[]>>, id: string) => void;
 }
 
 export const ApiConfigSection: FC<ApiConfigSectionProps> = ({

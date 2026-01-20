@@ -113,7 +113,7 @@ export function LLMProviderDialog({
         }));
       }
     }
-  }, [llmType, supportedModels]);
+  }, [llmType, supportedModels, connectionData]);
 
   const resetForm = () => {
     setProviderId(undefined);

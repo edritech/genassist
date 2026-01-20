@@ -342,7 +342,7 @@ export const RoutesProvider = () => {
         { path: "office365/oauth/callback", element: <Office365OAuthCallback />},
         { path: "*", element: <NotFound /> }
       ]),
-    [isEnabled],
+    [],
   );
 
   const organizationRouter = useMemo(

@@ -45,13 +45,13 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
       Object.keys(value as object).length > 0;
 
     const isArray = Array.isArray(value);
-    const hasArrayChildren = isArray && (value as any[]).length > 0;
+    const hasArrayChildren = isArray && (value as unknown[]).length > 0;
 
     // Make any level draggable, not just leaf values
     const isDraggable = true; // All levels can be dragged
 
     if (hasChildren || hasArrayChildren) {
-      const typeLabel = isArray ? `Array[${(value as any[]).length}]` : "Object";
+      const typeLabel = isArray ? `Array[${(value as unknown[]).length}]` : "Object";
       
       return (
         <div key={key} className="ml-2">
@@ -86,7 +86,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
           {isExpanded && (
             <div className="ml-4 mt-1 border-l border-gray-200 pl-3">
               {isArray ? (
-                (value as any[]).map((item, index) => (
+                (value as unknown[]).map((item, index) => (
                   <JsonViewer
                     key={index}
                     data={{ [index]: item }}
@@ -110,7 +110,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
     }
 
     // Handle empty objects and arrays
-    if ((isArray && (value as any[]).length === 0) || (typeof value === "object" && value !== null && Object.keys(value as object).length === 0)) {
+    if ((isArray && (value as unknown[]).length === 0) || (typeof value === "object" && value !== null && Object.keys(value as object).length === 0)) {
       const typeLabel = isArray ? "Array[]" : "Object{}";
       
       return (

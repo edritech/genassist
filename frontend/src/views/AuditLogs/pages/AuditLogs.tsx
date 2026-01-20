@@ -38,7 +38,7 @@ export default function AuditLogs() {
   const [dateRange, setDateRange] = useState(defaultRange);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Array<{ id: string; username: string }>>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 30;
 

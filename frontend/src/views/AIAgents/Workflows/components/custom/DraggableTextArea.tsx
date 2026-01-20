@@ -138,8 +138,8 @@ export const DraggableTextArea: React.FC<DraggableTextAreaProps> = ({
       !currentValue[safePosition].match(/\s/) &&
       !currentValue[safePosition].match(/[,;:]/);
 
-    let leadingSpace = needsLeadingSpace ? " " : "";
-    let trailingSpace = needsTrailingSpace ? " " : "";
+    const leadingSpace = needsLeadingSpace ? " " : "";
+    const trailingSpace = needsTrailingSpace ? " " : "";
 
     return before + leadingSpace + newValue + trailingSpace + after;
   };

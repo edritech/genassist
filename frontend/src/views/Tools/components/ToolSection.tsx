@@ -15,8 +15,8 @@ interface ToolSectionProps {
   setItems: (items: ToolParameter[]) => void;
   tab: string;
   setTab: (tab: string) => void;
-  addItem: (setter: any, sample: any) => void;
-  removeItem: (setter: any, id: string) => void;
+  addItem: (setter: (items: ToolParameter[]) => void, sample: { name: string; value: string }) => void;
+  removeItem: (setter: (items: ToolParameter[]) => void, id: string) => void;
   sample: { name: string; value: string };
 }
 

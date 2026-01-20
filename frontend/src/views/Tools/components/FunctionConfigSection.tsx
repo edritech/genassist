@@ -7,11 +7,16 @@ import { Button } from "@/components/button";
 import { ClipboardList, Maximize2, CodeXml, CirclePlay } from "lucide-react";
 import { toast } from "react-hot-toast";
 
+interface DynamicParam {
+  name: string;
+  value?: string;
+}
+
 interface FunctionConfigSectionProps {
   code: string;
   onCodeChange: (v: string) => void;
   handleGenerateTemplate: () => Promise<void>;
-  dynamicParams: any[];
+  dynamicParams: DynamicParam[];
   testParameters: string;
   onTestParametersChange: (v: string) => void;
   testingCode: boolean;

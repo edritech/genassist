@@ -21,7 +21,7 @@ export function AuditLogDetailsDialog({
 }: AuditLogDetailsDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [parsedJsonChanges, setParsedJsonChanges] = useState<any | string | null>(null);
+  const [parsedJsonChanges, setParsedJsonChanges] = useState<Record<string, unknown> | string | null>(null);
 
   useEffect(() => {
     if (isOpen && auditLogId) {
@@ -36,7 +36,7 @@ export function AuditLogDetailsDialog({
                 parsed = JSON.parse(parsed);
               }
 
-              const recursiveParse = (obj: any): any => {
+              const recursiveParse = (obj: unknown): unknown => {
                 if (typeof obj === "string") {
                   try {
                     return JSON.parse(obj);
@@ -44,9 +44,10 @@ export function AuditLogDetailsDialog({
                     return obj;
                   }
                 } else if (typeof obj === "object" && obj !== null) {
-                  for (const key in obj) {
-                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                      obj[key] = recursiveParse(obj[key]);
+                  const objRecord = obj as Record<string, unknown>;
+                  for (const key in objRecord) {
+                    if (Object.prototype.hasOwnProperty.call(objRecord, key)) {
+                      objRecord[key] = recursiveParse(objRecord[key]);
                     }
                   }
                 }

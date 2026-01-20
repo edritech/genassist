@@ -12,11 +12,11 @@ interface CustomArrowEdgeProps {
   sourceY: number;
   targetX: number;
   targetY: number;
-  sourcePosition?: any;
-  targetPosition?: any;
+  sourcePosition?: Position;
+  targetPosition?: Position;
   style?: React.CSSProperties;
   markerEnd?: string;
-  data?: any;
+  data?: { label?: string };
 }
 
 const offset = 3;

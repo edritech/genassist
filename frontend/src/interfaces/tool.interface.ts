@@ -15,8 +15,10 @@ export interface FunctionConfig {
 }
 
 export interface ToolParameter {
+  id?: string;
   name: string;
-  type: string;
+  type?: string;
+  value?: string;
   description?: string;
   required?: boolean;
   default?: unknown;

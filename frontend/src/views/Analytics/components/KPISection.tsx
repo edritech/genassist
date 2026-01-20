@@ -5,7 +5,7 @@ import { generateMetricData } from "../helpers/metricDataGenerator";
 import { MetricsAPIResponse } from "@/interfaces/analytics.interface";
 import { MetricCard } from "@/components/analytics/MetricCard";
 
-import { usePermissions, useIsLoadingPermissions } from "@/context/PermissionContext";
+import { usePermissions, useIsLoadingPermissions } from "@/shared/permissions";
 
 interface KPISectionProps {
   timeFilter: string;

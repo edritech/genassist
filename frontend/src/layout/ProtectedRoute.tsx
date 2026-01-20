@@ -4,7 +4,7 @@ import {
   usePermissions,
   useIsLoadingPermissions,
   useRefreshPermissions,
-} from "@/context/PermissionContext";
+} from "@/shared/permissions";
 import { Skeleton } from "@/components/skeleton";
 import { useEffect } from "react";
 import { useServerStatus } from "@/context/ServerStatusContext";

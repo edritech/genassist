@@ -12,7 +12,7 @@ import {
   testPythonCodeWithSchema,
   generatePythonTemplate,
 } from "@/services/tools";
-import { Tool } from "@/interfaces/tool.interface";
+import { Tool, ToolParameter } from "@/interfaces/tool.interface";
 
 import { CirclePlay } from "lucide-react";
 import { Card, CardContent } from "@/components/card";
@@ -38,13 +38,13 @@ export default function CreateTool() {
   const [toolType, setToolType] = useState<"api" | "function">("api");
   const [endpoint, setEndpoint] = useState("");
   const [method, setMethod] = useState("GET");
-  const [headers, setHeaders] = useState<any[]>([
+  const [headers, setHeaders] = useState<ToolParameter[]>([
     { id: uuidv4(), name: "", value: "" },
   ]);
-  const [queryParams, setQueryParams] = useState<any[]>([
+  const [queryParams, setQueryParams] = useState<ToolParameter[]>([
     { id: uuidv4(), name: "", value: "" },
   ]);
-  const [bodyParams, setBodyParams] = useState<any[]>([
+  const [bodyParams, setBodyParams] = useState<ToolParameter[]>([
     { id: uuidv4(), name: "", value: "" },
   ]);
   const [headersTab, setHeadersTab] = useState("form");
@@ -70,9 +70,9 @@ export default function CreateTool() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const addItem = (setter, template) =>
-    setter((prev) => [...prev, { ...template, id: uuidv4() }]);
-  const removeItem = (setter, id: string) =>
+  const addItem = <T extends { id?: string }>(setter: React.Dispatch<React.SetStateAction<T[]>>, template: Omit<T, 'id'>) =>
+    setter((prev) => [...prev, { ...template, id: uuidv4() } as T]);
+  const removeItem = <T extends { id?: string }>(setter: React.Dispatch<React.SetStateAction<T[]>>, id: string) =>
     setter((prev) => prev.filter((item) => item.id !== id));
 
   useEffect(() => {
@@ -120,14 +120,14 @@ export default function CreateTool() {
 
           const params = t.parameters_schema
             ? Object.entries(t.parameters_schema).map(
-                ([paramName, paramData]: [string, any]) => ({
+                ([paramName, paramData]) => ({
                   id: uuidv4(),
                   name: paramName,
                   type:
-                    (paramData?.type || "String").charAt(0).toUpperCase() +
-                    (paramData?.type?.slice(1) || ""),
-                  defaultValue: paramData?.default || "",
-                  description: paramData?.description || "",
+                    ((paramData as ToolParameter)?.type || "String").charAt(0).toUpperCase() +
+                    ((paramData as ToolParameter)?.type?.slice(1) || ""),
+                  defaultValue: String((paramData as ToolParameter)?.default || ""),
+                  description: (paramData as ToolParameter)?.description || "",
                 })
               )
             : [];
@@ -155,7 +155,7 @@ export default function CreateTool() {
       setLoading(true);
       setError(null);
 
-      const properties: Record<string, any> = {};
+      const properties: Record<string, { type: string; default: string; description: string }> = {};
       dynamicParams.forEach((p) => {
         if (p.name) {
           properties[p.name] = {
@@ -180,7 +180,7 @@ export default function CreateTool() {
           "Failed to generate template: Backend did not return 'template'"
         );
       }
-    } catch (err: any) {
+    } catch (err) {
       setError(
         `Failed to generate template: ${
           err instanceof Error ? err.message : String(err)
@@ -204,7 +204,7 @@ export default function CreateTool() {
         throw new Error("Invalid JSON in test parameters");
       }
 
-      const schema: Record<string, any> = {};
+      const schema: Record<string, { type: string; default: string; description: string }> = {};
       dynamicParams.forEach((p) => {
         if (p.name) {
           schema[p.name] = {
@@ -215,7 +215,7 @@ export default function CreateTool() {
         }
       });
 
-      let res: any;
+      let res: { result: unknown; original_params?: Record<string, unknown>; validated_params?: Record<string, unknown> };
       if (Object.keys(schema).length) {
         res = await testPythonCodeWithSchema(code, params, schema);
       } else {
@@ -235,8 +235,8 @@ export default function CreateTool() {
       }
       setTestResult(pieces.join(""));
       setSuccess("Code tested successfully");
-    } catch (err: any) {
-      setError(err.message || "Test failed");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Test failed");
     } finally {
       setTestingCode(false);
     }
@@ -251,7 +251,7 @@ export default function CreateTool() {
     setError(null);
 
     try {
-      const parameters_schema: Record<string, any> = {};
+      const parameters_schema: Record<string, { type: string; default: string; description: string }> = {};
       dynamicParams.forEach((p) => {
         if (p.name) {
           parameters_schema[p.name] = {
@@ -262,9 +262,9 @@ export default function CreateTool() {
         }
       });
 
-      const headersRecord: Record<string, any> = {};
-      const queryParamsRecord: Record<string, any> = {};
-      const bodyRecord: Record<string, any> = {};
+      const headersRecord: Record<string, string> = {};
+      const queryParamsRecord: Record<string, string> = {};
+      const bodyRecord: Record<string, string> = {};
       headers.forEach((h) => h.name && (headersRecord[h.name] = h.value));
       queryParams.forEach(
         (q) => q.name && (queryParamsRecord[q.name] = q.value)
@@ -297,8 +297,8 @@ export default function CreateTool() {
         toast.success("Tool created successfully.");
       }
       navigate("/tools");
-    } catch (err: any) {
-      setError(err.message || "Failed to save tool");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save tool");
       toast.error("Failed to save tool.");
     } finally {
       setSubmitting(false);

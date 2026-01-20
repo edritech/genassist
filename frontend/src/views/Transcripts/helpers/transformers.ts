@@ -60,7 +60,9 @@ export function transformTranscript(backendData: BackendTranscript): Transcript 
           } else if (Array.isArray(f)) {
             perMessageFeedback = f as ConversationFeedbackEntry[];
           }
-        } catch {}
+        } catch (e) {
+          console.error("Error parsing feedback:", e);
+        }
 
         return {
           speaker: entry.speaker || "Unknown",

@@ -78,7 +78,7 @@ export function Office365OAuthCallback() {
     };
 
     processOAuthCallback();
-  }, [searchParams]);
+  }, [searchParams, location.pathname]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

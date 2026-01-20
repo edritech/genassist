@@ -23,7 +23,7 @@ export function getTimeFromDatetime(datetimeString: string): string {
   return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-export function tryParse(value: any) {
+export function tryParse(value: unknown) {
   try {
     const first = JSON.parse(value);
     if (typeof first === "string") {

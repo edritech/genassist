@@ -39,8 +39,8 @@ export interface NodeExecutionStatus {
   startTime?: number;
   endTime?: number;
   duration?: number;
-  input?: Record<string, any>;
-  output?: Record<string, any>;
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
   error?: string;
   retryCount: number;
   maxRetries: number;
@@ -53,11 +53,11 @@ export interface ExecutionStep {
   nodeType: string;
   nodeName: string;
   timestamp: number;
-  input: Record<string, any>;
-  output: Record<string, any>;
+  input: Record<string, unknown>;
+  output: Record<string, unknown>;
   status: 'success' | 'error' | 'skipped';
   duration: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // Error information for failed executions
@@ -67,7 +67,7 @@ export interface ExecutionError {
   error: string;
   timestamp: number;
   retryCount: number;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 // Performance metrics for the workflow execution

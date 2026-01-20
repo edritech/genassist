@@ -58,10 +58,10 @@ export const ModelConfiguration: React.FC<ModelConfigurationProps> = ({
   };
 
   useEffect(() => {
-    if (config.providerId === undefined && providers.length > 0) {
+    if (config.providerId === undefined && providers && providers.length > 0) {
       handleProviderSelect(providers[0].id);
     }
-  }, []);
+  });
 
   const handleAgentTypeSelect = (type: BaseLLMNodeData["type"]) => {
     onConfigChange({

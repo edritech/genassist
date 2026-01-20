@@ -125,7 +125,8 @@ export const logout = (): void => {
   if (token) {
     try {
       apiRequest("POST", "auth/logout", {});
-    } catch (error) {
+    } catch {
+      // Silently ignore logout errors
     }
   }
 };

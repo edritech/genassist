@@ -1,5 +1,5 @@
 export interface LLMProvider {
-    llm_model: any;
+    llm_model: Record<string, unknown> | null;
     id: string;
     name: string;
     is_active: number;
