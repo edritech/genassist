@@ -99,6 +99,11 @@ class ProjectSettings(BaseSettings):
     DEV: bool = False
     FASTAPI_DEBUG: bool = True
     LOG_LEVEL: str = "DEBUG"
+    # Log summary settings - reduce terminal verbosity
+    LOG_CONSOLE_VERBOSE: bool = False  # True = individual logs, False = summaries only
+    LOG_SUMMARY_ENABLED: bool = True  # Enable periodic summaries
+    LOG_SUMMARY_INTERVAL_SECONDS: int = 60  # Summary output interval
+    LOG_SLOW_REQUEST_THRESHOLD_MS: int = 1000  # Threshold for slow requests
     SQLALCHEMY_LOG_LEVEL: str = "ERROR"
     FASTAPI_RUN_PORT: int = 8000
     # for alembic migration on startup (changed type from int to bool)

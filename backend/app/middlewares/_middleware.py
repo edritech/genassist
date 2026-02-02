@@ -25,6 +25,10 @@ from app.core.config.logging import (
     status_ctx,
     uid_ctx,
 )
+from app.core.config.log_aggregator import get_log_aggregator
+
+# Paths to exclude from request logging (health checks, etc.)
+EXCLUDED_LOG_PATHS = {"/health", "/healthz", "/ready", "/readiness", "/liveness"}
 
 
 def get_allowed_origins() -> list[str]:
@@ -131,6 +135,9 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         pth = request.url.path
         uid = getattr(getattr(request.state, "user", None), "id", "guest")
 
+        # Check if this path should be excluded from logging
+        should_log = pth not in EXCLUDED_LOG_PATHS
+
         # ------------------------------------------------------------------ #
         # 2️⃣  Set ContextVars *and keep the tokens* so we can restore later
         # ------------------------------------------------------------------ #
@@ -143,11 +150,12 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         }
 
         # ------------------------------------------------------------------ #
-        # 3️⃣  Log “request started”
+        # 3️⃣  Log "request started" (unless excluded path)
         # ------------------------------------------------------------------ #
-        logger.bind(request_id=rid, ip=ip, method=meth, path=pth, uid=uid).info(
-            "➡️  Request start"
-        )
+        if should_log:
+            logger.bind(request_id=rid, ip=ip, method=meth, path=pth, uid=uid).info(
+                "Request start"
+            )
 
         try:
             # Do the work
@@ -166,6 +174,13 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             status_ctx.set(code)
             duration_ctx.set(f"{dur_ms:.2f}")
 
+            # Record request in aggregator (always, for metrics)
+            get_log_aggregator().record_request(
+                status_code=code,
+                duration_ms=dur_ms,
+                path=pth,
+            )
+
             bind_common = dict(
                 request_id=rid,
                 ip=ip,
@@ -176,10 +191,11 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
                 duration=f"{dur_ms:.2f}",
             )
 
-            if ok:
-                logger.bind(**bind_common).info(f"✅ Request handled {code}")
-            else:
-                logger.bind(**bind_common).error(f"❌ Request error {code}")
+            if should_log:
+                if ok:
+                    logger.bind(**bind_common).info(f"Request handled {code}")
+                else:
+                    logger.bind(**bind_common).error(f"Request error {code}")
 
             # ------------------------------------------------------------------ #
             # 5️⃣  Always restore ContextVars to previous state

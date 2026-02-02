@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -8,6 +9,7 @@ from fastapi_injector import InjectorMiddleware, RequestScopeOptions, attach_inj
 from app.core.config.logging import init_logging
 from app.api.v1.routes._routes import register_routers
 from app.core.config.settings import settings
+from app.core.config.log_aggregator import get_log_aggregator
 from app.core.exceptions.exception_handler import init_error_handlers
 from app.dependencies.injector import injector
 from app.cache.redis_cache import init_fastapi_cache_with_redis
@@ -195,11 +197,25 @@ async def _lifespan(app: FastAPI):
     - WebSocket services (connection manager, pub/sub)
     - Database services (multi-tenant sessions)
     - Application services (permissions, tenants)
+    - Log aggregator (periodic summaries)
     """
     logger.debug("Running lifespan startup tasks...")
 
     # Generate OpenAPI schema
     await output_open_api(app)
+
+    # Initialize log aggregator for periodic summaries
+    log_aggregator = get_log_aggregator()
+    log_aggregator.configure(
+        interval_seconds=settings.LOG_SUMMARY_INTERVAL_SECONDS,
+        slow_threshold_ms=settings.LOG_SLOW_REQUEST_THRESHOLD_MS,
+        enabled=settings.LOG_SUMMARY_ENABLED,
+    )
+    log_aggregator.start(asyncio.get_event_loop())
+    logger.info(
+        f"Log aggregator started (summary interval: {settings.LOG_SUMMARY_INTERVAL_SECONDS}s, "
+        f"verbose: {settings.LOG_CONSOLE_VERBOSE})"
+    )
 
     # Initialize services in dependency order
     redis_string, redis_binary = await _initialize_redis_services(app)
@@ -219,6 +235,10 @@ async def _lifespan(app: FastAPI):
         yield  # Application runs here
     finally:
         logger.info("Starting application shutdown...")
+
+        # Stop log aggregator (outputs final summary)
+        log_aggregator.stop()
+        logger.info("Log aggregator stopped")
 
         # Clean up services in reverse dependency order
         await _cleanup_websocket_services()

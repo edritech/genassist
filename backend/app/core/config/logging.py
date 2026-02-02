@@ -24,6 +24,26 @@ duration_ctx:   ContextVar[int] = ContextVar("duration",   default=-1)
 uid_ctx:        ContextVar[str] = ContextVar("uid",        default="-")
 
 # --------------------------------------------------------------------------- #
+# Console filter – suppress verbose request logs when summary mode enabled
+# --------------------------------------------------------------------------- #
+def _console_filter(record) -> bool:
+    """
+    Filter function for console output.
+    Suppresses individual request logs when LOG_CONSOLE_VERBOSE is False.
+    File logs are unaffected.
+    """
+    if settings.LOG_CONSOLE_VERBOSE:
+        return True
+
+    # Suppress request start/end messages
+    message = record["message"]
+    if "Request start" in message or "Request handled" in message or "Request error" in message:
+        return False
+
+    return True
+
+
+# --------------------------------------------------------------------------- #
 # Helper – forward stdlib logging records to Loguru
 # --------------------------------------------------------------------------- #
 class _InterceptHandler(logging.Handler):
@@ -76,7 +96,7 @@ def init_logging() -> None:
 
     logger.remove()  # drop default stderr sink
 
-    # Human-friendly console
+    # Human-friendly console (with optional request log filtering)
     logger.add(
         sys.stdout,
         level=settings.LOG_LEVEL,
@@ -90,6 +110,7 @@ def init_logging() -> None:
             "<magenta>{extra[path]}</magenta> | "
             "<level>{message}</level>"
         ),
+        filter=_console_filter,
         enqueue=False,  # Disabled to avoid multiprocessing queue issues
     )
 
