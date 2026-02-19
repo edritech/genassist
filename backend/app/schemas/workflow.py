@@ -74,7 +74,8 @@ def get_base_workflow(name: str) -> WorkflowCreate:
                             "type": "string",
                             "required": True,
                             "description": "The input received from the user.",
-                            "defaultValue": ""
+                            "defaultValue": "",
+                            "shouldPersist": False
                         }
                     }
                 },
