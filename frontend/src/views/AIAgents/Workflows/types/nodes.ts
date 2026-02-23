@@ -80,6 +80,7 @@ export interface AggregatorNodeData extends BaseNodeData {
   aggregationStrategy?: "list" | "merge" | "first" | "last";
   timeoutSeconds?: number;
   forwardTemplate?: string;
+  requireAllInputs?: boolean;
 }
 
 export interface ZendeskTicketNodeData extends BaseNodeData {
@@ -152,10 +153,13 @@ export interface BaseLLMNodeData extends BaseNodeData {
     | "Chain-of-Thought"
     | "ReActAgentLC";
   maxIterations?: number;
-  memoryTrimmingMode?: "message_count" | "token_budget";
+  memoryTrimmingMode?: "message_count" | "token_budget" | "message_compacting";
   maxMessages?: number;
   tokenBudget?: number;
   conversationHistoryTokens?: number;
+  compactingThreshold?: number;
+  compactingKeepRecent?: number;
+  compactingModel?: string;
 }
 // Agent Node Data
 export interface AgentNodeData extends BaseLLMNodeData {
