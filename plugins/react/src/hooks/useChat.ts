@@ -4,6 +4,7 @@ import { ChatMessage, Attachment, MessageFeedback } from '../types';
 
 export interface UseChatProps {
   baseUrl: string;
+  websocketUrl?: string;
   apiKey: string;
   tenant?: string | undefined;
   metadata?: Record<string, any>;
@@ -33,7 +34,7 @@ function isNetworkOrServerError(error: any): boolean {
   return typeof status === 'number' && status >= 500;
 }
 
-export const useChat = ({ baseUrl, apiKey, tenant, metadata, useWs = true, language, onError, onTakeover, onFinalize, serverUnavailableMessage, serverUnavailableContactUrl, serverUnavailableContactLabel, onConfigLoaded }: UseChatProps) => {
+export const useChat = ({ baseUrl, websocketUrl, apiKey, tenant, metadata, useWs = true, language, onError, onTakeover, onFinalize, serverUnavailableMessage, serverUnavailableContactUrl, serverUnavailableContactLabel, onConfigLoaded }: UseChatProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [preloadedAttachments, setPreloadedAttachments] = useState<Attachment[]>([]);
@@ -150,7 +151,7 @@ export const useChat = ({ baseUrl, apiKey, tenant, metadata, useWs = true, langu
         chatServiceRef.current.setWelcomeDataHandler(null);
       }
 
-      chatServiceRef.current = new ChatService(baseUrl, apiKey, metadata, tenant, language, useWs);
+      chatServiceRef.current = new ChatService(baseUrl, websocketUrl, apiKey, metadata, tenant, language, useWs);
 
       // Set up handlers
       chatServiceRef.current.setMessageHandler((message: ChatMessage) => {

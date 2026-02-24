@@ -15,6 +15,7 @@ export const GENASSIST_AGENT_METADATA_UPDATED = "genassist_agent_metadata_update
 
 export class ChatService {
   private baseUrl: string;
+  private websocketUrl: string | undefined;
   private apiKey: string;
   private metadata: Record<string, any> | undefined;
   private conversationId: string | null = null;
@@ -45,6 +46,7 @@ export class ChatService {
 
   constructor(
     baseUrl: string,
+    websocketUrl: string | undefined,
     apiKey: string,
     metadata?: Record<string, any>,
     tenant?: string,
@@ -52,6 +54,10 @@ export class ChatService {
     useWs: boolean = true
   ) {
     this.baseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    this.websocketUrl = websocketUrl?.endsWith("/") ? websocketUrl?.slice(0, -1) : websocketUrl;
+    if (!this.websocketUrl) {
+      this.websocketUrl = this.baseUrl.replace("http", "ws");
+    }
     this.apiKey = apiKey;
     this.metadata = metadata;
     this.tenant = tenant;
@@ -108,10 +114,10 @@ export class ChatService {
    */
   private formatAcceptLanguage(langCode: string): string {
     if (!langCode) return '';
-    
+
     // Normalize language code (lowercase, handle common formats)
     const normalized = langCode.toLowerCase().trim();
-    
+
     // Map common language codes to their full locale format
     const languageMap: Record<string, string> = {
       'en': 'en-US',
@@ -123,28 +129,28 @@ export class ChatService {
       'ar': 'ar-SA',
       'sq': 'sq-AL',
     };
-    
+
     // Check if the code already has a region (e.g., "en-US", "es-ES")
     const hasRegion = normalized.includes('-');
-    
+
     // Get the full locale or use the provided code if it already has a region
     const fullLocale = hasRegion ? normalized : (languageMap[normalized] || normalized);
-    
+
     // Extract base language from the full locale (e.g., "en" from "en-US")
     const fullBaseLang = fullLocale.split('-')[0].toLowerCase();
-    
+
     // Build Accept-Language header: primary locale, base language with quality, English fallback
     // Format: "locale,base-lang;q=0.9,en;q=0.8"
     const parts: string[] = [fullLocale];
-    
+
     // fallback
     parts.push(`${fullBaseLang};q=0.9`);
-    
+
     // Add English as fallback if not already the primary language
     if (fullBaseLang !== 'en') {
       parts.push('en;q=0.8');
     }
-    
+
     return parts.join(', ');
   }
 
@@ -556,12 +562,12 @@ export class ChatService {
       if (!this.useWs && this.messageHandler) {
         try {
           const responseData = response.data as any;
-          
+
           if (responseData.messages && Array.isArray(responseData.messages)) {
             // Look for the latest agent message in the response
             for (let i = responseData.messages.length - 1; i >= 0; i--) {
               const messageData = responseData.messages[i];
-              
+
               if (
                 messageData.speaker === "agent" &&
                 messageData.text &&
@@ -581,7 +587,7 @@ export class ChatService {
                   text: messageData.text,
                   message_id: messageData.message_id || messageData.id,
                 };
-                
+
                 // Only process if this is a new message we haven't seen before
                 // We can't easily check here, so we'll let the handler manage duplicates
                 this.messageHandler(agentMessage);
@@ -670,24 +676,24 @@ export class ChatService {
     }
 
     if (this.connectionStateHandler) this.connectionStateHandler("connecting");
-    
+
     // Build WebSocket URL with proper authentication
-    const wsBase = this.baseUrl.replace("http", "ws");
+    const wsBase = this.websocketUrl || this.baseUrl.replace("http", "ws");
     const topics = ["message", "takeover", "finalize"];
     const topicsQuery = topics.map((t) => `topics=${t}`).join("&");
-    
+
     // Use guest_token if available, otherwise fall back to api_key
-    const authParam = this.guestToken 
+    const authParam = this.guestToken
       ? `access_token=${encodeURIComponent(this.guestToken)}`
       : `api_key=${encodeURIComponent(this.apiKey)}`;
-    
+
     let wsUrl = `${wsBase}/api/conversations/ws/${this.conversationId}?${authParam}&lang=en&${topicsQuery}`;
-    
+
     // Add tenant as query parameter if provided
     if (this.tenant) {
       wsUrl += `&x-tenant-id=${encodeURIComponent(this.tenant)}`;
     }
-    
+
     // Use native browser WebSocket factory
     this.webSocket = createWebSocket(wsUrl);
 
@@ -785,7 +791,7 @@ export class ChatService {
     this.webSocket.onerror = (error: Event) => {
       if (this.connectionStateHandler)
         this.connectionStateHandler("disconnected");
-      
+
       // Log diagnostic
       const diagnostic = createWebSocketDiagnostic(error, wsUrl);
       console.error(`[GenAssist Chat] ${diagnostic}`);
@@ -794,7 +800,7 @@ export class ChatService {
     this.webSocket.onclose = (event: CloseEvent) => {
       if (this.connectionStateHandler)
         this.connectionStateHandler("disconnected");
-      
+
       // Log diagnostic
       if (!event.wasClean) {
         const diagnostic = createWebSocketDiagnostic(event, wsUrl);
@@ -853,15 +859,15 @@ export class ChatService {
       } = {
         feedback,
       };
-      
+
       if (feedback_message) {
         payload.feedback_message = feedback_message;
       }
-      
+
       await axios.patch(url, payload, {
         headers: this.getHeaders(),
       });
-      
+
     } catch (error: any) {
       if (this.isTokenExpiredError(error)) {
         this.resetChatConversation();
