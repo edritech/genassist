@@ -254,8 +254,8 @@ def create_celery():
         },
         "cleanup-stale-conversations": {
             "task": "app.tasks.conversations_tasks.cleanup_stale_conversations",
-            # Run at 2 minutes past every 5th minute (2, 7, 12, 17, etc.)
-            "schedule": crontab(minute="2-59/5"),
+            # Run at 2 minutes past every 5 minutes
+             "schedule": crontab(minute="2-59/5"),
             "options": {"expires": 3600},  # Task expires after 1 hour
         },
         "import-s3-files": {

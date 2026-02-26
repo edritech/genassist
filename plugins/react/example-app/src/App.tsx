@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { GenAgentChat, GENASSIST_AGENT_METADATA_UPDATED } from "../../src";
+import { FeatureFlags, GenAgentChat, GENASSIST_AGENT_METADATA_UPDATED } from "../../src";
 import {
   ChevronDown,
   ChevronUp,
@@ -45,10 +45,11 @@ function App() {
     tenant: import.meta.env.VITE_GENASSIST_CHAT_TENANT || "",
   });
 
-  const [featureFlags, setFeatureFlags] = useState({
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
     useAudio: false,
     useFile: false,
     useWs: false,
+    usePoll: false,
   });
 
   const [customLogo, setCustomLogo] = useState<FileState>({
@@ -166,6 +167,16 @@ function App() {
     setShowMetadata(true);
   }, [agentChatInputMetadata]);
 
+  React.useEffect(() => {
+    const ls = localStorage.getItem(`genassist_feature_flags:${chatSettings.apiKey}`);
+    if (ls) {
+      const parsed = JSON.parse(ls);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        setFeatureFlags(parsed);
+      }
+    }
+  }, [chatSettings.apiKey]);
+
   const handleColorChange = (property: string, value: string) => {
     setTheme((prevTheme) => ({
       ...prevTheme,
@@ -181,10 +192,16 @@ function App() {
   };
 
   const handleFeatureFlagChange = (property: keyof typeof featureFlags, value: boolean) => {
-    setFeatureFlags((prevFlags) => ({
-      ...prevFlags,
-      [property]: value,
-    }));
+    const ls = localStorage.getItem(`genassist_feature_flags:${chatSettings.apiKey}`);
+    if (ls) {
+      const parsed = JSON.parse(ls);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        setFeatureFlags(parsed);
+      }
+    }
+    const next = { ...featureFlags, [property]: value };
+    setFeatureFlags(next);
+    localStorage.setItem(`genassist_feature_flags:${chatSettings.apiKey}`, JSON.stringify(next));
   };
 
   const handleLogoChange = (useCustom: boolean) => {
@@ -254,6 +271,8 @@ function App() {
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
+    maxHeight: "100%",
+    overflowY: "auto",
   };
 
 
@@ -965,6 +984,15 @@ function App() {
                     style={{ width: 20, height: 20, cursor: "pointer" }}
                   />
                 </div>
+                <div style={formGroupStyle}>
+                  <label style={labelStyle}>Use Heartbeat Polling</label>
+                  <input
+                    type="checkbox"
+                    checked={featureFlags.usePoll}
+                    onChange={(e) => handleFeatureFlagChange("usePoll", e.target.checked)}
+                    style={{ width: 20, height: 20, cursor: "pointer" }}
+                  />
+                </div>
               </div>
         </>
       )}
@@ -1049,10 +1077,12 @@ function App() {
         agentName={chatSettings.agentName}
         logoUrl={chatSettings.logoUrl}
         useWs={featureFlags.useWs}
+        usePoll={featureFlags.usePoll}
         serverUnavailableMessage="Support is currently offline. Please try again later or contact us."
         serverUnavailableContactUrl="https://www.ritech.co/"
         serverUnavailableContactLabel="Contact Support"
-        inputDisclaimer={<span><a href="https://genassist.ai">Genassist</a> provides AI-generated content for informational purposes only. While our bots strive for accuracy, AI responses may occasionally be incorrect, incomplete, or biased. Users should independently verify any critical information before taking action</span>}
+        inputDisclaimer={<span>Agent can make mistakes. <a href="https://genassist.ai">Check important info.</a></span>}
+        // inputDisclaimer={<span><a href="https://genassist.ai">Genassist</a> provides AI-generated content for informational purposes only. While our bots strive for accuracy, AI responses may occasionally be incorrect, incomplete, or biased. Users should independently verify any critical information before taking action</span>}
         onError={handleError}
         mode="floating"
         floatingConfig={{

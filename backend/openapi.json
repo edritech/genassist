@@ -4168,6 +4168,59 @@
         ]
       }
     },
+    "/api/conversations/in-progress/poll/{conversation_id}": {
+      "get": {
+        "tags": [
+          "v1",
+          "Conversations"
+        ],
+        "summary": "Poll In Progress",
+        "description": "Heartbeat polling for in-progress conversation when WebSocket is disabled.\nReturns status and messages so the client can sync state (new messages, finalized, takeover).\nUses a short (2s) cache to avoid DB hammering; cache is invalidated on update/finalize.",
+        "operationId": "poll_in_progress_api_conversations_in_progress_poll__conversation_id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InProgressPollResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/conversations/in-progress/no-agent-update/{conversation_id}": {
       "patch": {
         "tags": [
@@ -5151,6 +5204,57 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations/message/agent-response-log/{message_id}": {
+      "get": {
+        "tags": [
+          "v1",
+          "Conversations"
+        ],
+        "summary": "Get Agent Response Log By Message",
+        "description": "Return the stored agent response log associated with a given transcript (message) id.",
+        "operationId": "get_agent_response_log_by_message_api_conversations_message_agent_response_log__message_id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "message_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Message Id"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -18065,6 +18169,28 @@
         "type": "object",
         "title": "InProgressConversationTranscriptFinalize"
       },
+      "InProgressPollResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/TranscriptMessageRead"
+            },
+            "type": "array",
+            "title": "Messages",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "InProgressPollResponse",
+        "description": "Lightweight response for in-progress conversation heartbeat polling (no WebSocket)."
+      },
       "IntegrationItem": {
         "properties": {
           "id": {
@@ -21957,6 +22083,17 @@
             "type": "string",
             "maxLength": 50,
             "title": "Type"
+          },
+          "sequence_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sequence Number"
           },
           "id": {
             "type": "string",
