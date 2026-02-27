@@ -104,11 +104,19 @@ export function useWebSocketTranscript({
         }
       };
 
-      socket.onerror = () => {
-        // handled by onclose
+      socket.onerror = (event) => {
+        console.warn("[WebSocket] error", { conversationId, event });
       };
 
-      socket.onclose = () => {
+      socket.onclose = (event) => {
+        if (event.code !== 1000) {
+          console.warn("[WebSocket] closed", {
+            conversationId,
+            code: event.code,
+            reason: event.reason || "(none)",
+            clean: event.wasClean,
+          });
+        }
         if (cancelledRef.current) return;
         setIsConnected(false);
 
