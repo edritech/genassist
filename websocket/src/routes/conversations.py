@@ -3,7 +3,8 @@ import time
 
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
-from auth.token_verifier import AuthenticationError
+from dependencies.auth import require_authenticated_user
+from backend_shared.schemas.auth import AuthenticatedUser
 
 logger = logging.getLogger(__name__)
 
@@ -13,29 +14,17 @@ router = APIRouter()
 async def ws_conversation(
     websocket: WebSocket,
     conversation_id: str,
-    access_token: str | None = Query(default=None),
-    api_key: str | None = Query(default=None),
+    auth_user: AuthenticatedUser = require_authenticated_user(required_permissions=["update:in_progress_conversation"]),
     lang: str = Query(default="en"),
     topics: list[str] = Query(default=["message"]),
 ):
     manager = websocket.app.state.manager
-    verifier = websocket.app.state.verifier
     publisher = websocket.app.state.publisher
 
     # Extract tenant from query params
     tenant_id = websocket.query_params.get("x-tenant-id") or "master"
 
-    # Verify token ONCE
-    try:
-        user = await verifier.verify(
-            access_token, api_key,
-            ["update:in_progress_conversation"], tenant_id,
-        )
-    except AuthenticationError as exc:
-        await websocket.close(code=4401, reason=exc.detail)
-        return
-
-    conn = await manager.connect(websocket, conversation_id, user, set(topics))
+    conn = await manager.connect(websocket, conversation_id, auth_user, set(topics))
 
     try:
         while True:
@@ -45,7 +34,7 @@ async def ws_conversation(
             # Optionally publish upstream for backend processing
             if data and publisher:
                 await publisher.publish_upstream(
-                    tenant_id, conversation_id, user.user_id, data,
+                    tenant_id, conversation_id, auth_user.user_id, data,
                 )
     except WebSocketDisconnect:
         logger.debug(f"WebSocket disconnected: conversation={conversation_id} tenant={tenant_id}")

@@ -2,9 +2,10 @@ import json
 import logging
 
 import openai
-from fastapi import APIRouter, Query, WebSocket
+from fastapi import APIRouter, WebSocket
 
-from auth.token_verifier import AuthenticationError
+from dependencies.auth import require_authenticated_user
+from backend_shared.schemas.auth import AuthenticatedUser
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -15,23 +16,8 @@ router = APIRouter()
 @router.websocket("/audio/tts")
 async def ws_tts(
     websocket: WebSocket,
-    access_token: str | None = Query(default=None),
-    api_key: str | None = Query(default=None),
+    auth_user: AuthenticatedUser = require_authenticated_user(required_permissions=["create:in_progress_conversation"]),
 ):
-    verifier = websocket.app.state.verifier
-
-    tenant_id = websocket.query_params.get("x-tenant-id") or "master"
-
-    # Verify token ONCE
-    try:
-        await verifier.verify(
-            access_token, api_key,
-            ["create:in_progress_conversation"], tenant_id,
-        )
-    except AuthenticationError as exc:
-        await websocket.close(code=4401, reason=exc.detail)
-        return
-
     await websocket.accept()
     logger.debug("TTS WebSocket connection accepted")
 

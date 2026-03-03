@@ -3,7 +3,8 @@ import time
 
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 
-from auth.token_verifier import AuthenticationError
+from dependencies.auth import require_authenticated_user
+from backend_shared.schemas.auth import AuthenticatedUser
 
 logger = logging.getLogger(__name__)
 
@@ -15,28 +16,18 @@ DASHBOARD_ROOM = "DASHBOARD"
 @router.websocket("/dashboard/list")
 async def ws_dashboard(
     websocket: WebSocket,
-    access_token: str | None = Query(default=None),
-    api_key: str | None = Query(default=None),
+    auth_user: AuthenticatedUser = require_authenticated_user(required_permissions=["read:dashboard"]),
     lang: str = Query(default="en"),
     topics: list[str] = Query(default=["message"]),
 ):
     manager = websocket.app.state.manager
-    verifier = websocket.app.state.verifier
+    # verifier = websocket.app.state.verifier
 
     # Extract tenant from query params
     tenant_id = websocket.query_params.get("x-tenant-id") or "master"
 
-    # Verify token ONCE
-    try:
-        user = await verifier.verify(
-            access_token, api_key,
-            ["read:conversation"], tenant_id,
-        )
-    except AuthenticationError as exc:
-        await websocket.close(code=4401, reason=exc.detail)
-        return
-
-    conn = await manager.connect(websocket, DASHBOARD_ROOM, user, set(topics))
+    # Connect to the dashboard room
+    conn = await manager.connect(websocket, DASHBOARD_ROOM, auth_user, set(topics))
 
     try:
         while True:
