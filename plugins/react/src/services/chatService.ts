@@ -776,6 +776,14 @@ export class ChatService {
       try {
         const data = JSON.parse(event.data as string);
 
+        // Respond to server-side heartbeat pings
+        if (data.type === "ping") {
+          if (this.webSocket) {
+            this.webSocket.send(JSON.stringify({ type: "pong" }));
+            return;
+          }
+        }
+
         if (data.type === "message" && this.messageHandler) {
           if (Array.isArray(data.payload)) {
             const messages = data.payload as ChatMessage[];
