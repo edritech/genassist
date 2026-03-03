@@ -18,8 +18,8 @@ from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 
 # Shared schemas
-from schemas.internal import AgentExecuteRequest
-from schemas.auth import VerifyTokenRequest, VerifyTokenResponse
+from app.schemas.internal import AgentExecuteRequest
+from app.schemas.auth import VerifyTokenRequest, VerifyTokenResponse
 
 logger = logging.getLogger(__name__)
 
