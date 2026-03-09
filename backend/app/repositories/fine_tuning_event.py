@@ -1,8 +1,9 @@
 from typing import List, Optional
 from uuid import UUID
-from sqlalchemy import select, and_, desc
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from injector import inject
+from sqlalchemy import and_, desc, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.fine_tuning import FineTuningEventModel
 from app.repositories.db_repository import DbRepository
@@ -13,13 +14,9 @@ class FineTuningEventRepository(DbRepository[FineTuningEventModel]):
     def __init__(self, db: AsyncSession):
         super().__init__(FineTuningEventModel, db)
 
-
     async def get_events_by_job_id(
-            self,
-            job_id: UUID,
-            limit: Optional[int] = None,
-            order_desc: bool = True
-            ) -> List[FineTuningEventModel]:
+        self, job_id: UUID, limit: Optional[int] = None, order_desc: bool = True
+    ) -> List[FineTuningEventModel]:
         """
         Get all events for a specific job.
 
@@ -31,9 +28,7 @@ class FineTuningEventRepository(DbRepository[FineTuningEventModel]):
         Returns:
             List of event records
         """
-        query = select(FineTuningEventModel).where(
-                FineTuningEventModel.job_id == job_id
-                )
+        query = select(FineTuningEventModel).where(FineTuningEventModel.job_id == job_id)
 
         if order_desc:
             query = query.order_by(desc(FineTuningEventModel.event_created_at))
@@ -46,11 +41,7 @@ class FineTuningEventRepository(DbRepository[FineTuningEventModel]):
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-
-    async def get_latest_event_by_job_id(
-            self,
-            job_id: UUID
-            ) -> Optional[FineTuningEventModel]:
+    async def get_latest_event_by_job_id(self, job_id: UUID) -> Optional[FineTuningEventModel]:
         """
         Get the most recent event for a job.
 
@@ -70,7 +61,6 @@ class FineTuningEventRepository(DbRepository[FineTuningEventModel]):
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
-
     async def event_exists(self, openai_event_id: str) -> bool:
         """
         Check if an event already exists by OpenAI event ID.
@@ -81,17 +71,11 @@ class FineTuningEventRepository(DbRepository[FineTuningEventModel]):
         Returns:
             True if exists, False otherwise
         """
-        query = select(FineTuningEventModel.id).where(
-                FineTuningEventModel.openai_event_id == openai_event_id
-                )
+        query = select(FineTuningEventModel.id).where(FineTuningEventModel.openai_event_id == openai_event_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none() is not None
 
-
-    async def bulk_create_events(
-            self,
-            events: List[FineTuningEventModel]
-            ) -> List[FineTuningEventModel]:
+    async def bulk_create_events(self, events: List[FineTuningEventModel]) -> List[FineTuningEventModel]:
         """
         Bulk create multiple events.
 
@@ -109,11 +93,7 @@ class FineTuningEventRepository(DbRepository[FineTuningEventModel]):
 
         return events
 
-
-    async def get_events_with_metrics_by_job_id(
-            self,
-            job_id: UUID
-            ) -> List[FineTuningEventModel]:
+    async def get_events_with_metrics_by_job_id(self, job_id: UUID) -> List[FineTuningEventModel]:
         """
         Get all events that have metrics for a specific job.
 
@@ -125,22 +105,14 @@ class FineTuningEventRepository(DbRepository[FineTuningEventModel]):
         """
         query = (
             select(FineTuningEventModel)
-            .where(
-                    and_(
-                            FineTuningEventModel.job_id == job_id,
-                            FineTuningEventModel.metrics.isnot(None)
-                            )
-                    )
+            .where(and_(FineTuningEventModel.job_id == job_id, FineTuningEventModel.metrics.isnot(None)))
             .order_by(FineTuningEventModel.event_created_at)
         )
 
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_latest_step_event_by_job_id(
-            self,
-            job_id: UUID
-            ) -> Optional[FineTuningEventModel]:
+    async def get_latest_step_event_by_job_id(self, job_id: UUID) -> Optional[FineTuningEventModel]:
         """
         Get the most recent event with training metrics (has 'step' field).
         This excludes validation/completion events that don't have training metrics.
@@ -157,7 +129,7 @@ class FineTuningEventRepository(DbRepository[FineTuningEventModel]):
                 and_(
                     FineTuningEventModel.job_id == job_id,
                     FineTuningEventModel.metrics.isnot(None),
-                    FineTuningEventModel.metrics['step'].astext.isnot(None)
+                    FineTuningEventModel.metrics["step"].astext.isnot(None),
                 )
             )
             .order_by(desc(FineTuningEventModel.event_created_at))

@@ -1,8 +1,9 @@
-from uuid import UUID
-from pydantic import BaseModel, Field, ConfigDict, field_validator
-from typing import Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ModelType(str, Enum):
@@ -31,11 +32,11 @@ class MLModelCreate(MLModelBase):
     features: list[str] = Field(..., min_length=1, description="List of feature names (must not be empty)")
     target_variable: str = Field(..., max_length=255, description="The prediction target variable")
 
-    @field_validator('features')
+    @field_validator("features")
     @classmethod
     def validate_features_not_empty(cls, v):
         if not v or len(v) == 0:
-            raise ValueError('Features list must not be empty')
+            raise ValueError("Features list must not be empty")
         return v
 
 
@@ -51,4 +52,3 @@ class MLModelRead(MLModelBase):
     model_config = ConfigDict(
         from_attributes=True,
     )
-

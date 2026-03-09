@@ -1,77 +1,61 @@
-import React, { useEffect, useState } from "react";
-import { HumanInTheLoopNodeData, HumanInTheLoopFormField } from "../types/nodes";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { Switch } from "@/components/switch";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/dialog";
-import { Plus, Pencil, Trash2, Save } from "lucide-react";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
-import { DraggableTextArea } from "../components/custom/DraggableTextArea";
+import React, { useEffect, useState } from 'react';
+import { HumanInTheLoopNodeData, HumanInTheLoopFormField } from '../types/nodes';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { Switch } from '@/components/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/dialog';
+import { Plus, Pencil, Trash2, Save } from 'lucide-react';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
+import { DraggableTextArea } from '../components/custom/DraggableTextArea';
 
 const FIELD_TYPES = [
-  { value: "text", label: "Text" },
-  { value: "number", label: "Number" },
-  { value: "select", label: "Select" },
-  { value: "boolean", label: "Checkbox" },
-  { value: "date", label: "Date" },
+  { value: 'text', label: 'Text' },
+  { value: 'number', label: 'Number' },
+  { value: 'select', label: 'Select' },
+  { value: 'boolean', label: 'Checkbox' },
+  { value: 'date', label: 'Date' },
 ] as const;
 
 const emptyField: HumanInTheLoopFormField = {
-  name: "",
-  type: "text",
-  label: "",
+  name: '',
+  type: 'text',
+  label: '',
   required: false,
-  placeholder: "",
-  description: "",
+  placeholder: '',
+  description: '',
   options: [],
 };
 
 interface FieldDialogState {
   isOpen: boolean;
-  mode: "add" | "edit";
+  mode: 'add' | 'edit';
   editIndex: number | null;
   field: HumanInTheLoopFormField;
 }
 
-export const HumanInTheLoopDialog: React.FC<
-  BaseNodeDialogProps<HumanInTheLoopNodeData, HumanInTheLoopNodeData>
-> = (props) => {
+export const HumanInTheLoopDialog: React.FC<BaseNodeDialogProps<HumanInTheLoopNodeData, HumanInTheLoopNodeData>> = (
+  props
+) => {
   const { isOpen, onClose, data, onUpdate } = props;
 
-  const [name, setName] = useState(data.name || "");
-  const [message, setMessage] = useState(
-    data.message || "Please provide the following information:"
-  );
+  const [name, setName] = useState(data.name || '');
+  const [message, setMessage] = useState(data.message || 'Please provide the following information:');
   const [askOnce, setAskOnce] = useState(data.ask_once !== false);
-  const [formFields, setFormFields] = useState<HumanInTheLoopFormField[]>(
-    data.form_fields || []
-  );
+  const [formFields, setFormFields] = useState<HumanInTheLoopFormField[]>(data.form_fields || []);
   const [fieldDialog, setFieldDialog] = useState<FieldDialogState>({
     isOpen: false,
-    mode: "add",
+    mode: 'add',
     editIndex: null,
     field: { ...emptyField },
   });
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setMessage(data.message || "Please provide the following information:");
+      setName(data.name || '');
+      setMessage(data.message || 'Please provide the following information:');
       setAskOnce(data.ask_once !== false);
       setFormFields(data.form_fields || []);
     }
@@ -92,7 +76,7 @@ export const HumanInTheLoopDialog: React.FC<
   const openAddFieldDialog = () => {
     setFieldDialog({
       isOpen: true,
-      mode: "add",
+      mode: 'add',
       editIndex: null,
       field: { ...emptyField },
     });
@@ -101,7 +85,7 @@ export const HumanInTheLoopDialog: React.FC<
   const openEditFieldDialog = (index: number) => {
     setFieldDialog({
       isOpen: true,
-      mode: "edit",
+      mode: 'edit',
       editIndex: index,
       field: { ...formFields[index] },
     });
@@ -111,12 +95,10 @@ export const HumanInTheLoopDialog: React.FC<
     const field = fieldDialog.field;
     if (!field.name || !field.label) return;
 
-    if (fieldDialog.mode === "add") {
+    if (fieldDialog.mode === 'add') {
       setFormFields((prev) => [...prev, field]);
     } else if (fieldDialog.editIndex !== null) {
-      setFormFields((prev) =>
-        prev.map((f, i) => (i === fieldDialog.editIndex ? field : f))
-      );
+      setFormFields((prev) => prev.map((f, i) => (i === fieldDialog.editIndex ? field : f)));
     }
     setFieldDialog((prev) => ({ ...prev, isOpen: false }));
   };
@@ -125,10 +107,7 @@ export const HumanInTheLoopDialog: React.FC<
     setFormFields((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateDialogField = (
-    key: keyof HumanInTheLoopFormField,
-    value: unknown
-  ) => {
+  const updateDialogField = (key: keyof HumanInTheLoopFormField, value: unknown) => {
     setFieldDialog((prev) => ({
       ...prev,
       field: { ...prev.field, [key]: value },
@@ -137,25 +116,18 @@ export const HumanInTheLoopDialog: React.FC<
 
   // Select options management
   const addOption = () => {
-    updateDialogField("options", [
-      ...(fieldDialog.field.options || []),
-      { value: "", label: "" },
-    ]);
+    updateDialogField('options', [...(fieldDialog.field.options || []), { value: '', label: '' }]);
   };
 
-  const updateOption = (
-    optIndex: number,
-    key: "value" | "label",
-    val: string
-  ) => {
+  const updateOption = (optIndex: number, key: 'value' | 'label', val: string) => {
     const newOptions = [...(fieldDialog.field.options || [])];
     newOptions[optIndex] = { ...newOptions[optIndex], [key]: val };
-    updateDialogField("options", newOptions);
+    updateDialogField('options', newOptions);
   };
 
   const removeOption = (optIndex: number) => {
     updateDialogField(
-      "options",
+      'options',
       (fieldDialog.field.options || []).filter((_, i) => i !== optIndex)
     );
   };
@@ -206,53 +178,34 @@ export const HumanInTheLoopDialog: React.FC<
 
       <div className="flex items-center justify-between">
         <div>
-          <Label htmlFor="ask_once" className="text-sm font-medium">Ask once per conversation</Label>
-          <p className="text-xs text-muted-foreground">When enabled, input is collected only once. Subsequent executions use the cached response.</p>
+          <Label htmlFor="ask_once" className="text-sm font-medium">
+            Ask once per conversation
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            When enabled, input is collected only once. Subsequent executions use the cached response.
+          </p>
         </div>
-        <Switch
-          id="ask_once"
-          checked={askOnce}
-          onCheckedChange={(val) => setAskOnce(val)}
-        />
+        <Switch id="ask_once" checked={askOnce} onCheckedChange={(val) => setAskOnce(val)} />
       </div>
 
       <div className="space-y-2">
         <div className="flex justify-between items-center">
           <Label>Form Fields ({formFields.length})</Label>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-6 text-xs"
-            onClick={openAddFieldDialog}
-          >
+          <Button size="sm" variant="outline" className="h-6 text-xs" onClick={openAddFieldDialog}>
             <Plus className="h-3 w-3 mr-1" /> Add Field
           </Button>
         </div>
 
         <div className="space-y-2">
           {formFields.map((field, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between gap-2 p-2.5 bg-gray-50 rounded-lg border"
-            >
+            <div key={index} className="flex items-center justify-between gap-2 p-2.5 bg-gray-50 rounded-lg border">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-sm font-medium truncate">
-                  {field.label}
-                </span>
-                <span className="text-xs text-muted-foreground px-1.5 py-0.5 bg-gray-200 rounded">
-                  {field.type}
-                </span>
-                {field.required && (
-                  <span className="text-red-500 text-xs">*</span>
-                )}
+                <span className="text-sm font-medium truncate">{field.label}</span>
+                <span className="text-xs text-muted-foreground px-1.5 py-0.5 bg-gray-200 rounded">{field.type}</span>
+                {field.required && <span className="text-red-500 text-xs">*</span>}
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => openEditFieldDialog(index)}
-                >
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditFieldDialog(index)}>
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
                 <Button
@@ -276,17 +229,10 @@ export const HumanInTheLoopDialog: React.FC<
       </div>
 
       {/* Field Editor Dialog — rendered inside NodeConfigPanel so the Sheet doesn't close */}
-      <Dialog
-        open={fieldDialog.isOpen}
-        onOpenChange={(open) =>
-          setFieldDialog((prev) => ({ ...prev, isOpen: open }))
-        }
-      >
+      <Dialog open={fieldDialog.isOpen} onOpenChange={(open) => setFieldDialog((prev) => ({ ...prev, isOpen: open }))}>
         <DialogContent className="max-w-md" style={{ zIndex: 2000 }}>
           <DialogHeader>
-            <DialogTitle>
-              {fieldDialog.mode === "add" ? "Add Field" : "Edit Field"}
-            </DialogTitle>
+            <DialogTitle>{fieldDialog.mode === 'add' ? 'Add Field' : 'Edit Field'}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
@@ -295,7 +241,7 @@ export const HumanInTheLoopDialog: React.FC<
                 <Label className="text-xs">Field Name (key)</Label>
                 <Input
                   value={fieldDialog.field.name}
-                  onChange={(e) => updateDialogField("name", e.target.value)}
+                  onChange={(e) => updateDialogField('name', e.target.value)}
                   placeholder="e.g. location"
                   className="text-sm"
                 />
@@ -304,7 +250,7 @@ export const HumanInTheLoopDialog: React.FC<
                 <Label className="text-xs">Label</Label>
                 <Input
                   value={fieldDialog.field.label}
-                  onChange={(e) => updateDialogField("label", e.target.value)}
+                  onChange={(e) => updateDialogField('label', e.target.value)}
                   placeholder="e.g. Your Location"
                   className="text-sm"
                 />
@@ -314,10 +260,7 @@ export const HumanInTheLoopDialog: React.FC<
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Type</Label>
-                <Select
-                  value={fieldDialog.field.type}
-                  onValueChange={(val) => updateDialogField("type", val)}
-                >
+                <Select value={fieldDialog.field.type} onValueChange={(val) => updateDialogField('type', val)}>
                   <SelectTrigger className="text-sm">
                     <SelectValue />
                   </SelectTrigger>
@@ -333,7 +276,7 @@ export const HumanInTheLoopDialog: React.FC<
               <div className="flex items-end gap-2 pb-1">
                 <Switch
                   checked={fieldDialog.field.required || false}
-                  onCheckedChange={(val) => updateDialogField("required", val)}
+                  onCheckedChange={(val) => updateDialogField('required', val)}
                 />
                 <Label className="text-xs">Required</Label>
               </div>
@@ -342,10 +285,8 @@ export const HumanInTheLoopDialog: React.FC<
             <div>
               <Label className="text-xs">Placeholder</Label>
               <Input
-                value={fieldDialog.field.placeholder || ""}
-                onChange={(e) =>
-                  updateDialogField("placeholder", e.target.value)
-                }
+                value={fieldDialog.field.placeholder || ''}
+                onChange={(e) => updateDialogField('placeholder', e.target.value)}
                 placeholder="Placeholder text..."
                 className="text-sm"
               />
@@ -354,17 +295,15 @@ export const HumanInTheLoopDialog: React.FC<
             <div>
               <Label className="text-xs">Description</Label>
               <Input
-                value={fieldDialog.field.description || ""}
-                onChange={(e) =>
-                  updateDialogField("description", e.target.value)
-                }
+                value={fieldDialog.field.description || ''}
+                onChange={(e) => updateDialogField('description', e.target.value)}
                 placeholder="Help text for this field..."
                 className="text-sm"
               />
             </div>
 
             {/* Options editor for select type */}
-            {fieldDialog.field.type === "select" && (
+            {fieldDialog.field.type === 'select' && (
               <div>
                 <Label className="text-xs mb-1 block">Options</Label>
                 <div className="space-y-1">
@@ -372,17 +311,13 @@ export const HumanInTheLoopDialog: React.FC<
                     <div key={optIdx} className="flex items-center gap-1">
                       <Input
                         value={opt.value}
-                        onChange={(e) =>
-                          updateOption(optIdx, "value", e.target.value)
-                        }
+                        onChange={(e) => updateOption(optIdx, 'value', e.target.value)}
                         placeholder="Value"
                         className="text-xs h-7"
                       />
                       <Input
                         value={opt.label}
-                        onChange={(e) =>
-                          updateOption(optIdx, "label", e.target.value)
-                        }
+                        onChange={(e) => updateOption(optIdx, 'label', e.target.value)}
                         placeholder="Label"
                         className="text-xs h-7"
                       />
@@ -397,12 +332,7 @@ export const HumanInTheLoopDialog: React.FC<
                     </div>
                   ))}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-1 text-xs h-6"
-                  onClick={addOption}
-                >
+                <Button variant="outline" size="sm" className="mt-1 text-xs h-6" onClick={addOption}>
                   <Plus className="h-3 w-3 mr-1" />
                   Add Option
                 </Button>
@@ -411,19 +341,11 @@ export const HumanInTheLoopDialog: React.FC<
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() =>
-                setFieldDialog((prev) => ({ ...prev, isOpen: false }))
-              }
-            >
+            <Button variant="outline" onClick={() => setFieldDialog((prev) => ({ ...prev, isOpen: false }))}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSaveField}
-              disabled={!fieldDialog.field.name || !fieldDialog.field.label}
-            >
-              {fieldDialog.mode === "add" ? "Add" : "Save"}
+            <Button onClick={handleSaveField} disabled={!fieldDialog.field.name || !fieldDialog.field.label}>
+              {fieldDialog.mode === 'add' ? 'Add' : 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>

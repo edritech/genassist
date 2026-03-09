@@ -1,16 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from uuid import UUID
 from typing import List
+from uuid import UUID
 
-from app.schemas.mcp_server import (
-    MCPServerCreate,
-    MCPServerUpdate,
-    MCPServerResponse,
-)
-from app.services.mcp_server import MCPServerService
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi_injector import Injected
+
 from app.auth.dependencies import auth
 from app.core.exceptions.exception_classes import AppException
-from fastapi_injector import Injected
+from app.schemas.mcp_server import (
+    MCPServerCreate,
+    MCPServerResponse,
+    MCPServerUpdate,
+)
+from app.services.mcp_server import MCPServerService
 
 router = APIRouter(tags=["MCP Servers"], dependencies=[Depends(auth)])
 
@@ -82,4 +83,3 @@ async def delete_mcp_server(
             raise HTTPException(status_code=404, detail="MCP server not found")
     except AppException as e:
         raise HTTPException(status_code=e.status_code, detail=e.error_detail or str(e.error_key))
-

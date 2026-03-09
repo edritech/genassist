@@ -1,23 +1,15 @@
-from typing import Dict, List, Any, Optional
-from uuid import uuid4
 from copy import deepcopy
+from typing import Dict, List, Optional
+from uuid import uuid4
 
-from sqlalchemy import null
 from app.modules.workflow.manage.data_models import ValidationError
 from app.schemas.dynamic_form_schemas.base import FieldSchema
 from app.schemas.dynamic_form_schemas.nodes import NODE_DIALOG_SCHEMAS, NODE_HANDLERS_SCHEMAS
 
 
-#TODO: Validate Handlers
+# TODO: Validate Handlers
 class WorkflowManager:
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        user_id: str,
-        agent_id: str,
-        workflow_id: Optional[str] = None
-    ):
+    def __init__(self, name: str, description: str, user_id: str, agent_id: str, workflow_id: Optional[str] = None):
         self.workflow = {
             "id": workflow_id or str(uuid4()),
             "name": name,
@@ -25,12 +17,13 @@ class WorkflowManager:
             "user_id": user_id,
             "agent_id": agent_id,
             "nodes": [],
-            "edges": []
+            "edges": [],
         }
 
     json_nodes = []
     json_edges = []
     node_id_mapping = {}
+
     # ------------------------
     # Core helpers
     # ------------------------
@@ -39,7 +32,7 @@ class WorkflowManager:
 
     def _node_name(self, node: Dict) -> str:
         return node.get("data", {}).get("name", node["id"])
-    
+
     # define default values for different field types
     _DEFAULT_BY_TYPE = {
         "text": "",
@@ -61,16 +54,13 @@ class WorkflowManager:
 
         return data
 
-
-
-
     def _gen_node_from_type(self, node_type: str, name: str, idx: int) -> Dict:
-        fields = NODE_DIALOG_SCHEMAS.get(node_type) or []     
+        fields = NODE_DIALOG_SCHEMAS.get(node_type) or []
         handlers = NODE_HANDLERS_SCHEMAS.get(node_type) or []
         x = idx * 500 + 50
         y = 150
-        
-        node={
+
+        node = {
             "id": str(uuid4()),
             "type": node_type,
             "data": {
@@ -87,7 +77,7 @@ class WorkflowManager:
         node["data"]["name"] = name
         node["data"]["label"] = name
         node["data"]["description"] = name
-        node["data"]["inputSchema"] ={}
+        node["data"]["inputSchema"] = {}
 
         return node
 
@@ -112,12 +102,9 @@ class WorkflowManager:
         node.setdefault("data", {}).update(data_updates)
 
     def delete_node(self, node_id: str) -> None:
-        self.workflow["nodes"] = [
-            n for n in self.workflow["nodes"] if n["id"] != node_id
-        ]
+        self.workflow["nodes"] = [n for n in self.workflow["nodes"] if n["id"] != node_id]
         self.workflow["edges"] = [
-            e for e in self.workflow["edges"]
-            if e["source"] != node_id and e["target"] != node_id
+            e for e in self.workflow["edges"] if e["source"] != node_id and e["target"] != node_id
         ]
 
     def replace_node(self, node_id: str, new_node: Dict) -> None:
@@ -134,35 +121,22 @@ class WorkflowManager:
     # ------------------------
     # Edge operations
     # ------------------------
-    def add_edge(
-        self,
-        source: str,
-        target: str,
-        source_handle: str = "output",
-        target_handle: str = "input"
-    ) -> None:
+    def add_edge(self, source: str, target: str, source_handle: str = "output", target_handle: str = "input") -> None:
         if not self._find_node(source) or not self._find_node(target):
             raise ValueError("Invalid source or target")
 
-        self.workflow["edges"].append({
-            "id": f"reactflow__edge-{source}{source_handle}-{target}{target_handle}",
-            "source": source,
-            "target": target,
-            "sourceHandle": source_handle,
-            "targetHandle": target_handle,
-            "type": "default",
-            "style": {
-                "strokeWidth": 2,
-                "stroke": "hsl(var(--brand-600))",
-                "strokeDasharray": "7,7"
-            },
-            "markerEnd": {
-                "type": "arrowclosed",
-                "width": 16,
-                "height": 16,
-                "color": "hsl(var(--brand-600))"
-            },
-        })
+        self.workflow["edges"].append(
+            {
+                "id": f"reactflow__edge-{source}{source_handle}-{target}{target_handle}",
+                "source": source,
+                "target": target,
+                "sourceHandle": source_handle,
+                "targetHandle": target_handle,
+                "type": "default",
+                "style": {"strokeWidth": 2, "stroke": "hsl(var(--brand-600))", "strokeDasharray": "7,7"},
+                "markerEnd": {"type": "arrowclosed", "width": 16, "height": 16, "color": "hsl(var(--brand-600))"},
+            }
+        )
 
     def add_edge_source_to_current(self, source_node_id: str, current_node_id: str):
         self.add_edge(source_node_id, current_node_id)
@@ -177,30 +151,29 @@ class WorkflowManager:
         errors = []
 
         if "id" not in node:
-            errors.append(ValidationError(
-                node_id="unknown",
-                node_name="unknown",
-                field="id",
-                error="Missing node id"
-            ))
+            errors.append(ValidationError(node_id="unknown", node_name="unknown", field="id", error="Missing node id"))
 
         data = node.get("data", {})
         if not data.get("name"):
-            errors.append(ValidationError(
-                node_id=node["id"],
-                node_name=self._node_name(node),
-                field="data.name",
-                error="Node name is required"
-            ))
+            errors.append(
+                ValidationError(
+                    node_id=node["id"],
+                    node_name=self._node_name(node),
+                    field="data.name",
+                    error="Node name is required",
+                )
+            )
 
         handlers = data.get("handlers", [])
         if not handlers:
-            errors.append(ValidationError(
-                node_id=node["id"],
-                node_name=self._node_name(node),
-                field="data.handlers",
-                error="At least one handler is required"
-            ))
+            errors.append(
+                ValidationError(
+                    node_id=node["id"],
+                    node_name=self._node_name(node),
+                    field="data.handlers",
+                    error="At least one handler is required",
+                )
+            )
 
         return errors
 
@@ -216,20 +189,24 @@ class WorkflowManager:
         # Edge validation
         for edge in self.workflow["edges"]:
             if edge["source"] not in node_ids:
-                errors.append(ValidationError(
-                    node_id=edge["source"],
-                    node_name="unknown",
-                    field="edge.source",
-                    error="Source node does not exist"
-                ))
+                errors.append(
+                    ValidationError(
+                        node_id=edge["source"],
+                        node_name="unknown",
+                        field="edge.source",
+                        error="Source node does not exist",
+                    )
+                )
 
             if edge["target"] not in node_ids:
-                errors.append(ValidationError(
-                    node_id=edge["target"],
-                    node_name="unknown",
-                    field="edge.target",
-                    error="Target node does not exist"
-                ))
+                errors.append(
+                    ValidationError(
+                        node_id=edge["target"],
+                        node_name="unknown",
+                        field="edge.target",
+                        error="Target node does not exist",
+                    )
+                )
 
         return errors
 
@@ -243,18 +220,16 @@ class WorkflowManager:
     # Create Workflow from wizard
     # ------------------------
     def generate_nodes_from_wizard(self, input_data: Dict) -> List[Dict]:
-
         for index, node in enumerate(input_data["workflow"]):
             node_type = node["node_name"]
             name = node["function_of_node"]
-            node_simple_id= node["uniqueId"]
+            node_simple_id = node["uniqueId"]
 
-            x = index * 500 + 50
-            y = 150
+            index * 500 + 50
 
             full_node = self._gen_node_from_type(node_type, name, index)
-            
-            self.node_id_mapping[node_simple_id]= full_node["id"]
+
+            self.node_id_mapping[node_simple_id] = full_node["id"]
             self.json_nodes.append(full_node)
 
         return self.json_nodes
@@ -262,41 +237,29 @@ class WorkflowManager:
     def generate_edges_from_wizard(self, input_data: Dict) -> List[Dict]:
         output_edges = []
 
-        
         for index, node in enumerate(input_data["workflow"]):
             if index > 0:
-                output_edges.append({
-                    "id": f"reactflow__edge-{self.json_nodes[index - 1]['id']}output-{self.json_nodes[index]['id']}input",
-                    "type": "default",
-                    "style": {
-                        "strokeWidth": 2,
-                        "stroke": "hsl(var(--brand-600))",
-                        "strokeDasharray": "7,7"
-                    },
-                    "source": self.json_nodes[index - 1]['id'],
-                    "target": self.json_nodes[index]['id'],
-                    "markerEnd": {
-                        "type": "arrowclosed",
-                        "width": 16,
-                        "height": 16,
-                        "color": "hsl(var(--brand-600))"
-                    },
-                    "sourceHandle": "output",
-                    "targetHandle": "input"
-                })
+                output_edges.append(
+                    {
+                        "id": f"reactflow__edge-{self.json_nodes[index - 1]['id']}output-{self.json_nodes[index]['id']}input",
+                        "type": "default",
+                        "style": {"strokeWidth": 2, "stroke": "hsl(var(--brand-600))", "strokeDasharray": "7,7"},
+                        "source": self.json_nodes[index - 1]["id"],
+                        "target": self.json_nodes[index]["id"],
+                        "markerEnd": {
+                            "type": "arrowclosed",
+                            "width": 16,
+                            "height": 16,
+                            "color": "hsl(var(--brand-600))",
+                        },
+                        "sourceHandle": "output",
+                        "targetHandle": "input",
+                    }
+                )
                 self.json_edges.append(output_edges[-1])
 
         return output_edges
-    
 
     def generate_execution_state_from_wizard(self, input_data: Dict) -> Dict:
-        execution_state = {
-            "source": {
-                "message": None
-            },
-            "session": {
-                "message": None
-            },
-            "nodeOutputs": {}
-        }
+        execution_state = {"source": {"message": None}, "session": {"message": None}, "nodeOutputs": {}}
         return execution_state

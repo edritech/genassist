@@ -2,8 +2,9 @@
 Simple text chunker implementation that splits text using separators
 """
 
-from typing import List, Dict, Any, Optional
-from .base import BaseChunker, ChunkConfig, Chunk, decode_separators
+from typing import Any, Dict, List, Optional
+
+from .base import BaseChunker, Chunk, ChunkConfig
 
 
 class SimpleChunker(BaseChunker):
@@ -48,7 +49,7 @@ class SimpleChunker(BaseChunker):
                 content=chunk_text.strip() if self.config.strip_whitespace else chunk_text,
                 index=len(chunks),  # Use actual chunk count as index
                 start_char=start_pos,
-                metadata=metadata
+                metadata=metadata,
             )
             chunks.append(chunk)
 
@@ -82,17 +83,14 @@ class SimpleChunker(BaseChunker):
         """
         # if not separators:
         #     return [text] if text else []
-        
+
         # recursivly no separators left → must hard-split if still too big
         if not separators:
             if len(text) <= self.config.chunk_size:
                 return [text]
             else:
                 # HARD SPLIT by chunk size
-                return [
-                    text[i: i + self.config.chunk_size]
-                    for i in range(0, len(text), self.config.chunk_size)
-                ]
+                return [text[i : i + self.config.chunk_size] for i in range(0, len(text), self.config.chunk_size)]
 
         separator = separators[0]
         remaining_separators = separators[1:]
@@ -113,7 +111,7 @@ class SimpleChunker(BaseChunker):
 
             # Recursively process each split if it's still too large
             chunks = []
-        
+
             for split in splits:
                 if len(split) > self.config.chunk_size:
                     # Still too big → use remaining separators or fallback
@@ -122,8 +120,7 @@ class SimpleChunker(BaseChunker):
                     else:
                         # No separators left → fallback hard split
                         chunks.extend(
-                            split[i: i + self.config.chunk_size]
-                            for i in range(0, len(split), self.config.chunk_size)
+                            split[i : i + self.config.chunk_size] for i in range(0, len(split), self.config.chunk_size)
                         )
                 else:
                     if split:

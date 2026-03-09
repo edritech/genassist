@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { UserTypesCard } from "@/views/UserTypes/components/UserTypesCard";
-import { UserTypeDialog } from "../components/UserTypeDialog";
+import { useState } from 'react';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { UserTypesCard } from '@/views/UserTypes/components/UserTypesCard';
+import { UserTypeDialog } from '../components/UserTypeDialog';
 
 export default function UserTypes() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleUserTypeSaved = () => {
-    setRefreshKey(prevKey => prevKey + 1);
+    setRefreshKey((prevKey) => prevKey + 1);
   };
 
   const handleCreateUserType = () => {
@@ -28,17 +28,10 @@ export default function UserTypes() {
         actionButtonText="Add New User Type"
         onActionClick={handleCreateUserType}
       />
-      
-      <UserTypesCard
-        searchQuery={searchQuery}
-        refreshKey={refreshKey}
-      />
 
-      <UserTypeDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onUserTypeSaved={handleUserTypeSaved}
-      />
+      <UserTypesCard searchQuery={searchQuery} refreshKey={refreshKey} />
+
+      <UserTypeDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} onUserTypeSaved={handleUserTypeSaved} />
     </PageLayout>
   );
-} 
+}

@@ -1,16 +1,16 @@
-import pytest
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
+import pytest
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 
-from app.services.llm_providers import LlmProviderService
-from app.repositories.llm_providers import LlmProviderRepository
-from app.schemas.llm import LlmProviderCreate, LlmProviderUpdate
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.llm import LlmProvidersModel
+from app.repositories.llm_providers import LlmProviderRepository
+from app.schemas.llm import LlmProviderCreate, LlmProviderUpdate
+from app.services.llm_providers import LlmProviderService
 
 
 @pytest.fixture(autouse=True)
@@ -36,21 +36,16 @@ def sample_llm_provider_data():
     return {
         "name": "test_provider",
         "llm_model_provider": "openai",
-        "connection_data": {
-            "api_key": "sk-test-key-for-unit-tests"
-        },
+        "connection_data": {"api_key": "sk-test-key-for-unit-tests"},
         "is_active": 1,
-        "llm_model": "gpt-3.5-turbo"
+        "llm_model": "gpt-3.5-turbo",
     }
 
 
 @pytest.mark.asyncio
 async def test_create_success(llm_provider_service, mock_repository, sample_llm_provider_data):
     provider_create = LlmProviderCreate(**sample_llm_provider_data)
-    mock_provider = LlmProvidersModel(
-        id=uuid4(),
-        **sample_llm_provider_data
-    )
+    mock_provider = LlmProvidersModel(id=uuid4(), **sample_llm_provider_data)
     mock_repository.create.return_value = mock_provider
 
     result = await llm_provider_service.create(provider_create)
@@ -65,10 +60,7 @@ async def test_create_success(llm_provider_service, mock_repository, sample_llm_
 @pytest.mark.asyncio
 async def test_get_by_id_success(llm_provider_service, mock_repository, sample_llm_provider_data):
     provider_id = uuid4()
-    mock_provider = LlmProvidersModel(
-        id=provider_id,
-        **sample_llm_provider_data
-    )
+    mock_provider = LlmProvidersModel(id=provider_id, **sample_llm_provider_data)
     mock_repository.get_by_id.return_value = mock_provider
 
     result = await llm_provider_service.get_by_id(provider_id)
@@ -94,11 +86,7 @@ async def test_get_by_id_not_found(llm_provider_service, mock_repository):
 @pytest.mark.asyncio
 async def test_get_all_success(llm_provider_service, mock_repository, sample_llm_provider_data):
     mock_providers = [
-        LlmProvidersModel(
-            id=uuid4(),
-            **{**sample_llm_provider_data, "name": f"provider{i}"}
-        )
-        for i in range(3)
+        LlmProvidersModel(id=uuid4(), **{**sample_llm_provider_data, "name": f"provider{i}"}) for i in range(3)
     ]
     mock_repository.get_all.return_value = mock_providers
 
@@ -114,20 +102,12 @@ async def test_get_all_success(llm_provider_service, mock_repository, sample_llm
 @pytest.mark.asyncio
 async def test_update_success(llm_provider_service, mock_repository, sample_llm_provider_data):
     provider_id = uuid4()
-    update_data = LlmProviderUpdate(
-        name="updated_provider",
-        llm_model_provider="anthropic",
-        llm_model="claude-2"
-    )
-    mock_provider = LlmProvidersModel(
-        id=provider_id,
-        **sample_llm_provider_data
-    )
+    update_data = LlmProviderUpdate(name="updated_provider", llm_model_provider="anthropic", llm_model="claude-2")
+    mock_provider = LlmProvidersModel(id=provider_id, **sample_llm_provider_data)
     mock_repository.get_by_id.return_value = mock_provider
 
     updated_provider = LlmProvidersModel(
-        id=provider_id,
-        **{**sample_llm_provider_data, **update_data.model_dump(exclude_unset=True)}
+        id=provider_id, **{**sample_llm_provider_data, **update_data.model_dump(exclude_unset=True)}
     )
     mock_repository.update.return_value = updated_provider
 
@@ -144,10 +124,7 @@ async def test_update_success(llm_provider_service, mock_repository, sample_llm_
 @pytest.mark.asyncio
 async def test_delete_success(llm_provider_service, mock_repository, sample_llm_provider_data):
     provider_id = uuid4()
-    mock_provider = LlmProvidersModel(
-        id=provider_id,
-        **sample_llm_provider_data
-    )
+    mock_provider = LlmProvidersModel(id=provider_id, **sample_llm_provider_data)
     mock_repository.get_by_id.return_value = mock_provider
 
     result = await llm_provider_service.delete(provider_id)

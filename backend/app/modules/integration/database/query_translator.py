@@ -65,15 +65,12 @@ async def translate_to_query(
     query_info = _parse_response(raw_output)
 
     # Post-process values (restore exact string literals where needed)
-    query_info["formatted_query"] = _restore_exact_values(
-        query_info["formatted_query"], schema
-    )
+    query_info["formatted_query"] = _restore_exact_values(query_info["formatted_query"], schema)
 
     # Ensure we actually produced a query
     if not query_info["formatted_query"] or query_info["formatted_query"].strip() == "":
         raise ValueError(
-            "No valid SQL query could be generated from the input. "
-            "Please ask a specific question about the data."
+            "No valid SQL query could be generated from the input. Please ask a specific question about the data."
         )
 
     # Validate SQL
@@ -196,9 +193,7 @@ def _restore_exact_values(query: str, schema: Dict[str, Any]) -> str:
     try:
         for table in schema.get("tables", []):
             for col in table.get("columns", []):
-                examples = col.get("possible_values", []) or col.get(
-                    "categorical_values", []
-                )
+                examples = col.get("possible_values", []) or col.get("categorical_values", [])
                 if not examples:
                     continue
 

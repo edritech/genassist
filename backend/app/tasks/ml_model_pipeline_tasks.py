@@ -5,27 +5,27 @@ Celery tasks for ML model pipeline execution.
 import asyncio
 import logging
 import os
-from uuid import UUID
-from typing import Dict, Any
 from pathlib import Path
+from typing import Any, Dict
+from uuid import UUID
 
 from celery import shared_task
-from app.dependencies.injector import injector
-from app.db.multi_tenant_session import multi_tenant_manager
-from app.core.tenant_scope import get_tenant_context
-from app.repositories.ml_model_pipeline import (
-    MLModelPipelineRunRepository,
-    MLModelPipelineArtifactRepository,
-)
-from app.db.models.ml_model_pipeline import PipelineRunStatus, ArtifactType
-from app.modules.workflow.engine.workflow_engine import WorkflowEngine
-from app.repositories.workflow import WorkflowRepository
-from app.repositories.ml_models import MLModelsRepository
+
+from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
 from app.core.project_path import DATA_VOLUME
+from app.core.tenant_scope import get_tenant_context
+from app.db.models.ml_model_pipeline import ArtifactType, PipelineRunStatus
+from app.db.multi_tenant_session import multi_tenant_manager
+from app.modules.workflow.engine.workflow_engine import WorkflowEngine
+from app.repositories.ml_model_pipeline import (
+    MLModelPipelineArtifactRepository,
+    MLModelPipelineRunRepository,
+)
+from app.repositories.ml_models import MLModelsRepository
+from app.repositories.workflow import WorkflowRepository
 from app.schemas.ml_model_pipeline import MLModelPipelineArtifactCreate
 from app.tasks.base import run_task_for_all_tenants
-from app.core.exceptions.exception_classes import AppException
-from app.core.exceptions.error_messages import ErrorKey
 
 logger = logging.getLogger(__name__)
 
@@ -106,9 +106,7 @@ async def execute_pipeline_run_async(run_id: UUID):
                     run = await run_repository.get_by_id(run_id)
                 except AppException as e:
                     if e.error_key == ErrorKey.NOT_FOUND:
-                        logger.info(
-                            f"Pipeline run {run_id} not found in tenant {tenant_id}, skipping execution"
-                        )
+                        logger.info(f"Pipeline run {run_id} not found in tenant {tenant_id}, skipping execution")
                         return None  # Skip this tenant - run doesn't belong to it
                     raise
 
@@ -142,9 +140,7 @@ async def execute_pipeline_run_async(run_id: UUID):
 
                 # Execute workflow
                 thread_id = f"pipeline_run_{run_id}"
-                state = await workflow_engine.execute_from_node(
-                    input_data=input_data, thread_id=thread_id
-                )
+                state = await workflow_engine.execute_from_node(input_data=input_data, thread_id=thread_id)
 
                 # Extract execution results
                 execution_output = state.format_state_as_response()
@@ -177,16 +173,12 @@ async def execute_pipeline_run_async(run_id: UUID):
                 logger.info(f"Pipeline run {run_id} completed successfully")
 
             except Exception as e:
-                logger.error(
-                    f"Error executing pipeline run {run_id}: {str(e)}", exc_info=True
-                )
+                logger.error(f"Error executing pipeline run {run_id}: {str(e)}", exc_info=True)
 
                 # Update run status to failed
                 # Skip if run doesn't exist in this tenant's database
                 try:
-                    await run_repository.update_status(
-                        run_id, PipelineRunStatus.FAILED, error_message=str(e)
-                    )
+                    await run_repository.update_status(run_id, PipelineRunStatus.FAILED, error_message=str(e))
                 except AppException as update_error:
                     if update_error.error_key == ErrorKey.NOT_FOUND:
                         logger.info(
@@ -203,20 +195,20 @@ async def execute_pipeline_run_async(run_id: UUID):
 
 async def execute_pipeline_run_async_with_scope(run_id: UUID):
     """Wrapper to run pipeline execution for all tenants"""
-    from app.tasks.base import create_task_wrapper, run_task_for_all_tenants
-    
+    from app.tasks.base import create_task_wrapper
+
     # Create a wrapper that handles the UUID conversion
     async def task_with_uuid_conversion(**kwargs):
         task_run_id = kwargs.get("run_id", run_id)
         if isinstance(task_run_id, str):
             task_run_id = UUID(task_run_id)
         return await execute_pipeline_run_async(task_run_id)
-    
+
     try:
         logger.info(f"Starting pipeline run execution task for all tenants: {run_id}")
         wrapper = create_task_wrapper(task_with_uuid_conversion)
         results = await run_task_for_all_tenants(wrapper, run_id=str(run_id))
-        
+
         logger.info(f"Pipeline run execution completed for {len(results)} tenant(s)")
         return {
             "status": "success",
@@ -261,8 +253,10 @@ async def check_and_execute_scheduled_pipelines_async():
     Check all pipeline configs with cron schedules and execute them if needed.
     This runs periodically to check for scheduled executions.
     """
-    from croniter import croniter
     from datetime import datetime, timezone
+
+    from croniter import croniter
+
     from app.repositories.ml_model_pipeline import MLModelPipelineConfigRepository
     from app.schemas.ml_model_pipeline import MLModelPipelineRunCreate
 
@@ -272,7 +266,7 @@ async def check_and_execute_scheduled_pipelines_async():
 
     async with session_factory() as session:
         try:
-            config_repository = MLModelPipelineConfigRepository(session)
+            MLModelPipelineConfigRepository(session)
             run_repository = MLModelPipelineRunRepository(session)
 
             # Get all configs with cron schedules (this would need a new method)
@@ -281,6 +275,7 @@ async def check_and_execute_scheduled_pipelines_async():
 
             # Get all active configs (simplified - in production, add a method to filter by cron_schedule)
             from sqlalchemy import select
+
             from app.db.models.ml_model_pipeline import MLModelPipelineConfig
 
             query = select(MLModelPipelineConfig).where(
@@ -309,6 +304,7 @@ async def check_and_execute_scheduled_pipelines_async():
                         # Check if we already ran this recently (avoid duplicates)
                         # Get the last run for this config
                         from sqlalchemy import select
+
                         from app.db.models.ml_model_pipeline import MLModelPipelineRun
 
                         last_run_query = (
@@ -326,9 +322,7 @@ async def check_and_execute_scheduled_pipelines_async():
                         # Only run if last run was more than 1 minute ago or doesn't exist
                         should_run = True
                         if last_run and last_run.created_at:
-                            time_since_last_run = (
-                                current_time - last_run.created_at
-                            ).total_seconds()
+                            time_since_last_run = (current_time - last_run.created_at).total_seconds()
                             if time_since_last_run < 60:
                                 should_run = False
 
@@ -349,14 +343,10 @@ async def check_and_execute_scheduled_pipelines_async():
 
                             execute_pipeline_run_task.delay(str(run.id))
                             executed_count += 1
-                            logger.info(
-                                f"Scheduled pipeline run created: {run.id} for config {config.id}"
-                            )
+                            logger.info(f"Scheduled pipeline run created: {run.id} for config {config.id}")
 
                 except Exception as e:
-                    logger.error(
-                        f"Error checking cron schedule for config {config.id}: {str(e)}"
-                    )
+                    logger.error(f"Error checking cron schedule for config {config.id}: {str(e)}")
 
             if executed_count > 0:
                 logger.info(f"Executed {executed_count} scheduled pipeline runs")
@@ -371,10 +361,8 @@ async def check_and_execute_scheduled_pipelines_async():
 async def check_and_execute_scheduled_pipelines_async_with_scope():
     """Wrapper to run scheduled pipeline check for all tenants"""
     from app.tasks.base import run_task_with_tenant_support
-    return await run_task_with_tenant_support(
-        check_and_execute_scheduled_pipelines_async,
-        "scheduled pipeline check"
-    )
+
+    return await run_task_with_tenant_support(check_and_execute_scheduled_pipelines_async, "scheduled pipeline check")
 
 
 @shared_task
@@ -389,9 +377,7 @@ def check_scheduled_pipeline_runs():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
 
-        loop.run_until_complete(
-            check_and_execute_scheduled_pipelines_async_with_scope()
-        )
+        loop.run_until_complete(check_and_execute_scheduled_pipelines_async_with_scope())
     except Exception as e:
         logger.error(f"Error in scheduled pipeline check task: {str(e)}", exc_info=True)
         raise

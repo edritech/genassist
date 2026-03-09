@@ -3,13 +3,14 @@ WhatsApp tool node implementation using the BaseNode class.
 """
 
 import logging
-from typing import Dict, Any, cast
+from typing import Any, Dict, cast
 from uuid import UUID
 
-from ..base_node import BaseNode
+from app.dependencies.injector import injector
 from app.modules.integration.whatsapp import WhatsAppConnector
 from app.services.app_settings import AppSettingsService
-from app.dependencies.injector import injector
+
+from ..base_node import BaseNode
 
 logger = logging.getLogger(__name__)
 
@@ -53,17 +54,13 @@ class WhatsAppToolNode(BaseNode):
             app_settings = await app_settings_service.get_by_id(UUID(app_settings_id))
 
             # Extract token and phone_number_id from app settings values
-            values = (
-                app_settings.values if isinstance(app_settings.values, dict) else {}
-            )
+            values = app_settings.values if isinstance(app_settings.values, dict) else {}
             token = values.get("whatsapp_token")
             phone_number_id = values.get("phone_number_id")
 
             # Validate that we have the required values and they are strings
             if not token or not isinstance(token, str):
-                error_msg = (
-                    "WhatsApp tool: whatsapp_token not found or invalid in app settings"
-                )
+                error_msg = "WhatsApp tool: whatsapp_token not found or invalid in app settings"
                 logger.error(error_msg)
                 return {"status": 400, "data": {"error": error_msg}}
 
@@ -88,12 +85,8 @@ class WhatsAppToolNode(BaseNode):
             message_text: str = cast(str, text)
 
             # Send the WhatsApp message
-            whatsapp_connector = WhatsAppConnector(
-                token=token, phone_number_id=phone_number_id
-            )
-            result = await whatsapp_connector.send_text_message(
-                recipient_number=recipient_number, text=message_text
-            )
+            whatsapp_connector = WhatsAppConnector(token=token, phone_number_id=phone_number_id)
+            result = await whatsapp_connector.send_text_message(recipient_number=recipient_number, text=message_text)
             return result
 
         except Exception as e:

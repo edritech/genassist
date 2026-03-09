@@ -1,32 +1,32 @@
-import { useState } from "react";
-import { getInitials } from "@/helpers/formatters";
+import { useState } from 'react';
+import { getInitials } from '@/helpers/formatters';
 
 interface OperatorAvatarProps {
   firstName: string;
   lastName: string;
   avatarUrl?: string;
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export function OperatorAvatar({ firstName, lastName, avatarUrl, size = "md" }: OperatorAvatarProps) {
+export function OperatorAvatar({ firstName, lastName, avatarUrl, size = 'md' }: OperatorAvatarProps) {
   const [imageError, setImageError] = useState(false);
-  
+
   // Size classes
   const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-10 h-10", 
-    lg: "w-12 h-12"
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12',
   };
-  
+
   // Font size classes
   const fontSizeClasses = {
-    sm: "text-sm",
-    md: "text-base",
-    lg: "text-lg"
+    sm: 'text-sm',
+    md: 'text-base',
+    lg: 'text-lg',
   };
-  
+
   const initials = getInitials(firstName, lastName);
-  
+
   if (!imageError && avatarUrl) {
     return (
       <img
@@ -37,10 +37,12 @@ export function OperatorAvatar({ firstName, lastName, avatarUrl, size = "md" }: 
       />
     );
   }
-  
+
   return (
-    <div className={`${sizeClasses[size]} rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold ${fontSizeClasses[size]}`}>
+    <div
+      className={`${sizeClasses[size]} rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold ${fontSizeClasses[size]}`}
+    >
       {initials}
     </div>
   );
-} 
+}

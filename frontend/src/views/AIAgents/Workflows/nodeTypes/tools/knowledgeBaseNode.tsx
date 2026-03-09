@@ -1,21 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { NodeProps } from "reactflow";
-import { KnowledgeBaseNodeData } from "@/views/AIAgents/Workflows/types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { KnowledgeBaseDialog } from "../../nodeDialogs/KnowledgeBaseDialog";
-import { KnowledgeItem } from "@/interfaces/knowledge.interface";
-import { getAllKnowledgeItems } from "@/services/api";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
+import React, { useState, useEffect } from 'react';
+import { NodeProps } from 'reactflow';
+import { KnowledgeBaseNodeData } from '@/views/AIAgents/Workflows/types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { KnowledgeBaseDialog } from '../../nodeDialogs/KnowledgeBaseDialog';
+import { KnowledgeItem } from '@/interfaces/knowledge.interface';
+import { getAllKnowledgeItems } from '@/services/api';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
 
-export const KNOWLEDGE_BASE_NODE_TYPE = "knowledgeBaseNode";
+export const KNOWLEDGE_BASE_NODE_TYPE = 'knowledgeBaseNode';
 
-const KnowledgeBaseNode: React.FC<NodeProps<KnowledgeBaseNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const KnowledgeBaseNode: React.FC<NodeProps<KnowledgeBaseNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(KNOWLEDGE_BASE_NODE_TYPE);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [availableBases, setAvailableBases] = useState<KnowledgeItem[]>([]);
@@ -49,20 +45,20 @@ const KnowledgeBaseNode: React.FC<NodeProps<KnowledgeBaseNodeData>> = ({
   const selectedBaseNames = availableBases
     .filter((base) => data.selectedBases?.includes(base.id))
     .map((base) => base.name)
-    .join(", ");
+    .join(', ');
 
   const limit = data.limit ? data.limit : 0;
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Knowledge Bases",
+      label: 'Knowledge Bases',
       value: selectedBaseNames,
-      placeholder: "None selected",
+      placeholder: 'None selected',
     },
-    { label: "Query", value: data.query },
+    { label: 'Query', value: data.query },
     {
-      label: "Limit",
-      value: limit === 0 ? "" : limit === 1 ? "1 result" : `${limit} results`,
+      label: 'Limit',
+      value: limit === 0 ? '' : limit === 1 ? '1 result' : `${limit} results`,
     },
   ];
 

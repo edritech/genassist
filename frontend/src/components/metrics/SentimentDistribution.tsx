@@ -1,4 +1,4 @@
-import { BarChart3 } from "lucide-react";
+import { BarChart3 } from 'lucide-react';
 
 interface SentimentDistributionProps {
   positive: number;
@@ -10,9 +10,9 @@ export function SentimentDistribution({ positive = 0, neutral = 0, negative = 0 
   const total = positive + neutral + negative || 1;
 
   const sentiments = [
-    { name: "Positive", value: (positive / total) * 100, color: "bg-green-500", textColor: "text-green-600" },
-    { name: "Neutral", value: (neutral / total) * 100, color: "bg-yellow-500", textColor: "text-yellow-600" },
-    { name: "Negative", value: (negative / total) * 100, color: "bg-red-500", textColor: "text-red-600" }
+    { name: 'Positive', value: (positive / total) * 100, color: 'bg-green-500', textColor: 'text-green-600' },
+    { name: 'Neutral', value: (neutral / total) * 100, color: 'bg-yellow-500', textColor: 'text-yellow-600' },
+    { name: 'Negative', value: (negative / total) * 100, color: 'bg-red-500', textColor: 'text-red-600' },
   ];
 
   return (
@@ -25,9 +25,7 @@ export function SentimentDistribution({ positive = 0, neutral = 0, negative = 0 
         {sentiments.map((sentiment, idx) => (
           <div key={idx} className="flex-1">
             <div className="flex justify-between text-sm mb-1">
-              <span className={`${sentiment.textColor} capitalize`}>
-                {sentiment.name}
-              </span>
+              <span className={`${sentiment.textColor} capitalize`}>{sentiment.name}</span>
               <span>{Math.round(sentiment.value)}%</span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full">

@@ -7,14 +7,16 @@ Implements the BaseDataProvider interface for LightRAG-based graph search.
 import logging
 import os
 import re
-from typing import List, Dict, Any, Optional
-from lightrag import LightRAG, QueryParam
-from lightrag.llm.openai import openai_embed, gpt_4o_mini_complete
-from lightrag.kg.shared_storage import initialize_pipeline_status
+from typing import Any, Dict, List, Optional
 
-from .config import LightRAGConfig
-from ..base import FinalizableProvider, SearchResult
+from lightrag import LightRAG, QueryParam
+from lightrag.kg.shared_storage import initialize_pipeline_status
+from lightrag.llm.openai import gpt_4o_mini_complete, openai_embed
+
 from app.core.project_path import DATA_VOLUME
+
+from ..base import FinalizableProvider, SearchResult
+from .config import LightRAGConfig
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +31,9 @@ class LightRAGProvider(FinalizableProvider):
     - Multiple search modes (local, global, mix)
     - Async document operations and search
     """
+
     name = "lightrag"
-    
+
     def __init__(self, config: LightRAGConfig, knowledge_base_id: str):
         """
         Initialize the LightRAG provider
@@ -108,12 +111,7 @@ class LightRAGProvider(FinalizableProvider):
 
         return rag
 
-    async def add_document(
-        self,
-        doc_id: str,
-        content: str,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> bool:
+    async def add_document(self, doc_id: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> bool:
         """Add a document to LightRAG"""
         if not self._initialized or self.rag is None:
             logger.error("LightRAG provider not initialized")
@@ -180,7 +178,8 @@ class LightRAGProvider(FinalizableProvider):
             # Return document IDs from our tracking map that belong to this KB
             kb_prefix = f"KB:{self.knowledge_base_id}#"
             doc_ids = [
-                doc_id for doc_id in self._document_map.keys()
+                doc_id
+                for doc_id in self._document_map.keys()
                 if doc_id.startswith(kb_prefix) or doc_id in self._document_map
             ]
 
@@ -195,13 +194,7 @@ class LightRAGProvider(FinalizableProvider):
             logger.error(f"Failed to get document IDs from LightRAG: {e}")
             return []
 
-    async def search(
-        self,
-        query: str,
-        limit: int = 5,
-        mode: Optional[str] = None,
-        **kwargs
-    ) -> List[SearchResult]:
+    async def search(self, query: str, limit: int = 5, mode: Optional[str] = None, **kwargs) -> List[SearchResult]:
         """Search using LightRAG graph-based retrieval"""
         if not self._initialized or self.rag is None:
             logger.error("LightRAG provider not initialized")
@@ -213,9 +206,7 @@ class LightRAGProvider(FinalizableProvider):
 
             # Create query parameters
             param = QueryParam(
-                mode=search_mode,
-                top_k=min(limit, self.config.top_k),
-                response_type=self.config.response_type
+                mode=search_mode, top_k=min(limit, self.config.top_k), response_type=self.config.response_type
             )
 
             logger.info("=============== entered search documents ================")
@@ -242,11 +233,11 @@ class LightRAGProvider(FinalizableProvider):
                                 "kb_id": self.knowledge_base_id,
                                 "search_mode": search_mode,
                                 "provider": "lightrag",
-                                "result_index": i
+                                "result_index": i,
                             },
                             score=1.0 - (i * 0.1),  # Decrease score by rank
                             source="lightrag",
-                            chunk_count=1
+                            chunk_count=1,
                         )
                         search_results.append(search_result)
                 elif isinstance(raw_results, dict):
@@ -259,11 +250,11 @@ class LightRAGProvider(FinalizableProvider):
                             "kb_id": self.knowledge_base_id,
                             "search_mode": search_mode,
                             "provider": "lightrag",
-                            "raw_result": raw_results
+                            "raw_result": raw_results,
                         },
                         score=1.0,
                         source="lightrag",
-                        chunk_count=1
+                        chunk_count=1,
                     )
                     search_results.append(search_result)
 
@@ -278,7 +269,7 @@ class LightRAGProvider(FinalizableProvider):
         search_results: List[SearchResult] = []
         try:
             # Extract titles and content sections
-            titles = re.findall(r'^###\s+(.*)', raw_results, re.MULTILINE)
+            titles = re.findall(r"^###\s+(.*)", raw_results, re.MULTILINE)
 
             if titles:
                 # Extract content for first title
@@ -290,11 +281,11 @@ class LightRAGProvider(FinalizableProvider):
                     metadata={
                         "kb_id": self.knowledge_base_id,
                         "provider": "lightrag",
-                        "title": titles[0] if titles else "unknown"
+                        "title": titles[0] if titles else "unknown",
                     },
                     score=1.0,
                     source="lightrag",
-                    chunk_count=1
+                    chunk_count=1,
                 )
                 search_results.append(search_result)
 
@@ -302,14 +293,10 @@ class LightRAGProvider(FinalizableProvider):
             search_result_full = SearchResult(
                 id="lightrag_full_result",
                 content=raw_results,
-                metadata={
-                    "kb_id": self.knowledge_base_id,
-                    "provider": "lightrag",
-                    "type": "full_response"
-                },
+                metadata={"kb_id": self.knowledge_base_id, "provider": "lightrag", "type": "full_response"},
                 score=0.9,
                 source="lightrag",
-                chunk_count=1
+                chunk_count=1,
             )
             search_results.append(search_result_full)
 
@@ -319,14 +306,10 @@ class LightRAGProvider(FinalizableProvider):
             search_result = SearchResult(
                 id="lightrag_raw_result",
                 content=raw_results,
-                metadata={
-                    "kb_id": self.knowledge_base_id,
-                    "provider": "lightrag",
-                    "type": "raw_fallback"
-                },
+                metadata={"kb_id": self.knowledge_base_id, "provider": "lightrag", "type": "raw_fallback"},
                 score=0.8,
                 source="lightrag",
-                chunk_count=1
+                chunk_count=1,
             )
             search_results.append(search_result)
 
@@ -362,16 +345,18 @@ class LightRAGProvider(FinalizableProvider):
             "initialized": self._initialized,
             "search_mode": self.config.search_mode,
             "chunk_token_size": self.config.chunk_token_size,
-            "vector_storage": self.config.vector_storage
+            "vector_storage": self.config.vector_storage,
         }
 
         if self._initialized and self.rag:
             try:
                 # Get LightRAG-specific stats
-                stats.update({
-                    "num_docs": len(self._document_map),
-                    "tracked_documents": list(self._document_map.keys())[:10]  # Sample
-                })
+                stats.update(
+                    {
+                        "num_docs": len(self._document_map),
+                        "tracked_documents": list(self._document_map.keys())[:10],  # Sample
+                    }
+                )
             except Exception as e:
                 logger.error(f"Failed to get LightRAG stats: {e}")
 

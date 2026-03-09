@@ -1,16 +1,15 @@
-from typing import Optional, List
-from sqlalchemy import Integer, PrimaryKeyConstraint, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import Optional
+
+from sqlalchemy import Integer, PrimaryKeyConstraint, String
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
 
 class DataSourceModel(Base):
-    __tablename__ = 'data_sources'
-    __table_args__ = (
-        PrimaryKeyConstraint('id', name='data_sources_pk'),
-    )
+    __tablename__ = "data_sources"
+    __table_args__ = (PrimaryKeyConstraint("id", name="data_sources_pk"),)
 
     name: Mapped[Optional[str]] = mapped_column(String(255))
     source_type: Mapped[Optional[str]] = mapped_column(String(255))
@@ -20,5 +19,3 @@ class DataSourceModel(Base):
 
     # Relationship to KnowledgeBaseModel
     knowledge_bases = relationship("KnowledgeBaseModel", back_populates="sync_source")
-
-

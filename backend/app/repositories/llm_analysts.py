@@ -1,11 +1,14 @@
-from injector import inject
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from uuid import UUID
+
+from injector import inject
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from starlette_context import context
+
 from app.db.models.llm import LlmAnalystModel
 from app.schemas.llm import LlmAnalystCreate
+
 
 @inject
 class LlmAnalystRepository:
@@ -19,18 +22,14 @@ class LlmAnalystRepository:
         await self.db.refresh(obj)
         return obj
 
-
     async def get_by_id(self, llm_analyst_id: UUID):
         query = (
             select(LlmAnalystModel)
-            .options(
-                    joinedload(LlmAnalystModel.llm_provider)
-                    )
+            .options(joinedload(LlmAnalystModel.llm_provider))
             .where(LlmAnalystModel.id == llm_analyst_id and LlmAnalystModel.is_active == 1)
         )
         result = await self.db.execute(query)
         return result.scalars().first()
-
 
     async def update(self, obj: LlmAnalystModel):
         obj.updated_by = context["user_id"]

@@ -1,5 +1,5 @@
-import { Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/button";
+import { Pencil, Trash2 } from 'lucide-react';
+import { Button } from '@/components/button';
 
 interface ActionButtonsProps {
   onEdit: () => void;
@@ -8,12 +8,7 @@ interface ActionButtonsProps {
   deleteTitle?: string;
 }
 
-export function ActionButtons({
-  onEdit,
-  onDelete,
-  editTitle = "Edit",
-  deleteTitle = "Delete",
-}: ActionButtonsProps) {
+export function ActionButtons({ onEdit, onDelete, editTitle = 'Edit', deleteTitle = 'Delete' }: ActionButtonsProps) {
   return (
     <div className="flex flex-wrap gap-2">
       <Button variant="ghost" size="sm" onClick={onEdit} title={editTitle}>

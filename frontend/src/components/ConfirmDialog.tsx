@@ -1,4 +1,4 @@
-import { Loader2, X } from "lucide-react";
+import { Loader2, X } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,7 +8,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/alert-dialog";
+} from '@/components/alert-dialog';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -28,11 +28,11 @@ export function ConfirmDialog({
   onOpenChange,
   onConfirm,
   isInProgress,
-  primaryButtonText = "Delete",
-  secondaryButtonText = "Cancel",
+  primaryButtonText = 'Delete',
+  secondaryButtonText = 'Cancel',
   onCancel = () => {},
-  itemName = "",
-  title = "Are you sure?",
+  itemName = '',
+  title = 'Are you sure?',
   description,
 }: ConfirmDialogProps) {
   const defaultDescription = `This action cannot be undone. This will permanently delete "${itemName}".`;
@@ -40,9 +40,9 @@ export function ConfirmDialog({
   // const clickedConfirmButton = isDeleteDialog ? "Deleting..." : "Saving...";
   // const cancelButton = isDeleteDialog ? "Cancel" : "Discard";
   const confirmButtonClassName =
-    primaryButtonText === "Delete"
-      ? "bg-red-600 hover:bg-red-700 focus:ring-red-600"
-      : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-600";
+    primaryButtonText === 'Delete'
+      ? 'bg-red-600 hover:bg-red-700 focus:ring-red-600'
+      : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-600';
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -58,19 +58,13 @@ export function ConfirmDialog({
           </button>
           <AlertDialogHeader>
             <AlertDialogTitle>{title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {description || defaultDescription}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{description || defaultDescription}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={onCancel} disabled={isInProgress}>
               {secondaryButtonText}
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={onConfirm}
-              disabled={isInProgress}
-              className={confirmButtonClassName}
-            >
+            <AlertDialogAction onClick={onConfirm} disabled={isInProgress} className={confirmButtonClassName}>
               {isInProgress && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {primaryButtonText}
             </AlertDialogAction>

@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { ActionButtons } from "@/components/ActionButtons";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { TableCell, TableRow } from "@/components/table";
-import { Badge } from "@/components/badge";
-import { MCPServer } from "@/interfaces/mcp-server.interface";
-import { getAllMCPServers, deleteMCPServer } from "@/services/mcpServer";
-import { toast } from "react-hot-toast";
-import { formatDate } from "@/helpers/utils";
-import { MCPServerDetailsDialog } from "./MCPServerDetailsDialog";
+import { useEffect, useState } from 'react';
+import { DataTable } from '@/components/DataTable';
+import { ActionButtons } from '@/components/ActionButtons';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { TableCell, TableRow } from '@/components/table';
+import { Badge } from '@/components/badge';
+import { MCPServer } from '@/interfaces/mcp-server.interface';
+import { getAllMCPServers, deleteMCPServer } from '@/services/mcpServer';
+import { toast } from 'react-hot-toast';
+import { formatDate } from '@/helpers/utils';
+import { MCPServerDetailsDialog } from './MCPServerDetailsDialog';
 
 interface Props {
   searchQuery: string;
@@ -17,12 +17,7 @@ interface Props {
   updatedServer?: MCPServer | null;
 }
 
-export function MCPServerCard({
-  searchQuery,
-  refreshKey = 0,
-  onEditServer,
-  updatedServer = null,
-}: Props) {
+export function MCPServerCard({ searchQuery, refreshKey = 0, onEditServer, updatedServer = null }: Props) {
   const [servers, setServers] = useState<MCPServer[]>([]);
   const [loading, setLoading] = useState(true);
   const [serverToDelete, setServerToDelete] = useState<MCPServer | null>(null);
@@ -38,9 +33,7 @@ export function MCPServerCard({
   useEffect(() => {
     if (updatedServer) {
       setServers((prevServers) =>
-        prevServers.map((server) =>
-          server.id === updatedServer.id ? updatedServer : server
-        )
+        prevServers.map((server) => (server.id === updatedServer.id ? updatedServer : server))
       );
     }
   }, [updatedServer]);
@@ -51,7 +44,7 @@ export function MCPServerCard({
       const data = await getAllMCPServers();
       setServers(data);
     } catch (err) {
-      toast.error("Failed to fetch MCP servers.");
+      toast.error('Failed to fetch MCP servers.');
     } finally {
       setLoading(false);
     }
@@ -62,10 +55,10 @@ export function MCPServerCard({
     setIsDeleting(true);
     try {
       await deleteMCPServer(serverToDelete.id);
-      toast.success("MCP server deleted successfully.");
+      toast.success('MCP server deleted successfully.');
       setServers((prev) => prev.filter((s) => s.id !== serverToDelete.id));
     } catch {
-      toast.error("Failed to delete MCP server.");
+      toast.error('Failed to delete MCP server.');
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
@@ -78,7 +71,7 @@ export function MCPServerCard({
       (s.description && s.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const headers = ["Name", "Workflows", "Status", "Created", "Actions"];
+  const headers = ['Name', 'Workflows', 'Status', 'Created', 'Actions'];
 
   const handleRowClick = (server: MCPServer) => {
     setSelectedServerId(server.id);
@@ -86,21 +79,15 @@ export function MCPServerCard({
   };
 
   const renderRow = (s: MCPServer) => (
-    <TableRow 
-      key={s.id}
-      className="cursor-pointer hover:bg-gray-50"
-      onClick={() => handleRowClick(s)}
-    >
+    <TableRow key={s.id} className="cursor-pointer hover:bg-gray-50" onClick={() => handleRowClick(s)}>
       <TableCell className="font-medium break-all">{s.name}</TableCell>
       <TableCell className="truncate">
         {s.workflows.length === 0
-          ? "No workflows"
-          : `${s.workflows.length} workflow${s.workflows.length === 1 ? "" : "s"}`}
+          ? 'No workflows'
+          : `${s.workflows.length} workflow${s.workflows.length === 1 ? '' : 's'}`}
       </TableCell>
       <TableCell className="overflow-hidden whitespace-nowrap text-clip">
-        <Badge variant={s.is_active === 1 ? "default" : "secondary"}>
-          {s.is_active === 1 ? "Active" : "Inactive"}
-        </Badge>
+        <Badge variant={s.is_active === 1 ? 'default' : 'secondary'}>{s.is_active === 1 ? 'Active' : 'Inactive'}</Badge>
       </TableCell>
       <TableCell className="truncate">{formatDate(s.created_at)}</TableCell>
       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -140,10 +127,9 @@ export function MCPServerCard({
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDelete}
         isInProgress={isDeleting}
-        itemName={serverToDelete?.name || ""}
+        itemName={serverToDelete?.name || ''}
         description={`This will permanently delete "${serverToDelete?.name}". This action cannot be undone.`}
       />
     </>
   );
 }
-

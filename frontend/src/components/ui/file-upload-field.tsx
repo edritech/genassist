@@ -1,7 +1,7 @@
-import React from "react";
-import { Button } from "@/components/button";
-import { Label } from "@/components/label";
-import { File, Plus, Trash2, Upload } from "lucide-react";
+import React from 'react';
+import { Button } from '@/components/button';
+import { Label } from '@/components/label';
+import { File, Plus, Trash2, Upload } from 'lucide-react';
 
 export interface FileItem {
   id: string;
@@ -22,20 +22,14 @@ export function FileUploadField({
   files,
   onAddFile,
   onRemoveFile,
-  label = "Files",
-  className = "",
+  label = 'Files',
+  className = '',
 }: FileUploadFieldProps) {
   return (
     <div className={className}>
       <div className="flex justify-between items-center mb-1.5">
         <Label className="text-sm font-medium">{label}</Label>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="h-8 px-2"
-          onClick={onAddFile}
-        >
+        <Button type="button" size="sm" variant="outline" className="h-8 px-2" onClick={onAddFile}>
           <Plus className="h-4 w-4 mr-1" />
           Add file
         </Button>
@@ -50,16 +44,11 @@ export function FileUploadField({
 
       <div className="space-y-2">
         {files.map((file) => (
-          <div
-            key={file.id}
-            className="flex items-center justify-between rounded-xl border px-4 py-3"
-          >
+          <div key={file.id} className="flex items-center justify-between rounded-xl border px-4 py-3">
             <div className="flex items-center gap-3">
               <File className="h-5 w-5 text-gray-600" />
               <div>
-                <p className="text-sm font-medium text-gray-900 truncate max-w-[180px]">
-                  {file.name}
-                </p>
+                <p className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{file.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {file.type || '.pdf'} · {file.size || '0.2MB'}
                 </p>
@@ -77,4 +66,4 @@ export function FileUploadField({
       </div>
     </div>
   );
-} 
+}

@@ -1,13 +1,12 @@
 import logging
-from injector import inject
-from starlette_context import context
 from uuid import UUID
+
+from injector import inject
 
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.repositories.customers import CustomersRepository
 from app.schemas.customer import CustomerCreate, CustomerUpdate
-
 
 logger = logging.getLogger(__name__)
 

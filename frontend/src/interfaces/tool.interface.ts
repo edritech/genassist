@@ -26,7 +26,7 @@ export interface Tool {
   id: string;
   name: string;
   description?: string;
-  type: "api" | "function" | "browser";
+  type: 'api' | 'function' | 'browser';
   api_config?: ApiConfig;
   function_config?: FunctionConfig;
   parameters_schema: Record<string, ToolParameter>;

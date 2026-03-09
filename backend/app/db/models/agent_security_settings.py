@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, Integer, String, Boolean, Text
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -9,7 +9,9 @@ from app.db.base import Base
 class AgentSecuritySettingsModel(Base):
     __tablename__ = "agent_security_settings"
 
-    agent_id: Mapped[UUID] = mapped_column(ForeignKey("agents.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+    agent_id: Mapped[UUID] = mapped_column(
+        ForeignKey("agents.id", ondelete="CASCADE"), unique=True, nullable=False, index=True
+    )
 
     # Token-based auth settings
     token_based_auth: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")

@@ -10,20 +10,20 @@ from . import index as _index
 from . import retrieval as _retrieval
 from .chunking import *
 from .clustering import *
+from .config import LegraConfig
 from .core import Legra
 from .embedding import *
 from .generation import *
 from .graph import *
 from .index import *
-from .retrieval import *
 from .provider import LegraProvider
-from .config import LegraConfig
+from .retrieval import *
 
 __all__ = [
-    'Legra',
-    'conf',
-    'LegraProvider',
-    'LegraConfig',
+    "Legra",
+    "conf",
+    "LegraProvider",
+    "LegraConfig",
 ]
 __all__.extend(_chunking.__all__)
 __all__.extend(_clustering.__all__)

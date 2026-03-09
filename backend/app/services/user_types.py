@@ -1,5 +1,5 @@
 from uuid import UUID
-from fastapi import Depends
+
 from fastapi_injector import Injected
 from injector import inject
 
@@ -7,6 +7,7 @@ from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.repositories.user_types import UserTypesRepository
 from app.schemas.user import UserTypeCreate, UserTypeUpdate
+
 
 @inject
 class UserTypesService:
@@ -16,7 +17,6 @@ class UserTypesService:
         self.repository = repository
 
     async def create(self, user_type: UserTypeCreate):
-
         model = await self.repository.create(user_type)
         return model
 

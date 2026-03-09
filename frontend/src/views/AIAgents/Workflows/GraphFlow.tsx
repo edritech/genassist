@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import ReactFlow, {
   Background,
   useNodesState,
@@ -11,42 +11,35 @@ import ReactFlow, {
   NodeMouseHandler,
   MarkerType,
   reconnectEdge,
-} from "reactflow";
-import "reactflow/dist/style.css";
-import { isEqual } from "lodash";
-import { getNodeTypes } from "./nodeTypes";
-import { getEdgeTypes } from "./edgeTypes";
-import nodeRegistry from "./registry/nodeRegistry";
-import { NodeData } from "./types/nodes";
-import { Workflow } from "@/interfaces/workflow.interface";
-import WorkflowTestDialog from "./components/WorkflowTestDialog";
-import NodePanel from "./components/panels/NodePanel";
-import BottomPanel from "./components/panels/BottomPanel";
-import WorkflowsSavedPanel from "./components/panels/WorkflowsSavedPanel";
-import ChatInputBar from "./components/panels/ChatInputBar";
-import { useSchemaValidation } from "./hooks/useSchemaValidation";
-import { useUndoRedo } from "./hooks/useUndoRedo";
-import { AgentConfig, getAgentConfig, updateAgentConfig } from "@/services/api";
-import { useParams } from "react-router-dom";
-import { getWorkflowById, updateWorkflow } from "@/services/workflows";
-import AgentTopPanel from "./components/panels/AgentTopPanel";
-import { v4 as uuidv4 } from "uuid";
-import { WorkflowProvider } from "./context/WorkflowContext";
-import { useFeatureFlagVisible } from "@/components/featureFlag";
-import { FeatureFlags } from "@/config/featureFlags";
-import {
-  WorkflowExecutionProvider,
-  WorkflowExecutionState,
-} from "./context/WorkflowExecutionContext";
-import {
-  handleDragOver,
-  handleDrop,
-  handleNodeDoubleClick,
-} from "./utils/helpers";
-import { Button } from "@/components/button";
-import { History, ChevronLeft, X, Plus } from "lucide-react";
-import CanvasContextMenu from "./components/CanvasContextMenu";
-import CustomControls from "./components/CustomControls";
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import { isEqual } from 'lodash';
+import { getNodeTypes } from './nodeTypes';
+import { getEdgeTypes } from './edgeTypes';
+import nodeRegistry from './registry/nodeRegistry';
+import { NodeData } from './types/nodes';
+import { Workflow } from '@/interfaces/workflow.interface';
+import WorkflowTestDialog from './components/WorkflowTestDialog';
+import NodePanel from './components/panels/NodePanel';
+import BottomPanel from './components/panels/BottomPanel';
+import WorkflowsSavedPanel from './components/panels/WorkflowsSavedPanel';
+import ChatInputBar from './components/panels/ChatInputBar';
+import { useSchemaValidation } from './hooks/useSchemaValidation';
+import { useUndoRedo } from './hooks/useUndoRedo';
+import { AgentConfig, getAgentConfig, updateAgentConfig } from '@/services/api';
+import { useParams } from 'react-router-dom';
+import { getWorkflowById, updateWorkflow } from '@/services/workflows';
+import AgentTopPanel from './components/panels/AgentTopPanel';
+import { v4 as uuidv4 } from 'uuid';
+import { WorkflowProvider } from './context/WorkflowContext';
+import { useFeatureFlagVisible } from '@/components/featureFlag';
+import { FeatureFlags } from '@/config/featureFlags';
+import { WorkflowExecutionProvider, WorkflowExecutionState } from './context/WorkflowExecutionContext';
+import { handleDragOver, handleDrop, handleNodeDoubleClick } from './utils/helpers';
+import { Button } from '@/components/button';
+import { History, ChevronLeft, X, Plus } from 'lucide-react';
+import CanvasContextMenu from './components/CanvasContextMenu';
+import CustomControls from './components/CustomControls';
 
 // Get node types and edge types for React Flow
 const nodeTypes = getNodeTypes();
@@ -65,9 +58,7 @@ const GraphFlowContent: React.FC = () => {
 
   const [showNodePanel, setShowNodePanel] = useState(false);
   const [showWorkflowPanel, setShowWorkflowPanel] = useState(false);
-  const [currentTestConfig, setCurrentTestConfig] = useState<Workflow | null>(
-    null
-  );
+  const [currentTestConfig, setCurrentTestConfig] = useState<Workflow | null>(null);
   const [testDialogOpen, setTestDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -88,7 +79,7 @@ const GraphFlowContent: React.FC = () => {
   useEffect(() => {
     // Always hide overflow on the body when on Agent Studio page
     document.body.style.overflow = 'hidden';
-    
+
     // Cleanup on unmount - restore default overflow
     return () => {
       document.body.style.overflow = '';
@@ -98,12 +89,7 @@ const GraphFlowContent: React.FC = () => {
   const { validateConnection } = useSchemaValidation();
 
   // Undo/Redo functionality
-  const { undo, redo, canUndo, canRedo, takeSnapshot } = useUndoRedo(
-    nodes,
-    edges,
-    setNodes,
-    setEdges
-  );
+  const { undo, redo, canUndo, canRedo, takeSnapshot } = useUndoRedo(nodes, edges, setNodes, setEdges);
 
   const { agentId } = useParams<{ agentId: string }>();
   const edgeReconnectSuccessful = useRef(true);
@@ -117,30 +103,23 @@ const GraphFlowContent: React.FC = () => {
   );
 
   // Compare workflows ignoring UI state fields
-  const compareWorkflows = useCallback(
-    (workflow1: Workflow | null, workflow2: Workflow | null): boolean => {
-      if (!workflow1 || !workflow2) return false;
+  const compareWorkflows = useCallback((workflow1: Workflow | null, workflow2: Workflow | null): boolean => {
+    if (!workflow1 || !workflow2) return false;
 
-      const cleanWorkflow = (workflow: Workflow) => {
-        const workflowCopy = JSON.parse(JSON.stringify(workflow));
-        const { created_at, updated_at, ...remainingProps } = workflowCopy;
-        return {
-          ...remainingProps,
-          nodes: (remainingProps.nodes || []).map(
-            ({ selected, dragging, width, height, ...rest }: Node) => rest
-          ),
-          edges: (remainingProps.edges || []).map(
-            ({ selected, ...rest }) => rest
-          ),
-        };
+    const cleanWorkflow = (workflow: Workflow) => {
+      const workflowCopy = JSON.parse(JSON.stringify(workflow));
+      const { created_at, updated_at, ...remainingProps } = workflowCopy;
+      return {
+        ...remainingProps,
+        nodes: (remainingProps.nodes || []).map(({ selected, dragging, width, height, ...rest }: Node) => rest),
+        edges: (remainingProps.edges || []).map(({ selected, ...rest }) => rest),
       };
+    };
 
-      const cleanWorkflow1 = cleanWorkflow(workflow1);
-      const cleanWorkflow2 = cleanWorkflow(workflow2);
-      return !isEqual(cleanWorkflow1, cleanWorkflow2);
-    },
-    []
-  );
+    const cleanWorkflow1 = cleanWorkflow(workflow1);
+    const cleanWorkflow2 = cleanWorkflow(workflow2);
+    return !isEqual(cleanWorkflow1, cleanWorkflow2);
+  }, []);
 
   useEffect(() => {
     if (isSettling) {
@@ -159,10 +138,7 @@ const GraphFlowContent: React.FC = () => {
     if (isSettling || !lastSavedWorkflowRef.current) return;
 
     const currentWorkflowState = { ...workflow, nodes, edges } as Workflow;
-    const hasChanged = compareWorkflows(
-      lastSavedWorkflowRef.current,
-      currentWorkflowState
-    );
+    const hasChanged = compareWorkflows(lastSavedWorkflowRef.current, currentWorkflowState);
     setHasUnsavedChanges(hasChanged);
   }, [nodes, edges, workflow, isSettling, compareWorkflows]);
 
@@ -247,17 +223,17 @@ const GraphFlowContent: React.FC = () => {
       // Add arrow markers to existing edges
       const edgesWithMarkers = loadedWorkflow.edges.map((edge) => ({
         ...edge,
-        type: "default",
+        type: 'default',
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 16,
           height: 16,
-          color: "hsl(var(--brand-600))",
+          color: 'hsl(var(--brand-600))',
         },
         style: {
           strokeWidth: 2,
-          stroke: "hsl(var(--brand-600))",
-          strokeDasharray: "7,7",
+          stroke: 'hsl(var(--brand-600))',
+          strokeDasharray: '7,7',
         },
       }));
 
@@ -302,17 +278,17 @@ const GraphFlowContent: React.FC = () => {
       // Add arrow marker to the edge
       const edgeWithMarker = {
         ...params,
-        type: "default",
+        type: 'default',
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 16,
           height: 16,
-          color: "hsl(var(--brand-600))",
+          color: 'hsl(var(--brand-600))',
         },
         style: {
           strokeWidth: 2,
-          stroke: "hsl(var(--brand-600))",
-          strokeDasharray: "7,7",
+          stroke: 'hsl(var(--brand-600))',
+          strokeDasharray: '7,7',
         },
       };
 
@@ -324,17 +300,17 @@ const GraphFlowContent: React.FC = () => {
   const onReconnectStart = useCallback(() => {
     edgeReconnectSuccessful.current = false;
   }, []);
- 
+
   const onReconnect = useCallback((oldEdge, newConnection) => {
     edgeReconnectSuccessful.current = true;
     setEdges((els) => reconnectEdge(oldEdge, newConnection, els));
   }, []);
- 
+
   const onReconnectEnd = useCallback((_, edge) => {
     if (!edgeReconnectSuccessful.current) {
       setEdges((eds) => eds.filter((e) => e.id !== edge.id));
     }
- 
+
     edgeReconnectSuccessful.current = true;
   }, []);
 
@@ -355,10 +331,7 @@ const GraphFlowContent: React.FC = () => {
   }, [setNodes]);
 
   // Add a new node
-  const addNewNode = (
-    nodeType: string,
-    nodePosition?: { x: number; y: number }
-  ) => {
+  const addNewNode = (nodeType: string, nodePosition?: { x: number; y: number }) => {
     const id = uuidv4();
     const position = nodePosition ?? {
       x: Math.random() * 400 + 100,
@@ -412,33 +385,35 @@ const GraphFlowContent: React.FC = () => {
   };
 
   // Handle selection change
-  const onSelectionChange = useCallback(({ nodes: selectedNodes }) => {
-    if (selectedNodes && selectedNodes.length === 1) {
-      setSelectedNode(selectedNodes[0]);
-      
-      // Add animated-edge class to edges connected to selected node
-      const selectedNodeId = selectedNodes[0].id;
-      setEdges((eds) =>
-        eds.map((edge) => {
-          const isConnected = 
-            edge.source === selectedNodeId || edge.target === selectedNodeId;
-          return {
+  const onSelectionChange = useCallback(
+    ({ nodes: selectedNodes }) => {
+      if (selectedNodes && selectedNodes.length === 1) {
+        setSelectedNode(selectedNodes[0]);
+
+        // Add animated-edge class to edges connected to selected node
+        const selectedNodeId = selectedNodes[0].id;
+        setEdges((eds) =>
+          eds.map((edge) => {
+            const isConnected = edge.source === selectedNodeId || edge.target === selectedNodeId;
+            return {
+              ...edge,
+              className: isConnected ? 'animated-edge' : '',
+            };
+          })
+        );
+      } else {
+        setSelectedNode(null);
+        // Remove animated-edge class from all edges
+        setEdges((eds) =>
+          eds.map((edge) => ({
             ...edge,
-            className: isConnected ? 'animated-edge' : '',
-          };
-        })
-      );
-    } else {
-      setSelectedNode(null);
-      // Remove animated-edge class from all edges
-      setEdges((eds) =>
-        eds.map((edge) => ({
-          ...edge,
-          className: '',
-        }))
-      );
-    }
-  }, [setEdges]);
+            className: '',
+          }))
+        );
+      }
+    },
+    [setEdges]
+  );
 
   // Take snapshot when nodes or edges change (for undo/redo)
   useEffect(() => {
@@ -476,37 +451,37 @@ const GraphFlowContent: React.FC = () => {
       // Only handle copy/paste if ReactFlow canvas is focused
       const target = e.target as HTMLElement;
       const isReactFlowCanvas =
-        target.closest(".react-flow__viewport") ||
-        target.closest(".react-flow__pane") ||
-        target.closest(".react-flow__renderer");
+        target.closest('.react-flow__viewport') ||
+        target.closest('.react-flow__pane') ||
+        target.closest('.react-flow__renderer');
 
       if (!isReactFlowCanvas) {
         return;
       }
 
       // Undo (Ctrl+Z or Cmd+Z)
-      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
         undo();
         return;
       }
 
       // Redo (Ctrl+Shift+Z or Cmd+Shift+Z)
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z") {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z') {
         e.preventDefault();
         redo();
         return;
       }
 
       // Copy (Ctrl+C or Cmd+C)
-      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
         if (selectedNode) {
           e.preventDefault(); // Prevent default browser copy
           clipboardRef.current = { ...selectedNode };
         }
       }
       // Paste (Ctrl+V or Cmd+V)
-      if ((e.ctrlKey || e.metaKey) && e.key === "v") {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
         if (clipboardRef.current) {
           e.preventDefault(); // Prevent default browser paste
           const copiedNode = clipboardRef.current;
@@ -536,8 +511,8 @@ const GraphFlowContent: React.FC = () => {
         }
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedNode, setNodes, undo, redo]);
 
   return (
@@ -553,10 +528,7 @@ const GraphFlowContent: React.FC = () => {
               canRedo={canRedo}
               clickPosition={contextMenuPosition}
             >
-              <div
-                onContextMenu={handleCanvasContextMenu}
-                className="h-full w-full"
-              >
+              <div onContextMenu={handleCanvasContextMenu} className="h-full w-full">
                 <ReactFlow
                   nodes={nodes}
                   edges={edges}
@@ -598,19 +570,17 @@ const GraphFlowContent: React.FC = () => {
 
             {/* Unified top-right controls (prevents overlap between ReactFlow Panel + NodePanel buttons) */}
             <div
-              className={`fixed top-2 z-20 flex flex-row flex-wrap items-center justify-end gap-2 max-w-[calc(100vw-1rem)] transition-[right] duration-300 ${
-                (() => {
-                  if (showNodePanel && showWorkflowPanel) {
-                    return "right-[calc(360px+20rem+1rem)]";
-                  } else if (showNodePanel) {
-                    return "right-[calc(360px+1rem)]";
-                  } else if (showWorkflowPanel) {
-                    return "right-[calc(20rem+1rem)]";
-                  } else {
-                    return "right-2";
-                  }
-                })()
-              }`}
+              className={`fixed top-2 z-20 flex flex-row flex-wrap items-center justify-end gap-2 max-w-[calc(100vw-1rem)] transition-[right] duration-300 ${(() => {
+                if (showNodePanel && showWorkflowPanel) {
+                  return 'right-[calc(360px+20rem+1rem)]';
+                } else if (showNodePanel) {
+                  return 'right-[calc(360px+1rem)]';
+                } else if (showWorkflowPanel) {
+                  return 'right-[calc(20rem+1rem)]';
+                } else {
+                  return 'right-2';
+                }
+              })()}`}
             >
               <BottomPanel
                 workflow={{
@@ -633,17 +603,11 @@ const GraphFlowContent: React.FC = () => {
                 className="rounded-full h-10 w-10 shadow-md bg-white hover:bg-gray-50"
               >
                 {showNodePanel ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                <span className="sr-only">
-                  {showNodePanel ? "Close Node Panel" : "Open Node Panel"}
-                </span>
+                <span className="sr-only">{showNodePanel ? 'Close Node Panel' : 'Open Node Panel'}</span>
               </Button>
             </div>
 
-            <NodePanel
-              isOpen={showNodePanel}
-              onClose={toggleNodePanel}
-              onAddNode={addNewNode}
-            />
+            <NodePanel isOpen={showNodePanel} onClose={toggleNodePanel} onAddNode={addNewNode} />
 
             <WorkflowsSavedPanel
               isOpen={showWorkflowPanel}
@@ -683,7 +647,7 @@ const GraphFlowContent: React.FC = () => {
                   setShowNodePanel(false);
                   setTestDialogOpen(true);
                 }}
-                disabled={!workflow?.nodes?.some((node) => node.type === "chatInputNode")}
+                disabled={!workflow?.nodes?.some((node) => node.type === 'chatInputNode')}
               />
             )}
           </div>

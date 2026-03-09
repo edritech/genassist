@@ -3,18 +3,17 @@ Agent node implementation using the BaseNode class.
 """
 
 import datetime
-from typing import Dict, Any
 import logging
+from typing import Any, Dict
 
 from app.core.utils.token_utils import calculate_history_tokens
-from app.modules.workflow.engine import BaseNode
-from app.modules.workflow.llm.provider import LLMProvider
 from app.modules.workflow.agents.react_agent import ReActAgent
 from app.modules.workflow.agents.react_agent_lc import ReActAgentLC
 from app.modules.workflow.agents.simple_tool_agent import SimpleToolAgent
 from app.modules.workflow.agents.tool_agent import ToolAgent
+from app.modules.workflow.engine import BaseNode
+from app.modules.workflow.llm.provider import LLMProvider
 from app.services.llm_providers import LlmProviderService
-
 
 logger = logging.getLogger(__name__)
 
@@ -49,17 +48,13 @@ class AgentNode(BaseNode):
             provider = provider_info.llm_model_provider
             model = provider_info.llm_model
 
-            actual_history_tokens = calculate_history_tokens(config, model, provider,
-                                                                   system_prompt, user_prompt)
+            actual_history_tokens = calculate_history_tokens(config, model, provider, system_prompt, user_prompt)
 
             return await memory.get_chat_history_within_tokens(
-                token_budget=actual_history_tokens,
-                provider=provider,
-                model=model,
-                as_string=False
+                token_budget=actual_history_tokens, provider=provider, model=model, as_string=False
             )
         elif trimming_mode == "message_compacting":
-         # Message compacting mode - compact old messages at threshold intervals
+            # Message compacting mode - compact old messages at threshold intervals
             # compactingKeepRecent: minimum raw messages to keep (context grows between compactions)
             # compactingThreshold: compact every N messages (e.g., at 20, 40, 60...)
             keep_recent = config.get("compactingKeepRecent", 10)
@@ -77,7 +72,7 @@ class AgentNode(BaseNode):
                 # max_messages is only used as a fallback when no compaction exists yet
                 return await memory.get_chat_history_with_compaction(
                     max_messages=keep_recent,  # Fallback limit only
-                    as_string=False
+                    as_string=False,
                 )
             else:
                 # Never compacted and below threshold - return ALL messages
@@ -90,8 +85,8 @@ class AgentNode(BaseNode):
             # - Above threshold: lazily index message groups into vector DB,
             #   retrieve semantically relevant groups + keep recent messages verbatim
             from app.dependencies.injector import injector
-            from app.modules.workflow.agents.rag import ThreadScopedRAG
             from app.modules.workflow.agents.conversation_rag_indexer import ConversationRAGIndexer
+            from app.modules.workflow.agents.rag import ThreadScopedRAG
 
             thread_rag = injector.get(ThreadScopedRAG)
 
@@ -124,9 +119,7 @@ class AgentNode(BaseNode):
             max_messages = config.get("maxMessages", 10)
             return await memory.get_messages(max_messages=max_messages)
 
-    async def _perform_compaction(
-        self, memory, config: Dict[str, Any], provider_id: str
-    ) -> None:
+    async def _perform_compaction(self, memory, config: Dict[str, Any], provider_id: str) -> None:
         """
         Perform message compaction using configured settings.
 
@@ -149,11 +142,13 @@ class AgentNode(BaseNode):
             # Get or create LLM for compaction
             compacting_model_id = config.get("compactingModel") or provider_id
             from app.dependencies.injector import injector
+
             llm_provider = injector.get(LLMProvider)
             llm_model = await llm_provider.get_model(compacting_model_id)
 
             # Create compactor and perform compaction
             from app.modules.workflow.agents.memory_compactor import MemoryCompactor
+
             compactor = MemoryCompactor(llm_model)
 
             existing_summary = await memory.get_compacted_summary()
@@ -187,8 +182,7 @@ class AgentNode(BaseNode):
 
         # Get input data from state (this would typically come from connected nodes)
         # For now, we'll use default values
-        system_prompt = config.get(
-            "systemPrompt", "You are a helpful assistant.")
+        system_prompt = config.get("systemPrompt", "You are a helpful assistant.")
         prompt = config.get("userPrompt", "What is the capital of France?")
 
         # Get tools from connected nodes using the new generic method
@@ -198,35 +192,25 @@ class AgentNode(BaseNode):
         system_prompt += f" Current time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
         # Set input for tracking
-        self.set_node_input({
-            "system_prompt": system_prompt,
-            "prompt": prompt,
-            "tools_reference": tools
-        })
+        self.set_node_input({"system_prompt": system_prompt, "prompt": prompt, "tools_reference": tools})
 
         logger.info("Agent type: %s", agent_type)
 
         try:
             from app.dependencies.injector import injector
+
             llm_provider = injector.get(LLMProvider)
             llm_model = await llm_provider.get_model(provider_id)
-            logger.info("Agent type selected: %s, LLM model: %s",
-                        agent_type, llm_model)
+            logger.info("Agent type selected: %s, LLM model: %s", agent_type, llm_model)
 
             # Create agent based on type
             if agent_type == "ReActAgent":
                 agent = ReActAgent(
-                    llm_model=llm_model,
-                    system_prompt=system_prompt,
-                    tools=tools,
-                    max_iterations=max_iterations
+                    llm_model=llm_model, system_prompt=system_prompt, tools=tools, max_iterations=max_iterations
                 )
             elif agent_type == "ReActAgentLC":
                 agent = ReActAgentLC(
-                    llm_model=llm_model,
-                    system_prompt=system_prompt,
-                    tools=tools,
-                    max_iterations=max_iterations
+                    llm_model=llm_model, system_prompt=system_prompt, tools=tools, max_iterations=max_iterations
                 )
             elif agent_type == "SimpleToolExecutor":
                 agent = SimpleToolAgent(
@@ -236,10 +220,7 @@ class AgentNode(BaseNode):
                 )
             else:
                 agent = ToolAgent(
-                    llm_model=llm_model,
-                    system_prompt=system_prompt,
-                    tools=tools,
-                    max_iterations=max_iterations
+                    llm_model=llm_model, system_prompt=system_prompt, tools=tools, max_iterations=max_iterations
                 )
 
             # Get chat history if memory is enabled
@@ -256,7 +237,9 @@ class AgentNode(BaseNode):
             # Prepare output
             output = {
                 "message": result.get("response", "Something went wrong"),
-                "steps": result.get("reasoning_steps", []) if agent_type in ["ReActAgent", "ReActAgentLC"] else result.get("steps", [])
+                "steps": result.get("reasoning_steps", [])
+                if agent_type in ["ReActAgent", "ReActAgentLC"]
+                else result.get("steps", []),
             }
 
             return output

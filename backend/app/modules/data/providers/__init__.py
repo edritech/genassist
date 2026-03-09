@@ -5,12 +5,12 @@ This module contains all the provider implementations for different data sources
 Each provider implements the BaseDataProvider interface.
 """
 
-from .models import SearchResult
 from .base import BaseDataProvider, FinalizableProvider
-from .legra import LegraProvider, LegraConfig
-from .vector import VectorProvider, VectorConfig
-from .lightrag import LightRAGProvider, LightRAGConfig
+from .legra import LegraConfig, LegraProvider
+from .lightrag import LightRAGConfig, LightRAGProvider
+from .models import SearchResult
 from .plain import PlainProvider
+from .vector import VectorConfig, VectorProvider
 
 __all__ = [
     "BaseDataProvider",

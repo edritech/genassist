@@ -1,5 +1,6 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserReadMinimal(BaseModel):
@@ -8,13 +9,9 @@ class UserReadMinimal(BaseModel):
     password: str = Field(validation_alias="hashed_password")
     email: EmailStr
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserCreateMinimal(BaseModel):
     email: EmailStr
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)

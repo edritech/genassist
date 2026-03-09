@@ -1,13 +1,15 @@
-from typing import Any
 import logging
+from typing import Any
+
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .base import Generator
 
 __all__ = [
-    'HuggingFaceGenerator',
+    "HuggingFaceGenerator",
 ]
 logger = logging.getLogger(__name__)
+
 
 class HuggingFaceGenerator(Generator):
     """
@@ -34,16 +36,15 @@ class HuggingFaceGenerator(Generator):
         self.model = AutoModelForCausalLM.from_pretrained(model_name).to(device)
         self.truncate_context_size = truncate_context_size
 
-
     def generate(
-            self,
-            query: str,
-            context: str | None = None,
-            temperature: float = 0.7,
-            top_p: float = 0.9,
-            do_sample: bool = True,
-            **kwargs: Any,
-            ) -> str:
+        self,
+        query: str,
+        context: str | None = None,
+        temperature: float = 0.7,
+        top_p: float = 0.9,
+        do_sample: bool = True,
+        **kwargs: Any,
+    ) -> str:
         """
         Concatenate context + query, pass through LM, and return generated text.
         """
@@ -65,33 +66,30 @@ class HuggingFaceGenerator(Generator):
         if original_length > safe_input_length:
             tokens_removed = original_length - safe_input_length
             logger.warning(
-                    f"Context truncated: {original_length} → {safe_input_length} tokens "
-                    f"({tokens_removed} tokens removed, {tokens_removed / original_length * 100:.1f}%)"
-                    )
+                f"Context truncated: {original_length} → {safe_input_length} tokens "
+                f"({tokens_removed} tokens removed, {tokens_removed / original_length * 100:.1f}%)"
+            )
 
         # Force truncation to safe length
         inputs = self.tokenizer(
-                prompt,
-                return_tensors="pt",
-                truncation=True,
-                max_length=safe_input_length,
-                ).to(self.device)
+            prompt,
+            return_tensors="pt",
+            truncation=True,
+            max_length=safe_input_length,
+        ).to(self.device)
 
         input_length = inputs["input_ids"].shape[1]
 
         # Generate
         out = self.model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                do_sample=do_sample,
-                pad_token_id=self.tokenizer.eos_token_id,
-                )
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_p=top_p,
+            do_sample=do_sample,
+            pad_token_id=self.tokenizer.eos_token_id,
+        )
 
-        generated = self.tokenizer.decode(
-                out[0][input_length:],
-                skip_special_tokens=True
-                )
+        generated = self.tokenizer.decode(out[0][input_length:], skip_special_tokens=True)
 
         return generated.strip()

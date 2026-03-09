@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from uuid import UUID
-from fastapi import Depends
-from fastapi_injector import Injected
+
 from injector import inject
 
 from app.auth.utils import generate_unique_username, get_password_hash
@@ -18,14 +17,14 @@ from app.schemas.operator import OperatorCreate, OperatorRead
 
 @inject
 class OperatorService:
-
-    def __init__(self,
-                 operator_repository: OperatorRepository,
-                 user_repository: UserRepository,
-                 user_types_repository: UserTypesRepository,
-                 roles_repository: RolesRepository,
-                 conversation_repository: ConversationRepository
-                 ):  # Auto-inject repository
+    def __init__(
+        self,
+        operator_repository: OperatorRepository,
+        user_repository: UserRepository,
+        user_types_repository: UserTypesRepository,
+        roles_repository: RolesRepository,
+        conversation_repository: ConversationRepository,
+    ):  # Auto-inject repository
         self.operator_repo = operator_repository
         self.conversation_repo = conversation_repository
         self.user_repository = user_repository
@@ -41,14 +40,15 @@ class OperatorService:
         # --- 1) build UserModel -----------------------------------------
         user_type = await self.user_types_repository.get_by_name("interactive")
         new_user = UserModel(
-                username= await generate_unique_username(self.user_repository, operator_create.first_name,
-                                                         operator_create.last_name),
-                hashed_password=get_password_hash(generated_password),
-                email=operator_create.user.email,
-                is_active=1,
-                user_type_id=user_type.id,
-                force_upd_pass_date=datetime.now(timezone.utc),
-                )
+            username=await generate_unique_username(
+                self.user_repository, operator_create.first_name, operator_create.last_name
+            ),
+            hashed_password=get_password_hash(generated_password),
+            email=operator_create.user.email,
+            is_active=1,
+            user_type_id=user_type.id,
+            force_upd_pass_date=datetime.now(timezone.utc),
+        )
 
         operator_role = await self.roles_repository.get_by_name("operator")
         if operator_role is None or not operator_role.is_active:
@@ -62,25 +62,24 @@ class OperatorService:
 
         # --- 3) build OperatorModel & wire it up ------------------------
         new_operator = OperatorModel(
-                first_name=operator_create.first_name,
-                last_name=operator_create.last_name,
-                avatar=operator_create.avatar,
-                is_active=1,
-                operator_statistics=stats,
-                user=new_user,  # sets user_id automatically
-                )
+            first_name=operator_create.first_name,
+            last_name=operator_create.last_name,
+            avatar=operator_create.avatar,
+            is_active=1,
+            operator_statistics=stats,
+            user=new_user,  # sets user_id automatically
+        )
 
         # --- 4) hand off to repository ----------------------------------
         created = await self.operator_repo.create(new_operator)
         return created
 
-
     async def create_from_agent(
-            self,
-            agent_name: str,
-            email: str,
-            plain_password: str,
-            ) -> OperatorModel:
+        self,
+        agent_name: str,
+        email: str,
+        plain_password: str,
+    ) -> OperatorModel:
         """
         Build User + Operator for a *console* agent.
         first_name  = agent_name
@@ -94,42 +93,42 @@ class OperatorService:
         console_type = await self.user_types_repository.get_by_name("console")
 
         new_user = UserModel(
-                username=await generate_unique_username(
-                        self.user_repository,
-                        agent_name,  # first part
-                        "",  # no last name
-                        ),
-                hashed_password=get_password_hash(plain_password),
-                email=email,
-                is_active=1,
-                user_type_id=console_type.id,
-                )
+            username=await generate_unique_username(
+                self.user_repository,
+                agent_name,  # first part
+                "",  # no last name
+            ),
+            hashed_password=get_password_hash(plain_password),
+            email=email,
+            is_active=1,
+            user_type_id=console_type.id,
+        )
 
         # ---------- OperatorStatistics (all zeros) --------------------
         stats = OperatorStatisticsModel()  # relies on DB defaults
 
         # ---------- OperatorModel -------------------------------------
         new_operator = OperatorModel(
-                first_name=agent_name,
-                last_name="ai_agent",
-                avatar=None,
-                is_active=1,
-                operator_statistics=stats,
-                user=new_user,
-                )
+            first_name=agent_name,
+            last_name="ai_agent",
+            avatar=None,
+            is_active=1,
+            operator_statistics=stats,
+            user=new_user,
+        )
 
         # ---------- persist & return ----------------------------------
         return await self.operator_repo.add_and_flush(new_operator)
 
     async def get_all(self) -> list[OperatorModel]:
-        return  await self.operator_repo.get_all()
+        return await self.operator_repo.get_all()
 
     async def set_operator_latest_call(self, operator: OperatorRead):
         latest_conversation = await self.conversation_repo.get_latest_conversation_with_analysis_for_operator(
-                operator.id)
+            operator.id
+        )
         operator.latest_conversation_analysis = latest_conversation
 
     async def get_by_id(self, operator_id: UUID) -> OperatorModel:
         # Step 1: Fetch operator with stats
-        return  await self.operator_repo.get_by_id(operator_id)
-
+        return await self.operator_repo.get_by_id(operator_id)

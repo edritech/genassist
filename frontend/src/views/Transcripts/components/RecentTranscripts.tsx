@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { Card } from "@/components/card";
-import { TranscriptDialog } from "./TranscriptDialog";
-import { ActiveConversationDialog } from "@/views/ActiveConversations/components/ActiveConversationDialog";
-import { TranscriptCard } from "./TranscriptCard";
-import { useTranscripts } from "../hooks/useTranscripts";
-import type { Transcript } from "@/interfaces/transcript.interface";
-import { CardHeader } from "@/components/CardHeader";
-import { useToast } from "@/hooks/useToast";
-import { conversationService } from "@/services/liveConversations";
+import { useState } from 'react';
+import { Card } from '@/components/card';
+import { TranscriptDialog } from './TranscriptDialog';
+import { ActiveConversationDialog } from '@/views/ActiveConversations/components/ActiveConversationDialog';
+import { TranscriptCard } from './TranscriptCard';
+import { useTranscripts } from '../hooks/useTranscripts';
+import type { Transcript } from '@/interfaces/transcript.interface';
+import { CardHeader } from '@/components/CardHeader';
+import { useToast } from '@/hooks/useToast';
+import { conversationService } from '@/services/liveConversations';
 
 export function RecentTranscripts() {
   const { transcripts, loading, error, refreshTranscripts } = useTranscripts({ limit: 4, sortNewestFirst: true });
@@ -17,7 +17,7 @@ export function RecentTranscripts() {
   const { toast } = useToast();
 
   const isLiveTranscript = (transcript: Transcript) => {
-    return transcript?.status === "in_progress" || transcript?.status === "takeover";
+    return transcript?.status === 'in_progress' || transcript?.status === 'takeover';
   };
 
   const handleTranscriptClick = (transcript: Transcript) => {
@@ -31,20 +31,20 @@ export function RecentTranscripts() {
       const success = await conversationService.takeoverConversation(transcriptId);
       if (success) {
         toast({
-          title: "Success",
-          description: "Successfully took over the conversation",
+          title: 'Success',
+          description: 'Successfully took over the conversation',
         });
         refreshTranscripts();
         if (selectedTranscript && selectedTranscript.id === transcriptId) {
-          setSelectedTranscript(prev => prev ? { ...prev, status: "takeover" } : null);
+          setSelectedTranscript((prev) => (prev ? { ...prev, status: 'takeover' } : null));
         }
       }
       return success;
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to take over conversation",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to take over conversation',
+        variant: 'destructive',
       });
       return false;
     }
@@ -53,7 +53,7 @@ export function RecentTranscripts() {
   return (
     <>
       <Card className="p-6 shadow-sm animate-fade-up bg-white">
-        <CardHeader 
+        <CardHeader
           title="Recent Transcripts"
           tooltipText="The most recent customer interactions with detailed conversation transcripts and analytics"
           linkText="View all"
@@ -61,43 +61,29 @@ export function RecentTranscripts() {
         />
         <div className="space-y-4">
           {loading ? (
-            <div className="p-4 text-center text-muted-foreground">
-              Loading transcripts...
-            </div>
+            <div className="p-4 text-center text-muted-foreground">Loading transcripts...</div>
           ) : error ? (
-            <div className="p-4 text-center text-red-500">
-              Failed to load transcripts. Please try again.
-            </div>
+            <div className="p-4 text-center text-red-500">Failed to load transcripts. Please try again.</div>
           ) : transcripts.length > 0 ? (
             transcripts.map((transcript) => (
-              <TranscriptCard 
-                key={transcript.id} 
-                transcript={transcript} 
-                onClick={handleTranscriptClick} 
-              />
+              <TranscriptCard key={transcript.id} transcript={transcript} onClick={handleTranscriptClick} />
             ))
           ) : (
-            <div className="p-4 text-center text-muted-foreground">
-              No recent transcripts found.
-            </div>
+            <div className="p-4 text-center text-muted-foreground">No recent transcripts found.</div>
           )}
         </div>
       </Card>
 
       {isLiveTranscriptSelected ? (
-        <ActiveConversationDialog 
-          transcript={selectedTranscript} 
-          isOpen={isModalOpen} 
+        <ActiveConversationDialog
+          transcript={selectedTranscript}
+          isOpen={isModalOpen}
           onOpenChange={setIsModalOpen}
           refetchConversations={refreshTranscripts}
           onTakeOver={handleTakeOver}
         />
       ) : (
-        <TranscriptDialog 
-          transcript={selectedTranscript} 
-          isOpen={isModalOpen} 
-          onOpenChange={setIsModalOpen} 
-        />
+        <TranscriptDialog transcript={selectedTranscript} isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
       )}
     </>
   );

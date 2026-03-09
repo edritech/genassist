@@ -9,7 +9,7 @@ interface UseTranscriptsOptions {
 
 export const useTranscripts = (options: UseTranscriptsOptions = {}) => {
   const { limit, sortNewestFirst = true } = options;
-  
+
   const { data, loading, error, refetch } = useTranscriptData({ limit, sortNewestFirst });
   const [selectedTranscript, setSelectedTranscript] = useState<Transcript | null>(null);
 
@@ -21,6 +21,6 @@ export const useTranscripts = (options: UseTranscriptsOptions = {}) => {
     error,
     selectedTranscript,
     setSelectedTranscript,
-    refreshTranscripts: refetch
+    refreshTranscripts: refetch,
   };
-}; 
+};

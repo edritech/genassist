@@ -1,10 +1,13 @@
-from uuid import UUID
 from typing import List, Optional
+from uuid import UUID
+
 from injector import inject
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from app.db.models.feature_flag import FeatureFlagModel
 from app.schemas.feature_flag import FeatureFlagCreate, FeatureFlagUpdate
+
 
 @inject
 class FeatureFlagRepository:
@@ -25,9 +28,7 @@ class FeatureFlagRepository:
         result = await self.db.execute(select(FeatureFlagModel))
         return result.scalars().all()
 
-    async def update(
-        self, id: UUID, dto: FeatureFlagUpdate
-    ) -> Optional[FeatureFlagModel]:
+    async def update(self, id: UUID, dto: FeatureFlagUpdate) -> Optional[FeatureFlagModel]:
         obj = await self.db.get(FeatureFlagModel, id)
         if not obj:
             return None

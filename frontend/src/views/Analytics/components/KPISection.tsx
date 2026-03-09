@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { StatsOverviewCard } from "./StatsOverviewCard";
+import { useState, useEffect } from 'react';
+import { StatsOverviewCard } from './StatsOverviewCard';
 
-import { usePermissions, useIsLoadingPermissions } from "@/context/PermissionContext";
-import { fetchDashboardSummary, getFilterDays } from "@/services/dashboard";
-import type { DashboardSummaryStats } from "@/interfaces/dashboard.interface";
-import { useFeatureFlagVisible } from "@/components/featureFlag";
-import { FeatureFlags } from "@/config/featureFlags";
+import { usePermissions, useIsLoadingPermissions } from '@/context/PermissionContext';
+import { fetchDashboardSummary, getFilterDays } from '@/services/dashboard';
+import type { DashboardSummaryStats } from '@/interfaces/dashboard.interface';
+import { useFeatureFlagVisible } from '@/components/featureFlag';
+import { FeatureFlags } from '@/config/featureFlags';
 
 interface KPISectionProps {
   timeFilter: string;
 }
 
 const formatResponseTime = (ms: number): string => {
-  if (ms === 0) return "0ms";
+  if (ms === 0) return '0ms';
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
   return `${Math.round(ms / 60000)}m`;
@@ -25,9 +25,7 @@ const formatNumber = (num: number): string => {
 export function KPISection({ timeFilter }: KPISectionProps) {
   const permissions = usePermissions();
   const isLoadingPermissions = useIsLoadingPermissions();
-  const showCostPerConversation = useFeatureFlagVisible(
-    FeatureFlags.ANALYTICS.SHOW_COST_PER_CONVERSATION
-  );
+  const showCostPerConversation = useFeatureFlagVisible(FeatureFlags.ANALYTICS.SHOW_COST_PER_CONVERSATION);
   const [summaryStats, setSummaryStats] = useState<DashboardSummaryStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,14 +36,14 @@ export function KPISection({ timeFilter }: KPISectionProps) {
       }
 
       // Check for dashboard permission or wildcard
-      if (permissions.includes("read:dashboard") || permissions.includes("*")) {
+      if (permissions.includes('read:dashboard') || permissions.includes('*')) {
         setLoading(true);
         try {
           const days = getFilterDays(timeFilter);
           const data = await fetchDashboardSummary(days);
           setSummaryStats(data);
         } catch (err) {
-          console.error("Error fetching dashboard summary:", err);
+          console.error('Error fetching dashboard summary:', err);
         } finally {
           setLoading(false);
         }
@@ -60,30 +58,30 @@ export function KPISection({ timeFilter }: KPISectionProps) {
   // Transform summary stats for the stats overview card
   const statsMetrics = [
     {
-      label: "Active Agents",
-      value: summaryStats?.active_agents?.toString() || "0",
+      label: 'Active Agents',
+      value: summaryStats?.active_agents?.toString() || '0',
       change: 0,
-      changeType: "neutral" as const,
+      changeType: 'neutral' as const,
     },
     {
-      label: "Workflow Runs",
+      label: 'Workflow Runs',
       value: formatNumber(summaryStats?.workflow_runs || 0),
       change: 0,
-      changeType: "neutral" as const,
+      changeType: 'neutral' as const,
     },
     {
-      label: "Avg Response Time",
+      label: 'Avg Response Time',
       value: formatResponseTime(summaryStats?.avg_response_time_ms || 0),
       change: 0,
-      changeType: "neutral" as const,
+      changeType: 'neutral' as const,
     },
     ...(showCostPerConversation
       ? [
           {
-            label: "Usage",
-            value: "~$48.00",
+            label: 'Usage',
+            value: '~$48.00',
             change: 16,
-            changeType: "increase" as const,
+            changeType: 'increase' as const,
           },
         ]
       : []),

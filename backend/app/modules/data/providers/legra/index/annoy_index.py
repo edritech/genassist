@@ -7,7 +7,7 @@ from annoy import AnnoyIndex
 from .base import Indexer
 
 __all__ = [
-    'AnnoyIndexer',
+    "AnnoyIndexer",
 ]
 
 
@@ -44,9 +44,7 @@ class AnnoyIndexer(Indexer):
         idxs = np.zeros((M, top_k), dtype=np.int64)
 
         for i, q_vec in enumerate(queries.astype(np.float32)):
-            neighbors, distances = self.index.get_nns_by_vector(
-                q_vec.tolist(), top_k, include_distances=True
-            )
+            neighbors, distances = self.index.get_nns_by_vector(q_vec.tolist(), top_k, include_distances=True)
             idxs[i, :] = np.array(neighbors, dtype=np.int64)
             dists[i, :] = np.array(distances, dtype=np.float32)
 

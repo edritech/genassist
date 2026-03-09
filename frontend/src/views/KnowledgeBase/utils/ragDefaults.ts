@@ -1,10 +1,10 @@
-import { RagConfigValues } from "../types/ragSchema";
+import { RagConfigValues } from '../types/ragSchema';
 
 // Default RAG configuration
 export const DEFAULT_RAG_CONFIG: RagConfigValues = {
   vector: {
     enabled: false,
-    type: "chroma",
+    type: 'chroma',
   },
   lightrag: {
     enabled: false,
@@ -37,14 +37,14 @@ export const DEFAULT_LEGACY_RAG_CONFIG: LegacyRagConfig = {
   enabled: false,
   vector: {
     enabled: false,
-    type: "chroma",
+    type: 'chroma',
   },
   lightrag: {
     enabled: false,
-    search_mode: "mix",
+    search_mode: 'mix',
   },
   legra: {
     enabled: false,
-    questions: "",
+    questions: '',
   },
 };

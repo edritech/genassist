@@ -6,7 +6,6 @@ import { ChartDataItem } from '@/interfaces/analytics.interface';
 import { CardHeader } from '@/components/CardHeader';
 import { getTopicColorMap } from '../utils/topicsColors';
 
-
 export function TopicsReport() {
   const [data, setData] = useState<ChartDataItem[]>([]);
   const [totalConversations, setTotalConversations] = useState(0);
@@ -50,7 +49,7 @@ export function TopicsReport() {
 
   return (
     <Card className="p-6 shadow-sm animate-fade-up bg-white h-full">
-      <CardHeader 
+      <CardHeader
         title="Conversations by type"
         tooltipText="Breakdown of conversations by their identified topics or types."
       />
@@ -79,16 +78,23 @@ export function TopicsReport() {
             >
               {data.map((entry, index) => {
                 const color = colorMap[entry.originalKey];
-                return (
-                  <Cell key={`cell-${index}`} fill={color} stroke={color} strokeWidth={2} />
-                );
+                return <Cell key={`cell-${index}`} fill={color} stroke={color} strokeWidth={2} />;
               })}
             </Pie>
-            <Tooltip formatter={(value: number, name: string) => [value, name.charAt(0).toUpperCase() + name.slice(1)]} />
+            <Tooltip
+              formatter={(value: number, name: string) => [value, name.charAt(0).toUpperCase() + name.slice(1)]}
+            />
             <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central" className="text-3xl font-semibold">
               {totalConversations}
             </text>
-            <text x="50%" y="50%" dy={22} textAnchor="middle" dominantBaseline="central" className="text-sm text-muted-foreground">
+            <text
+              x="50%"
+              y="50%"
+              dy={22}
+              textAnchor="middle"
+              dominantBaseline="central"
+              className="text-sm text-muted-foreground"
+            >
               Conversations
             </text>
           </PieChart>
@@ -100,4 +106,4 @@ export function TopicsReport() {
       )}
     </Card>
   );
-} 
+}

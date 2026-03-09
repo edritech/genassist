@@ -1,14 +1,14 @@
 from uuid import UUID
+
 from injector import inject
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.cache.redis_cache import make_key_builder
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.customer import CustomerModel
 from app.schemas.customer import CustomerCreate, CustomerUpdate
-
 
 customer_key_builder = make_key_builder("customer")
 
@@ -39,24 +39,15 @@ class CustomersRepository:
         return new_customer
 
     async def get_by_id(self, customer_id: UUID) -> CustomerModel:
-        result = await self.db.execute(
-            select(CustomerModel).where(CustomerModel.id == customer_id)
-        )
+        result = await self.db.execute(select(CustomerModel).where(CustomerModel.id == customer_id))
         return result.scalars().first()
 
     async def _get_by_external_id(self, external_id: str) -> CustomerModel:
-        result = await self.db.execute(
-            select(CustomerModel).where(CustomerModel.external_id == external_id)
-        )
+        result = await self.db.execute(select(CustomerModel).where(CustomerModel.external_id == external_id))
         return result.scalars().first()
 
     async def get_all(self, skip: int = 0, limit: int = 20) -> list[CustomerModel]:
-        query = (
-            select(CustomerModel)
-            .order_by(CustomerModel.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-        )
+        query = select(CustomerModel).order_by(CustomerModel.created_at.desc()).offset(skip).limit(limit)
         result = await self.db.execute(query)
         return result.scalars().all()
 

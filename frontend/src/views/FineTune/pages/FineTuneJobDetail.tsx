@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { Card } from "@/components/card";
-import { Button } from "@/components/button";
-import { getFineTuneJob } from "@/services/openaiFineTune";
-import { getUser } from "@/services/users";
-import type { FineTuneJob } from "@/interfaces/fineTune.interface";
-import { PageLayout } from "@/components/PageLayout";
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { Card } from '@/components/card';
+import { Button } from '@/components/button';
+import { getFineTuneJob } from '@/services/openaiFineTune';
+import { getUser } from '@/services/users';
+import type { FineTuneJob } from '@/interfaces/fineTune.interface';
+import { PageLayout } from '@/components/PageLayout';
 import {
   formatStatusLabel,
   normalizePercent,
@@ -16,10 +16,10 @@ import {
   formatNumber,
   formatDate,
   inProgressStatuses,
-} from "@/views/FineTune/utils/utils";
-import { FineTuneAccuracyChart } from "@/views/FineTune/components/FineTuneAccuracyChart";
-import { StatItem, DetailItem } from "@/views/FineTune/components/FineTuneStatItems";
-import type { JobProgress, UsageMetrics } from "@/views/FineTune/types";
+} from '@/views/FineTune/utils/utils';
+import { FineTuneAccuracyChart } from '@/views/FineTune/components/FineTuneAccuracyChart';
+import { StatItem, DetailItem } from '@/views/FineTune/components/FineTuneStatItems';
+import type { JobProgress, UsageMetrics } from '@/views/FineTune/types';
 
 export default function FineTuneJobDetail() {
   const { id } = useParams();
@@ -38,7 +38,7 @@ export default function FineTuneJobDetail() {
         setJob(data);
         setError(null);
       } catch (err) {
-        setError("Failed to load job");
+        setError('Failed to load job');
       } finally {
         setLoading(false);
       }
@@ -47,9 +47,9 @@ export default function FineTuneJobDetail() {
   }, [id]);
 
   const progress = (job as Record<string, unknown> | null)?.progress as JobProgress | undefined;
-  const normalizedStatus = String(job?.status || progress?.status || "").toLowerCase();
+  const normalizedStatus = String(job?.status || progress?.status || '').toLowerCase();
   const isInProgress =
-    !["succeeded", "failed", "cancelled"].includes(normalizedStatus) &&
+    !['succeeded', 'failed', 'cancelled'].includes(normalizedStatus) &&
     (inProgressStatuses.has(normalizedStatus) || progress?.is_running);
   const percent =
     normalizePercent((job as Record<string, unknown> | null)?.progress_percentage) ??
@@ -65,16 +65,12 @@ export default function FineTuneJobDetail() {
     | undefined;
 
   const detailTitle = String(
-    job?.user_provided_suffix ??
-    job?.suffix ??
-    job?.fine_tuned_model ??
-    job?.id ??
-    "Fine-Tune Job"
+    job?.user_provided_suffix ?? job?.suffix ?? job?.fine_tuned_model ?? job?.id ?? 'Fine-Tune Job'
   );
 
   const statusLabel = (() => {
-    if (["succeeded", "failed", "cancelled"].includes(normalizedStatus)) {
-      if (normalizedStatus === "succeeded") return "Completed";
+    if (['succeeded', 'failed', 'cancelled'].includes(normalizedStatus)) {
+      if (normalizedStatus === 'succeeded') return 'Completed';
       return formatStatusLabel(normalizedStatus);
     }
     return percent !== null ? `${percent} %` : formatStatusLabel(normalizedStatus);
@@ -89,12 +85,10 @@ export default function FineTuneJobDetail() {
     latestMetricsAccuracy;
 
   const hyper = (job?.hyperparameters as { n_epochs?: unknown; batch_size?: unknown } | undefined) || {};
-  const nEpochsValue: string | number = normalizeNumber(hyper.n_epochs) ?? "—";
-  const batchSizeValue: string | number = normalizeNumber(hyper.batch_size) ?? "—";
+  const nEpochsValue: string | number = normalizeNumber(hyper.n_epochs) ?? '—';
+  const batchSizeValue: string | number = normalizeNumber(hyper.batch_size) ?? '—';
 
-  const createdByValue: string =
-    createdByName ??
-    (typeof job?.created_by === "string" ? job.created_by : "—");
+  const createdByValue: string = createdByName ?? (typeof job?.created_by === 'string' ? job.created_by : '—');
 
   const accuracyData = useMemo(() => buildAccuracySeries(events), [events]);
 
@@ -121,7 +115,7 @@ export default function FineTuneJobDetail() {
           const names = user as unknown as UserNameFields;
           const first = names.first_name || names.firstName;
           const last = names.last_name || names.lastName;
-          const full = [first, last].filter(Boolean).join(" ").trim();
+          const full = [first, last].filter(Boolean).join(' ').trim();
           const display = full || names.username || names.email || creatorId;
           setCreatedByName(display);
         } else {
@@ -145,16 +139,12 @@ export default function FineTuneJobDetail() {
         </div>
       ) : error || !job ? (
         <div className="p-6 flex flex-col items-center gap-3">
-          <p className="text-sm text-muted-foreground">{error || "Job not found"}</p>
+          <p className="text-sm text-muted-foreground">{error || 'Job not found'}</p>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate(-1)}>
               Go back
             </Button>
-            {id && (
-              <Button onClick={() => window.location.reload()}>
-                Retry
-              </Button>
-            )}
+            {id && <Button onClick={() => window.location.reload()}>Retry</Button>}
           </div>
         </div>
       ) : (
@@ -170,7 +160,7 @@ export default function FineTuneJobDetail() {
 
           <Card className="p-5 space-y-5 bg-white">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-              <StatItem label="Model" value={job.model || "—"} />
+              <StatItem label="Model" value={job.model || '—'} />
               <StatItem
                 label="Status"
                 value={
@@ -190,7 +180,7 @@ export default function FineTuneJobDetail() {
                         <span className="text-muted-foreground">Calculating...</span>
                       </div>
                     ) : (
-                      "—"
+                      '—'
                     )
                   ) : (
                     <div className="flex items-center gap-2">

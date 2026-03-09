@@ -13,13 +13,13 @@ Sliding-window formula:
     group g     covers messages [g*step, g*step + group_size)
     new groups  are detected via rag_indexed_count high-water mark in memory
 """
+
 import hashlib
 import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from app.modules.workflow.agents.rag import ThreadScopedRAG
-
 
 logger = logging.getLogger(__name__)
 
@@ -159,8 +159,7 @@ class ConversationRAGIndexer:
         if new_high_water > indexed_count:
             await memory.set_rag_indexed_count(new_high_water)
             logger.debug(
-                f"[ConversationRAGIndexer] Updated rag_indexed_count to "
-                f"{new_high_water} for thread {thread_id}"
+                f"[ConversationRAGIndexer] Updated rag_indexed_count to {new_high_water} for thread {thread_id}"
             )
 
     async def assemble_context(
@@ -198,10 +197,7 @@ class ConversationRAGIndexer:
         try:
             await self.index_new_groups(thread_id, memory)
         except Exception as e:
-            logger.error(
-                f"[ConversationRAGIndexer] index_new_groups failed for "
-                f"thread {thread_id}: {e}"
-            )
+            logger.error(f"[ConversationRAGIndexer] index_new_groups failed for thread {thread_id}: {e}")
             # Non-fatal: continue with retrieval against whatever is indexed
 
         # Step 3: recent verbatim tail
@@ -220,9 +216,7 @@ class ConversationRAGIndexer:
                 config_overrides=self.rag_config_overrides,
             )
         except Exception as e:
-            logger.error(
-                f"[ConversationRAGIndexer] retrieve failed for thread {thread_id}: {e}"
-            )
+            logger.error(f"[ConversationRAGIndexer] retrieve failed for thread {thread_id}: {e}")
             retrieved = []
 
         if not retrieved:
@@ -235,9 +229,7 @@ class ConversationRAGIndexer:
         #   group_end index comparison when available; text check as fallback.
         recent_text = self._format_messages_as_text(recent_msgs)
         cutoff: Optional[datetime] = (
-            datetime.now() - timedelta(hours=self.max_history_hours)
-            if self.max_history_hours > 0
-            else None
+            datetime.now() - timedelta(hours=self.max_history_hours) if self.max_history_hours > 0 else None
         )
         relevant_parts = []
         for result in retrieved:
@@ -260,11 +252,7 @@ class ConversationRAGIndexer:
             # an exact index comparison: group_end > recent_start means at least
             # one message in the group is already shown verbatim. For older docs
             # without that metadata we fall back to a text substring check.
-            overlaps_recent = (
-                group_end_meta > recent_start
-                if group_end_meta is not None
-                else content in recent_text
-            )
+            overlaps_recent = group_end_meta > recent_start if group_end_meta is not None else content in recent_text
             if not overlaps_recent:
                 relevant_parts.append(content)
 
@@ -301,7 +289,7 @@ class ConversationRAGIndexer:
             Combined query string for embedding.
         """
         parts = []
-        tail = recent_messages[-self.query_context_messages:]
+        tail = recent_messages[-self.query_context_messages :]
         for msg in tail:
             role = msg.get("role", "unknown").capitalize()
             content = msg.get("content", "")
@@ -320,9 +308,7 @@ class ConversationRAGIndexer:
         return hashlib.sha256(raw.encode()).hexdigest()[:32]
 
     @staticmethod
-    def _format_group_as_text(
-        messages: List[Dict[str, Any]], start_index: int, end_index: int
-    ) -> str:
+    def _format_group_as_text(messages: List[Dict[str, Any]], start_index: int, end_index: int) -> str:
         """Format a group of messages into a single indexable text block."""
         lines = [f"[Conversation history — messages {start_index} to {end_index - 1}]"]
         for msg in messages:
@@ -334,10 +320,7 @@ class ConversationRAGIndexer:
     @staticmethod
     def _format_messages_as_text(messages: List[Dict[str, Any]]) -> str:
         """Format messages as plain text for deduplication checks."""
-        return "\n".join(
-            f"{m.get('role', '').capitalize()}: {m.get('content', '')}"
-            for m in messages
-        )
+        return "\n".join(f"{m.get('role', '').capitalize()}: {m.get('content', '')}" for m in messages)
 
     @staticmethod
     def _format_retrieved_block(parts: List[str]) -> str:

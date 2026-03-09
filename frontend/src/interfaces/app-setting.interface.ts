@@ -1,15 +1,7 @@
 export interface AppSetting {
   id: string;
   name: string;
-  type:
-    | "Zendesk"
-    | "WhatsApp"
-    | "Gmail"
-    | "Microsoft"
-    | "Slack"
-    | "Jira"
-    | "FileManagerSettings"
-    | "Other";
+  type: 'Zendesk' | 'WhatsApp' | 'Gmail' | 'Microsoft' | 'Slack' | 'Jira' | 'FileManagerSettings' | 'Other';
   values: Record<string, string>;
   description?: string;
   is_active: number;

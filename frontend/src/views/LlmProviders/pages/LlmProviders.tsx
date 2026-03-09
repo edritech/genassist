@@ -1,23 +1,21 @@
-import { useEffect, useState } from "react";
-import { getAllLLMProviders, deleteLLMProvider } from "@/services/llmProviders";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { LLMProviderCard } from "../components/LLMProviderCard";
-import { LLMProviderDialog } from "../components/LLMProviderDialog";
-import { LLMProvider } from "@/interfaces/llmProvider.interface";
-import toast from "react-hot-toast";
+import { useEffect, useState } from 'react';
+import { getAllLLMProviders, deleteLLMProvider } from '@/services/llmProviders';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { LLMProviderCard } from '../components/LLMProviderCard';
+import { LLMProviderDialog } from '../components/LLMProviderDialog';
+import { LLMProvider } from '@/interfaces/llmProvider.interface';
+import toast from 'react-hot-toast';
 
 export default function LLMProviders() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [providers, setProviders] = useState<LLMProvider[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [providerToEdit, setProviderToEdit] = useState<LLMProvider | null>(
-    null
-  );
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [providerToEdit, setProviderToEdit] = useState<LLMProvider | null>(null);
   const [updatedProvider, setUpdatedProvider] = useState<LLMProvider | null>(null);
 
   // Fetch all providers
@@ -45,13 +43,13 @@ export default function LLMProviders() {
   };
 
   const handleCreate = () => {
-    setDialogMode("create");
+    setDialogMode('create');
     setProviderToEdit(null);
     setIsDialogOpen(true);
   };
 
   const handleEdit = (prov: LLMProvider) => {
-    setDialogMode("edit");
+    setDialogMode('edit');
     setProviderToEdit(prov);
     setIsDialogOpen(true);
   };
@@ -62,9 +60,7 @@ export default function LLMProviders() {
       //toast.success("LLM provider deleted successfully.");
       setRefreshKey((prev) => prev + 1);
     } catch (error) {
-      toast.error(
-        "Failed to delete LLM provider: LLM provider is in use by at least one LLM analyst."
-      );
+      toast.error('Failed to delete LLM provider: LLM provider is in use by at least one LLM analyst.');
     }
   };
 

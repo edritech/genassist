@@ -5,7 +5,7 @@ Defines the common interface that all storage providers must implement.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 
 class BaseStorageProvider(ABC):
@@ -53,10 +53,7 @@ class BaseStorageProvider(ABC):
 
     @abstractmethod
     async def upload_file(
-        self,
-        file_content: bytes,
-        file_path: str,
-        file_metadata: Optional[Dict[str, Any]] = None
+        self, file_content: bytes, file_path: str, file_metadata: Optional[Dict[str, Any]] = None
     ) -> bool:
         """
         Upload a file to the storage provider
@@ -111,11 +108,7 @@ class BaseStorageProvider(ABC):
         pass
 
     @abstractmethod
-    async def list_files(
-        self,
-        prefix: Optional[str] = None,
-        limit: Optional[int] = None
-    ) -> List[str]:
+    async def list_files(self, prefix: Optional[str] = None, limit: Optional[int] = None) -> List[str]:
         """
         List files in storage
 

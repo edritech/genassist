@@ -1,7 +1,7 @@
 from typing import List
 
-
 # ==================== REACT AGENT PROMPTS ====================
+
 
 def create_react_tools_available_prompt(base_prompt: str, tool_descriptions: List[str]) -> str:
     """Create ReAct system prompt when tools are available"""
@@ -74,9 +74,10 @@ Question: {query}
 
 Begin your reasoning using the ReAct pattern. Remember to follow the exact format specified above."""
 
+
 def create_chain_of_thought_prompt(enhanced_prompt: str, context: str, query: str, examples: list = None) -> str:
     """Create the main query prompt for Chain of Thought reasoning with optional few-shot examples"""
-    
+
     examples_section = ""
     if examples:
         examples_section = "\n\nHere are some examples of how to approach similar problems:\n\n"
@@ -84,7 +85,7 @@ def create_chain_of_thought_prompt(enhanced_prompt: str, context: str, query: st
             examples_section += f"Example {i}:\n"
             examples_section += f"Q: {example['question']}\n"
             examples_section += f"A: {example['reasoning']} {example['answer']}\n\n"
-    
+
     return f"""{enhanced_prompt}
 
 {context} {examples_section}
@@ -94,7 +95,9 @@ Question: {query}
 Think through this step-by-step. Break down your reasoning process and show your work clearly before arriving at your final answer.
 Respond with a human readable explanation of your thought process and the final answer in a structured format."""
 
+
 # ==================== TOOL AGENT PROMPTS ====================
+
 
 def create_tool_agent_tools_available_prompt(base_prompt: str, tool_descriptions: List[str]) -> str:
     """Create ToolAgent system prompt when tools are available"""
@@ -212,6 +215,7 @@ Do not execute any tools, just recommend which ones to use and why."""
 
 # ==================== SHARED PROMPTS ====================
 
+
 def create_conversation_context(chat_history: List[dict]) -> str:
     """Create conversation context section for prompts
 
@@ -225,4 +229,4 @@ def create_conversation_context(chat_history: List[dict]) -> str:
     for msg in chat_history:
         context += f"{msg['role'].capitalize()}: {msg['content']}\n"
 
-    return context 
+    return context

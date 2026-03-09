@@ -1,9 +1,12 @@
+from enum import Enum
 from typing import Optional
-from sqlalchemy import String, Index, Text, BigInteger
+
+from sqlalchemy import BigInteger, Index, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
-from enum import Enum
+
 from app.db.base import Base
+
 
 class StorageProvider(str, Enum):
     LOCAL = "local"
@@ -42,4 +45,6 @@ class FileModel(Base):
     permissions: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
 
     def __repr__(self):
-        return f"<FileModel(id='{self.id}', name='{self.name}', path='{self.path}', provider='{self.storage_provider}')>"
+        return (
+            f"<FileModel(id='{self.id}', name='{self.name}', path='{self.path}', provider='{self.storage_provider}')>"
+        )

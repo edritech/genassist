@@ -1,18 +1,18 @@
-import "ace-builds/src-noconflict/ace";
-import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AxiosError } from 'axios'
-import App from './App.tsx'
-import './index.css'
+import 'ace-builds/src-noconflict/ace';
+import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
+import App from './App.tsx';
+import './index.css';
 
 // Network error codes that indicate server is unreachable
 const NETWORK_ERROR_CODES = new Set([
-  "ERR_NETWORK",
-  "ECONNABORTED",
-  "ERR_CONNECTION_REFUSED",
-  "ERR_CONNECTION_RESET",
-  "ERR_SOCKET_NOT_CONNECTED",
-  "ENOTFOUND",
+  'ERR_NETWORK',
+  'ECONNABORTED',
+  'ERR_CONNECTION_REFUSED',
+  'ERR_CONNECTION_RESET',
+  'ERR_SOCKET_NOT_CONNECTED',
+  'ENOTFOUND',
 ]);
 
 // Custom retry function that limits retries on server/network errors
@@ -33,7 +33,7 @@ const shouldRetry = (failureCount: number, error: unknown): boolean => {
     }
 
     // Don't retry on network errors (server unreachable)
-    if (NETWORK_ERROR_CODES.has(code ?? "")) {
+    if (NETWORK_ERROR_CODES.has(code ?? '')) {
       return false;
     }
   }
@@ -48,9 +48,9 @@ const queryClient = new QueryClient({
       retry: shouldRetry,
     },
   },
-})
+});
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={queryClient}>
     <App />
   </QueryClientProvider>

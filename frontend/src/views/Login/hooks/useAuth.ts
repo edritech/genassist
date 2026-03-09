@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { login as loginApi } from "@/services/auth";
-import { AxiosError } from "axios";
-import { useFeatureFlag } from "@/context/FeatureFlagContext";
+import { useState } from 'react';
+import { login as loginApi } from '@/services/auth';
+import { AxiosError } from 'axios';
+import { useFeatureFlag } from '@/context/FeatureFlagContext';
 
 interface LoginResponse {
   access_token?: string;
@@ -12,16 +12,10 @@ interface LoginResponse {
 }
 
 export const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    localStorage.getItem("isAuthenticated") === "true"
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(localStorage.getItem('isAuthenticated') === 'true');
   const { refreshFlags } = useFeatureFlag();
 
-  const login = async (
-    username: string,
-    password: string,
-    tenant?: string
-  ): Promise<LoginResponse | null> => {
+  const login = async (username: string, password: string, tenant?: string): Promise<LoginResponse | null> => {
     try {
       const response = await loginApi({ username, password }, tenant);
 
@@ -41,12 +35,12 @@ export const useAuth = () => {
   };
 
   const logout = () => {
-    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem('isAuthenticated');
     setIsAuthenticated(false);
   };
 
   const checkAuth = (): boolean => {
-    return localStorage.getItem("isAuthenticated") === "true";
+    return localStorage.getItem('isAuthenticated') === 'true';
   };
 
   return {

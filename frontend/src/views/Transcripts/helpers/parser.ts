@@ -1,4 +1,4 @@
-import { Transcript } from "@/interfaces/transcript.interface";
+import { Transcript } from '@/interfaces/transcript.interface';
 
 interface ParsedTranscriptEntry {
   text: string;
@@ -15,18 +15,18 @@ interface ParsedTranscriptEntry {
 export const parseTranscription = (transcript: Transcript): ParsedTranscriptEntry[] => {
   try {
     if (!transcript) return [];
-    
+
     const transcription = transcript.transcription;
-    
+
     if (Array.isArray(transcription)) {
-      return transcription.map(entry => ({
-        speaker: entry.speaker || "Unknown",
+      return transcription.map((entry) => ({
+        speaker: entry.speaker || 'Unknown',
         start_time: typeof entry.start_time === 'number' ? entry.start_time : 0,
-        text: entry.text || "",
-        type: entry.type || "message",
+        text: entry.text || '',
+        type: entry.type || 'message',
       }));
     }
-    
+
     // if (typeof transcription === 'string') {
     //   try {
     //     const parsed = JSON.parse(transcription);
@@ -41,15 +41,15 @@ export const parseTranscription = (transcript: Transcript): ParsedTranscriptEntr
     //     console.error("Error parsing JSON transcription:", e);
     //   }
     // }
-    
+
     if (transcript.transcript && Array.isArray(transcript.transcript) && transcript.transcript.length > 0) {
-      return transcript.transcript.map(entry => ({
-        speaker: entry.speaker || "Unknown",
+      return transcript.transcript.map((entry) => ({
+        speaker: entry.speaker || 'Unknown',
         start_time: typeof entry.start_time === 'number' ? entry.start_time : 0,
-        text: entry.text || ""
+        text: entry.text || '',
       }));
     }
-    
+
     return [];
   } catch (error) {
     return [];
@@ -62,42 +62,35 @@ export const parseTranscription = (transcript: Transcript): ParsedTranscriptEntr
  * @param maxLength Maximum length of the preview text
  * @returns A preview of the transcript text
  */
-export const getTranscriptPreview = (
-  transcript: Transcript,
-  maxLength: number = 100
-): string => {
-  if (!transcript) return "No transcription available";
-  
+export const getTranscriptPreview = (transcript: Transcript, maxLength: number = 100): string => {
+  if (!transcript) return 'No transcription available';
+
   const parsedTranscript = parseTranscription(transcript);
-  
+
   if (!parsedTranscript || parsedTranscript.length === 0) {
-    return "No transcription available";
+    return 'No transcription available';
   }
-  
+
   for (const entry of parsedTranscript) {
     // Handle file attachments with a safe, non-HTML preview
-    if (entry.type === "file") {
+    if (entry.type === 'file') {
       try {
         const fileInfo = JSON.parse(entry.text);
         const name =
-          typeof fileInfo?.name === "string" && fileInfo.name.trim().length > 0
-            ? fileInfo.name
-            : "attachment";
+          typeof fileInfo?.name === 'string' && fileInfo.name.trim().length > 0 ? fileInfo.name : 'attachment';
         return `File attached: ${name}`;
       } catch {
-        return "File attached";
+        return 'File attached';
       }
     }
 
     if (entry.text && entry.text.trim().length > 0) {
       const text = entry.text;
-      return (
-        text.slice(0, maxLength) + (text.length > maxLength ? "..." : "")
-      );
+      return text.slice(0, maxLength) + (text.length > maxLength ? '...' : '');
     }
   }
-  
-  return "No transcription available";
+
+  return 'No transcription available';
 };
 
 /**
@@ -105,21 +98,23 @@ export const getTranscriptPreview = (
  * @param entries The parsed transcript entries
  * @returns An array of grouped transcript entries by speaker
  */
-export const groupTranscriptByConversation = (entries: ParsedTranscriptEntry[]): {
+export const groupTranscriptByConversation = (
+  entries: ParsedTranscriptEntry[]
+): {
   speaker: string;
   text: string;
   start_time: number;
 }[] => {
   if (!entries || !Array.isArray(entries) || entries.length === 0) return [];
-  
+
   const result = [];
   let currentSpeaker = '';
   let currentText = '';
   let currentStartTime = 0;
-  
+
   for (const entry of entries) {
     if (!entry || !entry.speaker) continue;
-    
+
     if (currentSpeaker === '') {
       currentSpeaker = entry.speaker;
       currentText = entry.text || '';
@@ -130,22 +125,22 @@ export const groupTranscriptByConversation = (entries: ParsedTranscriptEntry[]):
       result.push({
         speaker: currentSpeaker,
         text: currentText,
-        start_time: currentStartTime
+        start_time: currentStartTime,
       });
-      
+
       currentSpeaker = entry.speaker;
       currentText = entry.text || '';
       currentStartTime = typeof entry.start_time === 'number' ? entry.start_time : 0;
     }
   }
-  
+
   if (currentSpeaker !== '') {
     result.push({
       speaker: currentSpeaker,
       text: currentText,
-      start_time: currentStartTime
+      start_time: currentStartTime,
     });
   }
-  
+
   return result;
-}; 
+};

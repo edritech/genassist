@@ -1,4 +1,4 @@
-import { WorkflowTestResponse } from "@/services/workflows";
+import { WorkflowTestResponse } from '@/services/workflows';
 
 // Extended execution state that includes real-time tracking
 export interface WorkflowExecutionState extends Omit<WorkflowTestResponse, 'execution_summary'> {
@@ -14,20 +14,20 @@ export interface WorkflowExecutionState extends Omit<WorkflowTestResponse, 'exec
   isExecuting: boolean;
   currentStep: number;
   totalSteps: number;
-  
+
   // Real-time execution tracking
   executionStartTime: number;
   executionEndTime?: number;
-  
+
   // Node execution details
   nodeExecutionStatus: Record<string, NodeExecutionStatus>;
-  
+
   // Execution history for debugging
   executionHistory: ExecutionStep[];
-  
+
   // Error handling
   errors: ExecutionError[];
-  
+
   // Performance metrics
   performanceMetrics: PerformanceMetrics;
 }
@@ -86,31 +86,31 @@ export interface PerformanceMetrics {
 export interface WorkflowExecutionActions {
   // Start a new execution
   startExecution: (input: Record<string, unknown>) => void;
-  
+
   // Stop current execution
   stopExecution: () => void;
-  
+
   // Update node output
   updateNodeOutput: (nodeId: string, output: Record<string, unknown>) => void;
-  
+
   // Mark node as completed
   markNodeCompleted: (nodeId: string, output: Record<string, unknown>, nodeType: string, nodeName: string) => void;
-  
+
   // Mark node as failed
   markNodeFailed: (nodeId: string, error: string, nodeType: string, nodeName: string) => void;
-  
+
   // Retry failed node
   retryNode: (nodeId: string) => void;
-  
+
   // Get node output
   getNodeOutput: (nodeId: string) => Record<string, unknown> | undefined;
-  
+
   // Get all available outputs for a node
   getAvailableOutputs: (nodeId: string) => Record<string, unknown>;
-  
+
   // Clear execution state
   clearExecution: () => void;
-  
+
   // Export execution state
   exportExecutionState: () => WorkflowExecutionState;
 }

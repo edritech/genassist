@@ -1,12 +1,12 @@
-import { ArrowUp, ArrowDown, Minus } from "lucide-react";
-import { Card } from "@/components/card";
-import { getChangeBadgeColor, getChangeIconColor, getChangeTextColor } from "../helpers/badgeColors";
+import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { Card } from '@/components/card';
+import { getChangeBadgeColor, getChangeIconColor, getChangeTextColor } from '../helpers/badgeColors';
 
 interface StatMetric {
   label: string;
   value: string;
   change: number;
-  changeType: "increase" | "decrease" | "neutral";
+  changeType: 'increase' | 'decrease' | 'neutral';
 }
 
 interface StatsOverviewCardProps {
@@ -15,13 +15,13 @@ interface StatsOverviewCardProps {
 }
 
 export const StatsOverviewCard = ({ metrics, loading = false }: StatsOverviewCardProps) => {
-  const getChangeIcon = (changeType: "increase" | "decrease" | "neutral") => {
+  const getChangeIcon = (changeType: 'increase' | 'decrease' | 'neutral') => {
     switch (changeType) {
-      case "increase":
+      case 'increase':
         return ArrowUp;
-      case "decrease":
+      case 'decrease':
         return ArrowDown;
-      case "neutral":
+      case 'neutral':
         return Minus;
     }
   };
@@ -50,9 +50,7 @@ export const StatsOverviewCard = ({ metrics, loading = false }: StatsOverviewCar
   }
 
   const gridColsClass =
-    metrics.length === 4
-      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+    metrics.length === 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 
   return (
     <Card className="w-full px-4 py-4 sm:px-6 sm:py-6 shadow-sm bg-white animate-fade-up">
@@ -64,9 +62,7 @@ export const StatsOverviewCard = ({ metrics, loading = false }: StatsOverviewCar
             <div key={index} className="relative">
               <div className="flex flex-col gap-3 sm:gap-4 py-2 sm:py-0">
                 <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-                  <div className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
-                    {metric.value}
-                  </div>
+                  <div className="text-xl sm:text-2xl font-bold text-foreground leading-tight">{metric.value}</div>
                   {/* TODO */}
                   {/* <div className="flex items-center gap-2">
                     <div className={`${getChangeBadgeColor(metric.changeType)} flex items-center p-1 rounded-full`}>
@@ -77,9 +73,7 @@ export const StatsOverviewCard = ({ metrics, loading = false }: StatsOverviewCar
                     </div>
                   </div> */}
                 </div>
-                <div className="text-sm sm:text-base font-medium text-foreground">
-                  {metric.label}
-                </div>
+                <div className="text-sm sm:text-base font-medium text-foreground">{metric.label}</div>
               </div>
 
               {/* Vertical divider - hidden on mobile, shown on larger screens between items */}

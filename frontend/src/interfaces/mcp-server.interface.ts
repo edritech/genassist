@@ -32,4 +32,3 @@ export interface MCPServerUpdatePayload {
   description?: string;
   is_active?: number;
 }
-

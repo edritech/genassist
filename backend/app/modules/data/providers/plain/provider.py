@@ -6,10 +6,10 @@ without chunking, embedding, or vector operations. Returns content as-is.
 """
 
 import logging
-from typing import List, Dict, Any, Union
+from typing import Any, Dict, List, Union
+
 from ..base import BaseDataProvider
 from ..models import SearchResult
-
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +19,10 @@ class PlainProvider(BaseDataProvider):
     Simple document storage provider that returns content as-is
     without any processing, chunking, or embedding.
     """
+
     name = "plain"
 
-    def __init__(
-        self,
-        knowledge_base_id: str
-    ):
+    def __init__(self, knowledge_base_id: str):
         super().__init__(knowledge_base_id)
         self.documents: Dict[str, Dict[str, Any]] = {}
 
@@ -38,12 +36,7 @@ class PlainProvider(BaseDataProvider):
             logger.error(f"Failed to initialize PlainProvider: {e}")
             return False
 
-    async def add_document(
-        self,
-        doc_id: str,
-        content: str,
-        metadata: Union[Dict[str, Any], None] = None
-    ) -> bool:
+    async def add_document(self, doc_id: str, content: str, metadata: Union[Dict[str, Any], None] = None) -> bool:
         """
         Add a document to the plain store
 
@@ -71,10 +64,7 @@ class PlainProvider(BaseDataProvider):
             metadata["doc_id"] = doc_id
 
             # Store document as-is without any processing
-            self.documents[doc_id] = {
-                "content": content,
-                "metadata": metadata
-            }
+            self.documents[doc_id] = {"content": content, "metadata": metadata}
 
             logger.info(f"Added document {doc_id} to plain store")
             return True
@@ -111,11 +101,7 @@ class PlainProvider(BaseDataProvider):
             return False
 
     async def search(
-        self,
-        query: str,
-        limit: int = 5,
-        filter_dict: Union[Dict[str, Any], None] = None,
-        **kwargs
+        self, query: str, limit: int = 5, filter_dict: Union[Dict[str, Any], None] = None, **kwargs
     ) -> List[SearchResult]:
         """
         Search the plain store - returns all documents as-is
@@ -150,7 +136,7 @@ class PlainProvider(BaseDataProvider):
                     metadata=doc_data["metadata"],
                     score=1.0,  # Plain provider doesn't do scoring
                     source="plain",
-                    chunk_count=1  # Plain provider stores whole documents
+                    chunk_count=1,  # Plain provider stores whole documents
                 )
                 results.append(search_result)
 
@@ -204,5 +190,5 @@ class PlainProvider(BaseDataProvider):
             "provider_type": "plain",
             "knowledge_base_id": self.knowledge_base_id,
             "initialized": self._initialized,
-            "document_count": len(self.documents)
+            "document_count": len(self.documents),
         }

@@ -1,7 +1,9 @@
-from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field
-from typing import Any, Dict, Optional
 from datetime import datetime
+from typing import Any, Dict, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class LlmProviderBase(BaseModel):
     name: str
@@ -10,10 +12,7 @@ class LlmProviderBase(BaseModel):
     connection_data: Dict[str, Any] = Field(..., description="Connection parameters like api key.")
     is_active: Optional[int] = 1
     is_default: Optional[int] = 0
-    model_config = ConfigDict(
-        from_attributes = True
-    )
-
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LlmProviderCreate(LlmProviderBase):
@@ -23,9 +22,7 @@ class LlmProviderCreate(LlmProviderBase):
 class LlmProviderRead(LlmProviderBase):
     id: UUID
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LlmProviderUpdate(BaseModel):
@@ -43,9 +40,7 @@ class LlmAnalystBase(BaseModel):
     prompt: Optional[str]
     is_active: Optional[int]
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LlmAnalystCreate(LlmAnalystBase):
@@ -58,10 +53,7 @@ class LlmAnalyst(LlmAnalystBase):
     updated_at: datetime
     llm_provider: Optional[LlmProviderRead] = None
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
-
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LlmAnalystUpdate(BaseModel):

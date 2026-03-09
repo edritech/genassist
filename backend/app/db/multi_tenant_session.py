@@ -1,16 +1,16 @@
 import logging
 from typing import Dict
+
+from sqlalchemy import NullPool, create_engine, text
 from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
     async_sessionmaker,
     create_async_engine,
-    AsyncEngine,
 )
-from sqlalchemy import NullPool, create_engine, text
+
 from app.core.config.settings import settings
-from app.db.base import Base
-
-
 from app.db import models  # noqa: F401
+from app.db.base import Base
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +21,9 @@ class MultiTenantSessionManager:
     _engines: Dict[str, AsyncEngine] = {}
     _session_factories: Dict[str, async_sessionmaker] = {}
 
-
     async def initialize(self):
         """Initialize the multi-tenant session manager"""
         await self.run_db_init_actions("master")
-
 
     def get_tenant_engine(self, tenant: str | None = None) -> AsyncEngine:
         """Get or create engine for a specific tenant"""
@@ -36,19 +34,17 @@ class MultiTenantSessionManager:
 
         if ktenant not in self._engines:
             tenant_url = settings.get_tenant_database_url(tenant)
-            logger.debug(
-                    f"Creating new engine for tenant {tenant} with URL: {tenant_url}"
-                    )
+            logger.debug(f"Creating new engine for tenant {tenant} with URL: {tenant_url}")
 
             if settings.BACKGROUND_TASK:
                 # Use NullPool for Celery - no connection pooling
                 logger.info(f"🔧 Creating NullPool engine for Celery, tenant: {tenant}")
                 self._engines[ktenant] = create_async_engine(
-                        tenant_url,
-                        echo=False,
-                        poolclass=NullPool,  # Creates fresh connection each time
-                        pool_pre_ping=True,
-                        )
+                    tenant_url,
+                    echo=False,
+                    poolclass=NullPool,  # Creates fresh connection each time
+                    pool_pre_ping=True,
+                )
 
                 # Print all engines
                 logger.info("=== Current Engines (BACKGROUND_TASK) ===")
@@ -59,15 +55,15 @@ class MultiTenantSessionManager:
                 # Normal pooling for FastAPI
                 logger.info(f"🔧 Creating pooled engine for FastAPI, tenant: {tenant}")
                 self._engines[ktenant] = create_async_engine(
-                        tenant_url,
-                        echo=False,
-                        future=True,
-                        pool_size=settings.DB_POOL_SIZE,
-                        max_overflow=settings.DB_MAX_OVERFLOW,
-                        pool_timeout=settings.DB_POOL_TIMEOUT,
-                        pool_recycle=settings.DB_POOL_RECYCLE,
-                        pool_pre_ping=True,
-                        )
+                    tenant_url,
+                    echo=False,
+                    future=True,
+                    pool_size=settings.DB_POOL_SIZE,
+                    max_overflow=settings.DB_MAX_OVERFLOW,
+                    pool_timeout=settings.DB_POOL_TIMEOUT,
+                    pool_recycle=settings.DB_POOL_RECYCLE,
+                    pool_pre_ping=True,
+                )
 
                 # Print all engines
                 logger.info("=== Current Engines (FastAPI) ===")
@@ -104,11 +100,7 @@ class MultiTenantSessionManager:
 
             with engine.connect() as conn:
                 # Check if database exists
-                result = conn.execute(
-                    text(
-                        f"SELECT 1 FROM pg_database WHERE datname = '{tenant_db_name}'"
-                    )
-                )
+                result = conn.execute(text(f"SELECT 1 FROM pg_database WHERE datname = '{tenant_db_name}'"))
                 if result.fetchone():
                     logger.info(f"Tenant database '{tenant_db_name}' already exists")
                 else:
@@ -128,16 +120,15 @@ class MultiTenantSessionManager:
 
             # Stamp the database at head to mark it as fully migrated
             # We don't run actual migrations because Base.metadata.create_all() creates tables with current schema
-            from alembic.config import Config
-            from alembic import command
             import os
+
+            from alembic import command
+            from alembic.config import Config
 
             # Point Alembic at our alembic.ini configurations (same pattern as migrations.py)
             # Get the project root relative to this file
             current_file = os.path.abspath(__file__)  # app/db/multi_tenant_session.py
-            project_root = os.path.dirname(
-                os.path.dirname(os.path.dirname(current_file))
-            )  # project root
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))  # project root
             alembic_ini_path = os.path.join(project_root, "alembic.ini")
             logger.info(f"Alembic ini path: {alembic_ini_path}")
 
@@ -156,9 +147,7 @@ class MultiTenantSessionManager:
             # Dispose the async engine
             await async_engine.dispose()
 
-            logger.info(
-                f"Created database schema for tenant:  ({tenant}) using Alembic"
-            )
+            logger.info(f"Created database schema for tenant:  ({tenant}) using Alembic")
             return True
 
         except Exception as e:
@@ -169,16 +158,17 @@ class MultiTenantSessionManager:
         """Seed a tenant database with initial data"""
         try:
             # Set tenant context so that dependency injection uses the tenant session
-            from app.core.tenant_scope import set_tenant_context, clear_tenant_context
+            from app.core.tenant_scope import clear_tenant_context, set_tenant_context
 
             set_tenant_context(tenant)
 
             try:
                 # Import and run the seed function inside a request scope so DI shares the same session
-                from app.db.seed.seed import seed_data
-                from app.dependencies.injector import injector
                 from fastapi_injector import RequestScopeFactory
                 from sqlalchemy.ext.asyncio import AsyncSession
+
+                from app.db.seed.seed import seed_data
+                from app.dependencies.injector import injector
 
                 request_scope_factory = injector.get(RequestScopeFactory)
                 async with request_scope_factory.create_scope():

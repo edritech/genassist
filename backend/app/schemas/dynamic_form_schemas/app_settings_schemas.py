@@ -5,7 +5,8 @@ This module defines field schemas for AppSettings integration types.
 All schemas use the unified TypeSchema structure from base.py.
 """
 
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+
 from .base import FieldSchema, TypeSchema, convert_typed_schemas_to_dict
 
 # Define field schemas for each integration type
@@ -196,11 +197,11 @@ APP_SETTINGS_SCHEMAS: Dict[str, TypeSchema] = {
                 description="Storage Provider for the file manager",
                 encrypted=False,
                 options=[
-                    { "label": "Local", "value": "local" },
-                    { "label": "S3", "value": "s3" },
-                    { "label": "Azure", "value": "azure" },
-                    { "label": "GCS", "value": "gcs" },
-                    { "label": "SharePoint", "value": "sharepoint" },
+                    {"label": "Local", "value": "local"},
+                    {"label": "S3", "value": "s3"},
+                    {"label": "Azure", "value": "azure"},
+                    {"label": "GCS", "value": "gcs"},
+                    {"label": "SharePoint", "value": "sharepoint"},
                 ],
             ),
             FieldSchema(

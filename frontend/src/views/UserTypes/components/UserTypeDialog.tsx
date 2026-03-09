@@ -1,19 +1,12 @@
-import { useEffect, useState } from "react";
-import { UserType } from "@/interfaces/userType.interface";
-import { toast } from "react-hot-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/dialog";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { updateUserType, createUserType } from "@/services/userTypes";
-import { Button } from "@/components/button";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { UserType } from '@/interfaces/userType.interface';
+import { toast } from 'react-hot-toast';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/dialog';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { updateUserType, createUserType } from '@/services/userTypes';
+import { Button } from '@/components/button';
+import { Loader2 } from 'lucide-react';
 
 interface UserTypeDialogProps {
   isOpen: boolean;
@@ -21,7 +14,7 @@ interface UserTypeDialogProps {
   onUserTypeSaved: () => void;
   onUserTypeUpdated?: (userType: UserType) => void;
   userTypeToEdit?: UserType | null;
-  mode?: "create" | "edit";
+  mode?: 'create' | 'edit';
 }
 
 export function UserTypeDialog({
@@ -30,18 +23,16 @@ export function UserTypeDialog({
   onUserTypeSaved,
   onUserTypeUpdated,
   userTypeToEdit = null,
-  mode = "create",
+  mode = 'create',
 }: UserTypeDialogProps) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userTypeId, setUserTypeId] = useState<string | undefined>(undefined);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">(mode);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>(mode);
 
-  const title =
-    dialogMode === "create" ? "Create New User Type" : "Edit User Type";
-  const submitButtonText =
-    dialogMode === "create" ? "Create User Type" : "Update User Type";
-  const loadingText = dialogMode === "create" ? "Creating..." : "Updating...";
+  const title = dialogMode === 'create' ? 'Create New User Type' : 'Edit User Type';
+  const submitButtonText = dialogMode === 'create' ? 'Create User Type' : 'Update User Type';
+  const loadingText = dialogMode === 'create' ? 'Creating...' : 'Updating...';
 
   useEffect(() => {
     setDialogMode(mode);
@@ -51,7 +42,7 @@ export function UserTypeDialog({
     if (isOpen) {
       resetForm();
 
-      if (userTypeToEdit && dialogMode === "edit") {
+      if (userTypeToEdit && dialogMode === 'edit') {
         populateFormWithUserTypeData(userTypeToEdit);
       }
     }
@@ -60,14 +51,14 @@ export function UserTypeDialog({
 
   const populateFormWithUserTypeData = (userType: UserType) => {
     setUserTypeId(userType.id);
-    setName(userType.name || "");
+    setName(userType.name || '');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Name is required.");
+      toast.error('Name is required.');
       return;
     }
 
@@ -77,17 +68,17 @@ export function UserTypeDialog({
         name: name.trim(),
       };
 
-      if (dialogMode === "create") {
+      if (dialogMode === 'create') {
         await createUserType(userTypeData);
-        toast.success("User type created successfully.");
+        toast.success('User type created successfully.');
         onUserTypeSaved();
       } else {
         if (!userTypeId) {
-          toast.error("User type ID is required.");
+          toast.error('User type ID is required.');
           return;
         }
         await updateUserType(userTypeId, userTypeData);
-        toast.success("User type updated successfully.");
+        toast.success('User type updated successfully.');
         if (onUserTypeUpdated && userTypeToEdit) {
           const updatedUserType: UserType = {
             ...userTypeToEdit,
@@ -101,40 +92,33 @@ export function UserTypeDialog({
       resetForm();
     } catch (err) {
       const data = err.response.data;
-      let errorMessage = "";
+      let errorMessage = '';
 
       if (err.status === 400) {
-        errorMessage = "A user type with this name already exists.";
+        errorMessage = 'A user type with this name already exists.';
       } else if (data.error) {
         errorMessage = data.error;
       } else if (data.detail) {
-        errorMessage = data.detail["0"].msg;
+        errorMessage = data.detail['0'].msg;
       }
 
-      toast.error(
-        `Failed to ${dialogMode} user type${
-          errorMessage ? `: ${errorMessage}` : "."
-        }`
-      );
+      toast.error(`Failed to ${dialogMode} user type${errorMessage ? `: ${errorMessage}` : '.'}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const resetForm = () => {
-    if (dialogMode === "create") {
+    if (dialogMode === 'create') {
       setUserTypeId(undefined);
-      setName("");
+      setName('');
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden">
-        <form
-          onSubmit={handleSubmit}
-          className="max-h-[90vh] overflow-y-auto overflow-x-hidden flex flex-col"
-        >
+        <form onSubmit={handleSubmit} className="max-h-[90vh] overflow-y-auto overflow-x-hidden flex flex-col">
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="text-xl">{title}</DialogTitle>
           </DialogHeader>
@@ -154,12 +138,7 @@ export function UserTypeDialog({
 
           <DialogFooter className="px-6 py-4 border-t">
             <div className="flex justify-end gap-3 w-full">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>

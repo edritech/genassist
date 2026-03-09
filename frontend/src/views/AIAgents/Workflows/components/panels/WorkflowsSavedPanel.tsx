@@ -1,27 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/button";
-import { Save, Plus, Trash2, Pencil, Power, MoreVertical } from "lucide-react";
-import { Workflow } from "@/interfaces/workflow.interface";
-import { getAllWorkflows, deleteWorkflow } from "@/services/workflows";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { createWorkflow, updateWorkflow } from "@/services/workflows";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/button';
+import { Save, Plus, Trash2, Pencil, Power, MoreVertical } from 'lucide-react';
+import { Workflow } from '@/interfaces/workflow.interface';
+import { getAllWorkflows, deleteWorkflow } from '@/services/workflows';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { createWorkflow, updateWorkflow } from '@/services/workflows';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/dropdown-menu";
-import { calculateNextVersion, findPreviousVersion, isVersionDuplicate } from "../../utils/helpers";
+} from '@/components/dropdown-menu';
+import { calculateNextVersion, findPreviousVersion, isVersionDuplicate } from '../../utils/helpers';
 
 interface WorkflowsSavedPanelProps {
   isOpen: boolean;
@@ -52,36 +46,23 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
   const [loading, setLoading] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [workflowName, setWorkflowName] = useState(currentWorkflow.name || "");
-  const [workflowVersion, setWorkflowVersion] = useState(
-    currentWorkflow.version || ""
-  );
-  const [workflowDescription, setWorkflowDescription] = useState(
-    currentWorkflow.description || ""
-  );
+  const [workflowName, setWorkflowName] = useState(currentWorkflow.name || '');
+  const [workflowVersion, setWorkflowVersion] = useState(currentWorkflow.version || '');
+  const [workflowDescription, setWorkflowDescription] = useState(currentWorkflow.description || '');
   const [error, setError] = useState<string | null>(null);
   const [versionError, setVersionError] = useState<string | null>(null);
-  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(
-    null
-  );
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
 
-  const [workflowToActivate, setWorkflowToActivate] = useState<Workflow | null>(
-    null
-  );
+  const [workflowToActivate, setWorkflowToActivate] = useState<Workflow | null>(null);
   const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
 
-  const [workflowToDelete, setWorkflowToDelete] = useState<Workflow | null>(
-    null
-  );
+  const [workflowToDelete, setWorkflowToDelete] = useState<Workflow | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] =
-    useState(false);
-  const [workflowToSelect, setWorkflowToSelect] = useState<Workflow | null>(
-    null
-  );
+  const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = useState(false);
+  const [workflowToSelect, setWorkflowToSelect] = useState<Workflow | null>(null);
   const [isSwitching, setIsSwitching] = useState(false);
 
   // Load workflows
@@ -90,9 +71,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
     setError(null);
     try {
       let workflowList = await getAllWorkflows();
-      workflowList = workflowList.filter(
-        (workflow) => workflow["agent_id"] === agentId
-      );
+      workflowList = workflowList.filter((workflow) => workflow['agent_id'] === agentId);
       workflowList.sort((a, b) => {
         const dateA = new Date(a.created_at).getTime();
         const dateB = new Date(b.created_at).getTime();
@@ -100,7 +79,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
       });
       setWorkflows(workflowList || []);
     } catch (err) {
-      setError("Failed to load workflows. Please try again.");
+      setError('Failed to load workflows. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -110,7 +89,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
     if (isOpen && agentId) {
       loadWorkflows();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, agentId, refreshKey]);
 
   useEffect(() => {
@@ -147,7 +126,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
 
       loadWorkflows();
     } catch (err) {
-      setError("Failed to save workflow. Please try again.");
+      setError('Failed to save workflow. Please try again.');
     }
   };
 
@@ -188,7 +167,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
     handleWorkflowSelect(workflow);
     setWorkflowName(workflow.name);
     setWorkflowVersion(workflow.version);
-    setWorkflowDescription(workflow.description || "");
+    setWorkflowDescription(workflow.description || '');
     setVersionError(null);
     setEditDialogOpen(true);
   };
@@ -223,8 +202,8 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
       return;
     }
 
-    const finalVersion = workflowVersion != "" ? workflowVersion : currentWorkflow.version;
-    
+    const finalVersion = workflowVersion != '' ? workflowVersion : currentWorkflow.version;
+
     // Check for duplicate version (excluding current workflow)
     if (isVersionDuplicate(workflows, finalVersion, currentWorkflow.id)) {
       setVersionError(`Version "${finalVersion}" already exists. Please choose a different version number.`);
@@ -236,11 +215,8 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
     try {
       const workflowToSave = {
         ...currentWorkflow,
-        name: workflowName != "" ? workflowName : currentWorkflow.name,
-        description:
-          workflowDescription != ""
-            ? workflowDescription
-            : currentWorkflow.description,
+        name: workflowName != '' ? workflowName : currentWorkflow.name,
+        description: workflowDescription != '' ? workflowDescription : currentWorkflow.description,
         version: finalVersion,
       };
 
@@ -248,7 +224,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
       closeDialogs();
       loadWorkflows();
     } catch (err) {
-      setError("Failed to save workflow. Please try again.");
+      setError('Failed to save workflow. Please try again.');
     }
   };
 
@@ -263,17 +239,17 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
       setIsDeleting(true);
       const workflowId = workflowToDelete.id;
       const isCurrentlySelected = workflowId === selectedWorkflowId;
-      
+
       // Find the previous version to switch to if we're deleting the current workflow
       let previousVersion: Workflow | null = null;
       if (isCurrentlySelected) {
         previousVersion = findPreviousVersion(workflows, workflowToDelete);
       }
-      
+
       await deleteWorkflow(workflowId);
       const updatedWorkflows = workflows.filter((w) => w.id !== workflowId);
       setWorkflows(updatedWorkflows);
-      
+
       // Auto-switch to previous version if we deleted the current workflow
       if (isCurrentlySelected && previousVersion) {
         setSelectedWorkflowId(previousVersion.id);
@@ -283,7 +259,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
         setSelectedWorkflowId(null);
       }
     } catch (err) {
-      setError("Failed to delete workflow. Please try again.");
+      setError('Failed to delete workflow. Please try again.');
     } finally {
       setWorkflowToDelete(null);
       setIsDeleteDialogOpen(false);
@@ -299,9 +275,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed top-2 right-2 h-[calc(100vh-1rem)] w-80 bg-white border shadow-lg rounded-lg transform transition-transform duration-200 ease-in-out translate-x-0 animate-in slide-in-from-right"
-    >
+    <div className="fixed top-2 right-2 h-[calc(100vh-1rem)] w-80 bg-white border shadow-lg rounded-lg transform transition-transform duration-200 ease-in-out translate-x-0 animate-in slide-in-from-right">
       <div className="h-full flex flex-col">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between">
@@ -313,9 +287,9 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
           <div className="flex items-center space-x-2 mb-4">
             <Button
               onClick={() => {
-                setWorkflowName(currentWorkflow.name || "");
+                setWorkflowName(currentWorkflow.name || '');
                 setWorkflowVersion(calculateNextVersion(workflows));
-                setWorkflowDescription(currentWorkflow.description || "");
+                setWorkflowDescription(currentWorkflow.description || '');
                 setVersionError(null);
                 setCreateDialogOpen(true);
               }}
@@ -329,9 +303,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
           </div>
 
           {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-600 p-2 rounded-md text-sm">
-              {error}
-            </div>
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-600 p-2 rounded-md text-sm">{error}</div>
           )}
 
           <div className="space-y-2">
@@ -339,9 +311,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
               <div
                 key={workflow.id}
                 className={`flex items-center space-x-2 p-2 rounded-md border cursor-pointer ${
-                  selectedWorkflowId === workflow.id
-                    ? "bg-blue-50 border-blue-200"
-                    : "hover:bg-gray-50"
+                  selectedWorkflowId === workflow.id ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
                 }`}
                 onClick={() => handleWorkflowSelect(workflow)}
               >
@@ -355,9 +325,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-gray-500 truncate">
-                    {workflow.description || "No description"}
-                  </div>
+                  <div className="text-xs text-gray-500 truncate">{workflow.description || 'No description'}</div>
                   <span className="inline-flex items-center gap-1 text-xs text-white bg-gray-400 px-2 py-0.5 rounded-full">
                     v{workflow.version}
                   </span>
@@ -453,11 +421,9 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
                   setVersionError(null); // Clear version error when user types
                 }}
                 disabled={editDialogOpen}
-                className={versionError ? "border-red-500" : ""}
+                className={versionError ? 'border-red-500' : ''}
               />
-              {versionError && (
-                <p className="text-sm text-red-600">{versionError}</p>
-              )}
+              {versionError && <p className="text-sm text-red-600">{versionError}</p>}
             </div>
           </div>
 
@@ -495,7 +461,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteWorkflow}
         isInProgress={isDeleting}
-        itemName={workflowToDelete?.name || ""}
+        itemName={workflowToDelete?.name || ''}
         description={`This action cannot be undone. This will permanently delete workflow "${workflowToDelete?.name}".`}
       />
 
@@ -506,7 +472,7 @@ const WorkflowsSavedPanel: React.FC<WorkflowsSavedPanelProps> = ({
         onConfirm={handleActiveWorkflowChange}
         isInProgress={isActivating}
         primaryButtonText="Activate"
-        itemName={workflowToActivate?.name || ""}
+        itemName={workflowToActivate?.name || ''}
         description={`This action will make workflow "${workflowToActivate?.name}" the active workflow of this agent.`}
       />
 

@@ -3,12 +3,11 @@ Centralized schema utilities for extracting default values from AGENT_RAG_FORM_S
 """
 
 from typing import Any
+
 from app.schemas.dynamic_form_schemas import AGENT_RAG_FORM_SCHEMAS_DICT
 
 
-def get_schema_default(
-    schema_section: str, field_name: str, fallback: Any = None
-) -> Any:
+def get_schema_default(schema_section: str, field_name: str, fallback: Any = None) -> Any:
     """
     Extract default value from AGENT_RAG_FORM_SCHEMAS for a specific field.
 
@@ -55,28 +54,18 @@ VECTOR_DEFAULTS = {
     "chunk_keep_separator": get_vector_default("chunk_keep_separator", True),
     "chunk_strip_whitespace": get_vector_default("chunk_strip_whitespace", True),
     "embedding_type": get_vector_default("embedding_type", "bedrock"),
-    "embedding_model_name": get_vector_default(
-        "embedding_model_name", "all-MiniLM-L6-v2"
-    ),
-    "embedding_model_id": get_vector_default(
-        "embedding_model_id", "amazon.titan-embed-text-v2:0"
-    ),
+    "embedding_model_name": get_vector_default("embedding_model_name", "all-MiniLM-L6-v2"),
+    "embedding_model_id": get_vector_default("embedding_model_id", "amazon.titan-embed-text-v2:0"),
     "embedding_region_name": get_vector_default("embedding_region_name", "ca-central-1"),
     "embedding_device_type": get_vector_default("embedding_device_type", "cpu"),
     "embedding_batch_size": get_vector_default("embedding_batch_size", 32),
-    "embedding_normalize_embeddings": get_vector_default(
-        "embedding_normalize_embeddings", True
-    ),
+    "embedding_normalize_embeddings": get_vector_default("embedding_normalize_embeddings", True),
     "vector_db_type": get_vector_default("vector_db_type", "chroma"),
-    "vector_db_collection_name": get_vector_default(
-        "vector_db_collection_name", "default"
-    ),
+    "vector_db_collection_name": get_vector_default("vector_db_collection_name", "default"),
 }
 
 LEGRA_DEFAULTS = {
-    "embedding_model": get_legra_default(
-        "embedding_model", "sentence-transformers/all-MiniLM-L6-v2"
-    ),
+    "embedding_model": get_legra_default("embedding_model", "sentence-transformers/all-MiniLM-L6-v2"),
     "chunk_min_sentences": get_legra_default("chunk_min_sentences", 1),
     "chunk_max_sentences": get_legra_default("chunk_max_sentences", 30),
     "chunk_min_sentence_length": get_legra_default("chunk_min_sentence_length", 32),
@@ -93,9 +82,7 @@ LIGHTRAG_DEFAULTS = {
     "working_directory": get_lightrag_default("working_directory", "lightrag_data"),
     "search_mode": get_lightrag_default("search_mode", "mix"),
     "embedding_func_name": get_lightrag_default("embedding_func_name", "openai_embed"),
-    "llm_model_func_name": get_lightrag_default(
-        "llm_model_func_name", "gpt_4o_mini_complete"
-    ),
+    "llm_model_func_name": get_lightrag_default("llm_model_func_name", "gpt_4o_mini_complete"),
     "chunk_token_size": get_lightrag_default("chunk_token_size", 512),
     "chunk_overlap_token_size": get_lightrag_default("chunk_overlap_token_size", 50),
     "vector_storage": get_lightrag_default("vector_storage", "ChromaVectorDBStorage"),

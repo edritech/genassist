@@ -1,5 +1,5 @@
-import { Label } from "@/components/label";
-import { Skeleton } from "@/components/skeleton";
+import { Label } from '@/components/label';
+import { Skeleton } from '@/components/skeleton';
 
 interface ApiRoleSelectionProps {
   availableRoles: { id: string; name: string }[];
@@ -8,12 +8,7 @@ interface ApiRoleSelectionProps {
   isLoading: boolean;
 }
 
-export function ApiRoleSelection({
-  availableRoles,
-  selectedRoles,
-  toggleRole,
-  isLoading,
-}: ApiRoleSelectionProps) {
+export function ApiRoleSelection({ availableRoles, selectedRoles, toggleRole, isLoading }: ApiRoleSelectionProps) {
   const renderLoadingSkeletons = () =>
     Array.from({ length: 5 }).map((_, index) => (
       <div key={index} className="flex items-center space-x-2">
@@ -25,9 +20,7 @@ export function ApiRoleSelection({
     ));
 
   const renderNoAvailableRoles = () => (
-    <div className="text-sm text-muted-foreground">
-      No roles available for your account.
-    </div>
+    <div className="text-sm text-muted-foreground">No roles available for your account.</div>
   );
 
   const renderAvailableRoles = () =>
@@ -41,10 +34,7 @@ export function ApiRoleSelection({
           className="form-checkbox h-4 w-4"
           disabled={isLoading}
         />
-        <Label
-          htmlFor={`role-${role.id}`}
-          className="text-sm font-normal cursor-pointer"
-        >
+        <Label htmlFor={`role-${role.id}`} className="text-sm font-normal cursor-pointer">
           {role.name}
         </Label>
       </div>
@@ -57,8 +47,8 @@ export function ApiRoleSelection({
         {isLoading
           ? renderLoadingSkeletons()
           : availableRoles.length === 0
-          ? renderNoAvailableRoles()
-          : renderAvailableRoles()}
+            ? renderNoAvailableRoles()
+            : renderAvailableRoles()}
       </div>
     </div>
   );

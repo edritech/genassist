@@ -5,21 +5,18 @@ Pydantic configuration models for the vector system
 from pydantic import BaseModel, Field
 
 from .chunking import ChunkConfig
-from .embedding import EmbeddingConfig
 from .db import VectorDBConfig
+from .embedding import EmbeddingConfig
 
 
 class VectorConfig(BaseModel):
     """Complete vector system configuration"""
-    enabled: bool = Field(
-        default=False, description="Whether vector is enabled")
 
-    chunking: ChunkConfig = Field(
-        default_factory=ChunkConfig)
-    embedding: EmbeddingConfig = Field(
-        default_factory=EmbeddingConfig)
-    vector_db: VectorDBConfig = Field(
-        default_factory=VectorDBConfig)
+    enabled: bool = Field(default=False, description="Whether vector is enabled")
+
+    chunking: ChunkConfig = Field(default_factory=ChunkConfig)
+    embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
+    vector_db: VectorDBConfig = Field(default_factory=VectorDBConfig)
 
     class Config:
         extra = "allow"  # Allow additional fields for extensibility
@@ -39,8 +36,6 @@ class VectorConfig(BaseModel):
         return VectorConfig(
             enabled=data.get("enabled", False),
             chunking=ChunkConfig(**chunking) if chunking else ChunkConfig(),
-            embedding=EmbeddingConfig(
-                **embedding) if embedding else EmbeddingConfig(),
-            vector_db=VectorDBConfig(
-                **vector_db) if vector_db else VectorDBConfig(),
+            embedding=EmbeddingConfig(**embedding) if embedding else EmbeddingConfig(),
+            vector_db=VectorDBConfig(**vector_db) if vector_db else VectorDBConfig(),
         )

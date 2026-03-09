@@ -1,12 +1,12 @@
 /**
  * Unified schema definitions for dynamic field schemas.
- * 
+ *
  * This module provides a unified structure for all dynamic field schemas
  * to ensure consistency and maintainability.
  */
 
 // Field types supported across all schemas
-export type FieldType = "text" | "number" | "password" | "select" | "boolean" | "tags";
+export type FieldType = 'text' | 'number' | 'password' | 'select' | 'boolean' | 'tags';
 
 /**
  * Conditional field definition for showing/hiding fields based on other field values.
@@ -66,7 +66,7 @@ export interface SectionSchema {
 
 /**
  * Unified type schema definition for all dynamic schemas.
- * 
+ *
  * Supports two patterns:
  * 1. Flat structure: Direct 'fields' array (DATA_SOURCE, APP_SETTINGS, LLM_FORM)
  * 2. Sectioned structure: 'sections' array (AGENT_RAG_FORM)
@@ -92,4 +92,3 @@ export interface TypeSchema {
 export interface DynamicFormSchema {
   [key: string]: TypeSchema;
 }
-

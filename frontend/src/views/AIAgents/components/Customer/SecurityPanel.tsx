@@ -1,22 +1,20 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { toast } from "react-hot-toast";
-import { getAgentConfig, updateAgentConfig } from "@/services/api";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { Switch } from "@/components/switch";
-import { Textarea } from "@/components/textarea";
-import { Card } from "@/components/card";
-import { Save, Loader2, Upload, X, FileJson } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { getAgentConfig, updateAgentConfig } from '@/services/api';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Switch } from '@/components/switch';
+import { Textarea } from '@/components/textarea';
+import { Card } from '@/components/card';
+import { Save, Loader2, Upload, X, FileJson } from 'lucide-react';
 
 interface SecurityPanelProps {
   agentId?: string;
 }
 
-export const SecurityPanel = ({
-  agentId: agentIdProp,
-}: SecurityPanelProps) => {
+export const SecurityPanel = ({ agentId: agentIdProp }: SecurityPanelProps) => {
   const { agentId: agentIdParam } = useParams<{ agentId: string }>();
   const agentId = agentIdProp ?? agentIdParam;
   const [loading, setLoading] = useState<boolean>(false);
@@ -25,25 +23,25 @@ export const SecurityPanel = ({
 
   // Token-based auth settings
   const [tokenBasedAuth, setTokenBasedAuth] = useState<boolean>(false);
-  const [tokenExpirationMinutes, setTokenExpirationMinutes] = useState<string>("");
+  const [tokenExpirationMinutes, setTokenExpirationMinutes] = useState<string>('');
 
   // CORS settings
-  const [corsAllowedOrigins, setCorsAllowedOrigins] = useState<string>("");
+  const [corsAllowedOrigins, setCorsAllowedOrigins] = useState<string>('');
 
   // Rate limiting settings
-  const [rateLimitStartPerMinute, setRateLimitStartPerMinute] = useState<string>("");
-  const [rateLimitStartPerHour, setRateLimitStartPerHour] = useState<string>("");
-  const [rateLimitUpdatePerMinute, setRateLimitUpdatePerMinute] = useState<string>("");
-  const [rateLimitUpdatePerHour, setRateLimitUpdatePerHour] = useState<string>("");
+  const [rateLimitStartPerMinute, setRateLimitStartPerMinute] = useState<string>('');
+  const [rateLimitStartPerHour, setRateLimitStartPerHour] = useState<string>('');
+  const [rateLimitUpdatePerMinute, setRateLimitUpdatePerMinute] = useState<string>('');
+  const [rateLimitUpdatePerHour, setRateLimitUpdatePerHour] = useState<string>('');
 
   // reCAPTCHA settings
   const [recaptchaEnabled, setRecaptchaEnabled] = useState<boolean>(false);
-  const [recaptchaProjectId, setRecaptchaProjectId] = useState<string>("");
-  const [recaptchaSiteKey, setRecaptchaSiteKey] = useState<string>("");
-  const [recaptchaMinScore, setRecaptchaMinScore] = useState<string>("");
-  const [gcpSvcAccountJson, setGcpSvcAccountJson] = useState<string>("");
+  const [recaptchaProjectId, setRecaptchaProjectId] = useState<string>('');
+  const [recaptchaSiteKey, setRecaptchaSiteKey] = useState<string>('');
+  const [recaptchaMinScore, setRecaptchaMinScore] = useState<string>('');
+  const [gcpSvcAccountJson, setGcpSvcAccountJson] = useState<string>('');
   const [gcpSvcAccountFile, setGcpSvcAccountFile] = useState<File | null>(null);
-  const [gcpSvcAccountFileName, setGcpSvcAccountFileName] = useState<string>("");
+  const [gcpSvcAccountFileName, setGcpSvcAccountFileName] = useState<string>('');
 
   useEffect(() => {
     if (!agentId) return;
@@ -56,36 +54,26 @@ export const SecurityPanel = ({
 
         // Security settings (nested object)
         const securitySettings = config.security_settings;
-        
+
         // Token-based auth (now in security_settings)
         setTokenBasedAuth(securitySettings?.token_based_auth ?? false);
-        setTokenExpirationMinutes(
-          securitySettings?.token_expiration_minutes?.toString() ?? ""
-        );
+        setTokenExpirationMinutes(securitySettings?.token_expiration_minutes?.toString() ?? '');
 
         // CORS
-        setCorsAllowedOrigins(securitySettings?.cors_allowed_origins ?? "");
+        setCorsAllowedOrigins(securitySettings?.cors_allowed_origins ?? '');
 
         // Rate limiting
-        setRateLimitStartPerMinute(
-          securitySettings?.rate_limit_conversation_start_per_minute?.toString() ?? ""
-        );
-        setRateLimitStartPerHour(
-          securitySettings?.rate_limit_conversation_start_per_hour?.toString() ?? ""
-        );
-        setRateLimitUpdatePerMinute(
-          securitySettings?.rate_limit_conversation_update_per_minute?.toString() ?? ""
-        );
-        setRateLimitUpdatePerHour(
-          securitySettings?.rate_limit_conversation_update_per_hour?.toString() ?? ""
-        );
+        setRateLimitStartPerMinute(securitySettings?.rate_limit_conversation_start_per_minute?.toString() ?? '');
+        setRateLimitStartPerHour(securitySettings?.rate_limit_conversation_start_per_hour?.toString() ?? '');
+        setRateLimitUpdatePerMinute(securitySettings?.rate_limit_conversation_update_per_minute?.toString() ?? '');
+        setRateLimitUpdatePerHour(securitySettings?.rate_limit_conversation_update_per_hour?.toString() ?? '');
 
         // reCAPTCHA
         setRecaptchaEnabled(securitySettings?.recaptcha_enabled ?? false);
-        setRecaptchaProjectId(securitySettings?.recaptcha_project_id ?? "");
-        setRecaptchaSiteKey(securitySettings?.recaptcha_site_key ?? "");
-        setRecaptchaMinScore(securitySettings?.recaptcha_min_score ?? "");
-        
+        setRecaptchaProjectId(securitySettings?.recaptcha_project_id ?? '');
+        setRecaptchaSiteKey(securitySettings?.recaptcha_site_key ?? '');
+        setRecaptchaMinScore(securitySettings?.recaptcha_min_score ?? '');
+
         // Decode base64 GCP service account if present
         if (securitySettings?.gcp_svc_account) {
           try {
@@ -94,15 +82,15 @@ export const SecurityPanel = ({
             setGcpSvcAccountJson(JSON.stringify(jsonObj, null, 2));
           } catch (e) {
             // If decoding fails, just show empty
-            setGcpSvcAccountJson("");
+            setGcpSvcAccountJson('');
           }
         } else {
-          setGcpSvcAccountJson("");
+          setGcpSvcAccountJson('');
         }
         setGcpSvcAccountFile(null);
-        setGcpSvcAccountFileName("");
+        setGcpSvcAccountFileName('');
       } catch (error) {
-        toast.error("Failed to load security settings");
+        toast.error('Failed to load security settings');
       } finally {
         setLoading(false);
       }
@@ -115,9 +103,9 @@ export const SecurityPanel = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== "application/json" && !file.name.endsWith(".json")) {
-      toast.error("Please select a valid JSON file");
-      e.target.value = "";
+    if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+      toast.error('Please select a valid JSON file');
+      e.target.value = '';
       return;
     }
 
@@ -128,17 +116,17 @@ export const SecurityPanel = ({
       setGcpSvcAccountJson(text);
       setGcpSvcAccountFile(file);
       setGcpSvcAccountFileName(file.name);
-      e.target.value = "";
+      e.target.value = '';
     } catch (error) {
-      toast.error("Invalid JSON file. Please check the file format.");
-      e.target.value = "";
+      toast.error('Invalid JSON file. Please check the file format.');
+      e.target.value = '';
     }
   };
 
   const handleRemoveGcpFile = () => {
     setGcpSvcAccountFile(null);
-    setGcpSvcAccountFileName("");
-    setGcpSvcAccountJson("");
+    setGcpSvcAccountFileName('');
+    setGcpSvcAccountJson('');
   };
 
   const handleSave = async () => {
@@ -156,7 +144,7 @@ export const SecurityPanel = ({
           // Convert to base64
           gcpSvcAccountBase64 = btoa(JSON.stringify(jsonObj));
         } catch (error) {
-          toast.error("Invalid JSON format for GCP Service Account");
+          toast.error('Invalid JSON format for GCP Service Account');
           setSaving(false);
           return;
         }
@@ -165,22 +153,14 @@ export const SecurityPanel = ({
       const updateData: any = {
         security_settings: {
           token_based_auth: tokenBasedAuth,
-          token_expiration_minutes: tokenExpirationMinutes
-            ? parseInt(tokenExpirationMinutes)
-            : null,
+          token_expiration_minutes: tokenExpirationMinutes ? parseInt(tokenExpirationMinutes) : null,
           cors_allowed_origins: corsAllowedOrigins || null,
-          rate_limit_conversation_start_per_minute: rateLimitStartPerMinute
-            ? parseInt(rateLimitStartPerMinute)
-            : null,
-          rate_limit_conversation_start_per_hour: rateLimitStartPerHour
-            ? parseInt(rateLimitStartPerHour)
-            : null,
+          rate_limit_conversation_start_per_minute: rateLimitStartPerMinute ? parseInt(rateLimitStartPerMinute) : null,
+          rate_limit_conversation_start_per_hour: rateLimitStartPerHour ? parseInt(rateLimitStartPerHour) : null,
           rate_limit_conversation_update_per_minute: rateLimitUpdatePerMinute
             ? parseInt(rateLimitUpdatePerMinute)
             : null,
-          rate_limit_conversation_update_per_hour: rateLimitUpdatePerHour
-            ? parseInt(rateLimitUpdatePerHour)
-            : null,
+          rate_limit_conversation_update_per_hour: rateLimitUpdatePerHour ? parseInt(rateLimitUpdatePerHour) : null,
           recaptcha_enabled: recaptchaEnabled,
           recaptcha_project_id: recaptchaProjectId || null,
           recaptcha_site_key: recaptchaSiteKey || null,
@@ -190,36 +170,26 @@ export const SecurityPanel = ({
       };
 
       await updateAgentConfig(agentId, updateData);
-      toast.success("Security settings saved successfully");
-      
+      toast.success('Security settings saved successfully');
+
       // Reload the config to show updated values
       const updatedConfig = await getAgentConfig(agentId);
       const securitySettings = updatedConfig.security_settings;
-      
+
       // Update state with fresh data
       const updatedSecuritySettings = updatedConfig.security_settings;
       setTokenBasedAuth(updatedSecuritySettings?.token_based_auth ?? false);
-      setTokenExpirationMinutes(
-        securitySettings?.token_expiration_minutes?.toString() ?? ""
-      );
-      setCorsAllowedOrigins(securitySettings?.cors_allowed_origins ?? "");
-      setRateLimitStartPerMinute(
-        securitySettings?.rate_limit_conversation_start_per_minute?.toString() ?? ""
-      );
-      setRateLimitStartPerHour(
-        securitySettings?.rate_limit_conversation_start_per_hour?.toString() ?? ""
-      );
-      setRateLimitUpdatePerMinute(
-        securitySettings?.rate_limit_conversation_update_per_minute?.toString() ?? ""
-      );
-      setRateLimitUpdatePerHour(
-        securitySettings?.rate_limit_conversation_update_per_hour?.toString() ?? ""
-      );
+      setTokenExpirationMinutes(securitySettings?.token_expiration_minutes?.toString() ?? '');
+      setCorsAllowedOrigins(securitySettings?.cors_allowed_origins ?? '');
+      setRateLimitStartPerMinute(securitySettings?.rate_limit_conversation_start_per_minute?.toString() ?? '');
+      setRateLimitStartPerHour(securitySettings?.rate_limit_conversation_start_per_hour?.toString() ?? '');
+      setRateLimitUpdatePerMinute(securitySettings?.rate_limit_conversation_update_per_minute?.toString() ?? '');
+      setRateLimitUpdatePerHour(securitySettings?.rate_limit_conversation_update_per_hour?.toString() ?? '');
       setRecaptchaEnabled(securitySettings?.recaptcha_enabled ?? false);
-      setRecaptchaProjectId(securitySettings?.recaptcha_project_id ?? "");
-      setRecaptchaSiteKey(securitySettings?.recaptcha_site_key ?? "");
-      setRecaptchaMinScore(securitySettings?.recaptcha_min_score ?? "");
-      
+      setRecaptchaProjectId(securitySettings?.recaptcha_project_id ?? '');
+      setRecaptchaSiteKey(securitySettings?.recaptcha_site_key ?? '');
+      setRecaptchaMinScore(securitySettings?.recaptcha_min_score ?? '');
+
       // Decode base64 GCP service account if present
       if (securitySettings?.gcp_svc_account) {
         try {
@@ -227,15 +197,15 @@ export const SecurityPanel = ({
           const jsonObj = JSON.parse(decoded);
           setGcpSvcAccountJson(JSON.stringify(jsonObj, null, 2));
         } catch (e) {
-          setGcpSvcAccountJson("");
+          setGcpSvcAccountJson('');
         }
       } else {
-        setGcpSvcAccountJson("");
+        setGcpSvcAccountJson('');
       }
       setGcpSvcAccountFile(null);
-      setGcpSvcAccountFileName("");
+      setGcpSvcAccountFileName('');
     } catch (error: any) {
-      toast.error(error?.message || "Failed to save security settings");
+      toast.error(error?.message || 'Failed to save security settings');
     } finally {
       setSaving(false);
     }
@@ -257,7 +227,7 @@ export const SecurityPanel = ({
         <div className="flex items-center justify-between border-b border-gray-200 pb-4">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
-              {configName ? `Security Settings for ${configName}` : "Security Settings"}
+              {configName ? `Security Settings for ${configName}` : 'Security Settings'}
             </h3>
             <p className="text-sm text-gray-500 mt-1">
               Configure authentication, CORS, rate limiting, and reCAPTCHA settings
@@ -281,32 +251,20 @@ export const SecurityPanel = ({
         {/* Token-based Authentication */}
         <div className="space-y-4 border-b border-gray-200 pb-6">
           <div>
-            <h4 className="text-base font-semibold text-gray-900 mb-1">
-              Token-based Authentication
-            </h4>
-            <p className="text-sm text-gray-500">
-              Configure JWT token authentication for secure API access
-            </p>
+            <h4 className="text-base font-semibold text-gray-900 mb-1">Token-based Authentication</h4>
+            <p className="text-sm text-gray-500">Configure JWT token authentication for secure API access</p>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="token-based-auth">Enable Token-based Auth</Label>
-                <p className="text-sm text-gray-500">
-                  Require JWT token for conversation updates instead of API key
-                </p>
+                <p className="text-sm text-gray-500">Require JWT token for conversation updates instead of API key</p>
               </div>
-              <Switch
-                id="token-based-auth"
-                checked={tokenBasedAuth}
-                onCheckedChange={setTokenBasedAuth}
-              />
+              <Switch id="token-based-auth" checked={tokenBasedAuth} onCheckedChange={setTokenBasedAuth} />
             </div>
             {tokenBasedAuth && (
               <div className="space-y-2">
-                <Label htmlFor="token-expiration">
-                  Token Expiration (minutes)
-                </Label>
+                <Label htmlFor="token-expiration">Token Expiration (minutes)</Label>
                 <Input
                   id="token-expiration"
                   type="number"
@@ -315,9 +273,7 @@ export const SecurityPanel = ({
                   onChange={(e) => setTokenExpirationMinutes(e.target.value)}
                   placeholder="60 (default)"
                 />
-                <p className="text-xs text-gray-500">
-                  Leave empty to use global default (60 minutes)
-                </p>
+                <p className="text-xs text-gray-500">Leave empty to use global default (60 minutes)</p>
               </div>
             )}
           </div>
@@ -327,9 +283,7 @@ export const SecurityPanel = ({
         <div className="space-y-4 border-b border-gray-200 pb-6">
           <div>
             <h4 className="text-base font-semibold text-gray-900 mb-1">CORS Settings</h4>
-            <p className="text-sm text-gray-500">
-              Configure allowed origins for cross-origin requests
-            </p>
+            <p className="text-sm text-gray-500">Configure allowed origins for cross-origin requests</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="cors-origins">Allowed Origins</Label>
@@ -341,8 +295,7 @@ export const SecurityPanel = ({
               rows={3}
             />
             <p className="text-xs text-gray-500">
-              Comma-separated list of allowed CORS origins. Leave empty to use
-              global default.
+              Comma-separated list of allowed CORS origins. Leave empty to use global default.
             </p>
           </div>
         </div>
@@ -351,15 +304,11 @@ export const SecurityPanel = ({
         <div className="space-y-4 border-b border-gray-200 pb-6">
           <div>
             <h4 className="text-base font-semibold text-gray-900 mb-1">Rate Limiting</h4>
-            <p className="text-sm text-gray-500">
-              Set rate limits for conversation endpoints per agent
-            </p>
+            <p className="text-sm text-gray-500">Set rate limits for conversation endpoints per agent</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="rate-limit-start-minute">
-                Conversation Start (per minute)
-              </Label>
+              <Label htmlFor="rate-limit-start-minute">Conversation Start (per minute)</Label>
               <Input
                 id="rate-limit-start-minute"
                 type="number"
@@ -370,9 +319,7 @@ export const SecurityPanel = ({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rate-limit-start-hour">
-                Conversation Start (per hour)
-              </Label>
+              <Label htmlFor="rate-limit-start-hour">Conversation Start (per hour)</Label>
               <Input
                 id="rate-limit-start-hour"
                 type="number"
@@ -383,9 +330,7 @@ export const SecurityPanel = ({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rate-limit-update-minute">
-                Conversation Update (per minute)
-              </Label>
+              <Label htmlFor="rate-limit-update-minute">Conversation Update (per minute)</Label>
               <Input
                 id="rate-limit-update-minute"
                 type="number"
@@ -396,9 +341,7 @@ export const SecurityPanel = ({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rate-limit-update-hour">
-                Conversation Update (per hour)
-              </Label>
+              <Label htmlFor="rate-limit-update-hour">Conversation Update (per hour)</Label>
               <Input
                 id="rate-limit-update-hour"
                 type="number"
@@ -410,8 +353,7 @@ export const SecurityPanel = ({
             </div>
           </div>
           <p className="text-xs text-gray-500">
-            Leave empty to use global defaults. These limits apply per
-            conversation/agent.
+            Leave empty to use global defaults. These limits apply per conversation/agent.
           </p>
         </div>
 
@@ -419,23 +361,15 @@ export const SecurityPanel = ({
         <div className="space-y-4">
           <div>
             <h4 className="text-base font-semibold text-gray-900 mb-1">reCAPTCHA Settings</h4>
-            <p className="text-sm text-gray-500">
-              Configure Google reCAPTCHA Enterprise for bot protection
-            </p>
+            <p className="text-sm text-gray-500">Configure Google reCAPTCHA Enterprise for bot protection</p>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="recaptcha-enabled">Enable reCAPTCHA</Label>
-                <p className="text-sm text-gray-500">
-                  Enable Google reCAPTCHA Enterprise verification
-                </p>
+                <p className="text-sm text-gray-500">Enable Google reCAPTCHA Enterprise verification</p>
               </div>
-              <Switch
-                id="recaptcha-enabled"
-                checked={recaptchaEnabled}
-                onCheckedChange={setRecaptchaEnabled}
-              />
+              <Switch id="recaptcha-enabled" checked={recaptchaEnabled} onCheckedChange={setRecaptchaEnabled} />
             </div>
             {recaptchaEnabled && (
               <div className="space-y-4">
@@ -468,10 +402,8 @@ export const SecurityPanel = ({
                   />
                 </div>
                 <div className="space-y-3">
-                  <Label htmlFor="gcp-svc-account">
-                    GCP Service Account JSON
-                  </Label>
-                  
+                  <Label htmlFor="gcp-svc-account">GCP Service Account JSON</Label>
+
                   {/* File Upload Option */}
                   <div className="space-y-2">
                     <label
@@ -481,11 +413,9 @@ export const SecurityPanel = ({
                       <div className="flex flex-col items-center gap-2">
                         <Upload className="h-6 w-6 text-gray-400" />
                         <span className="text-sm font-medium text-gray-600">
-                          {gcpSvcAccountFileName || "Upload JSON file"}
+                          {gcpSvcAccountFileName || 'Upload JSON file'}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          Click to select a JSON file
-                        </span>
+                        <span className="text-xs text-gray-500">Click to select a JSON file</span>
                       </div>
                       <input
                         id="gcp-file-upload"
@@ -495,14 +425,12 @@ export const SecurityPanel = ({
                         className="hidden"
                       />
                     </label>
-                    
+
                     {gcpSvcAccountFileName && (
                       <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <div className="flex items-center gap-2">
                           <FileJson className="h-5 w-5 text-gray-600" />
-                          <span className="text-sm font-medium text-gray-700">
-                            {gcpSvcAccountFileName}
-                          </span>
+                          <span className="text-sm font-medium text-gray-700">{gcpSvcAccountFileName}</span>
                         </div>
                         <Button
                           type="button"

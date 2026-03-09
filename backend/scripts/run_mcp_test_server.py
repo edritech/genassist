@@ -11,8 +11,8 @@ Examples:
     python scripts/run_mcp_test_server.py 8001 0.0.0.0
 """
 
-import sys
 import os
+import sys
 
 # Add project root to path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

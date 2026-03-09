@@ -1,6 +1,6 @@
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/chart";
-import { AccuracyPoint } from "../types";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/chart';
+import { AccuracyPoint } from '../types';
 
 interface FineTuneAccuracyChartProps {
   title?: string;
@@ -11,15 +11,15 @@ interface FineTuneAccuracyChartProps {
 
 const chartConfig: ChartConfig = {
   accuracy: {
-    label: "Accuracy",
-    color: "var(--color-accuracy, hsl(var(--primary)))",
+    label: 'Accuracy',
+    color: 'var(--color-accuracy, hsl(var(--primary)))',
   },
 };
 
 export function FineTuneAccuracyChart({
-  title = "Accuracy over steps",
+  title = 'Accuracy over steps',
   data,
-  emptyLabel = "Data N/A",
+  emptyLabel = 'Data N/A',
   className,
 }: FineTuneAccuracyChartProps) {
   const series = data.map((p) => ({
@@ -28,7 +28,7 @@ export function FineTuneAccuracyChart({
   }));
 
   return (
-    <div className={`rounded-lg p-4 bg-white ${className || ""}`}>
+    <div className={`rounded-lg p-4 bg-white ${className || ''}`}>
       <div className="text-sm font-semibold mb-3">{title}</div>
       <div className="h-[240px] relative">
         {series.length === 0 ? (
@@ -37,11 +37,11 @@ export function FineTuneAccuracyChart({
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="!aspect-auto h-full w-full">
-          <LineChart
-            data={series}
-            margin={{
-              left: 12,
-              right: 12,
+            <LineChart
+              data={series}
+              margin={{
+                left: 12,
+                right: 12,
                 top: 8,
                 bottom: 8,
               }}
@@ -55,14 +55,14 @@ export function FineTuneAccuracyChart({
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tick={{ fill: "#9ca3af", fontSize: 12 }}
+                tick={{ fill: '#9ca3af', fontSize: 12 }}
               />
               <YAxis
                 domain={[0, 100]}
                 ticks={[0, 25, 50, 75, 100]}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={() => ""}
+                tickFormatter={() => ''}
                 width={0}
               />
               <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />

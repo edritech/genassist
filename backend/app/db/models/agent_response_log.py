@@ -47,4 +47,3 @@ class AgentResponseLogModel(Base):
     # Optional convenience relationships
     message = relationship("TranscriptMessageModel", lazy="joined")
     conversation = relationship("ConversationModel", lazy="joined")
-

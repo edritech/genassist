@@ -1,37 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { WhatsappNodeData } from "../types/nodes";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { Save } from "lucide-react";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { getAllAppSettings } from "@/services/appSettings";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { AppSettingDialog } from "@/views/AppSettings/components/AppSettingDialog";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
-import { DraggableInput } from "../components/custom/DraggableInput";
+import React, { useState, useEffect } from 'react';
+import { WhatsappNodeData } from '../types/nodes';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Save } from 'lucide-react';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { getAllAppSettings } from '@/services/appSettings';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { AppSettingDialog } from '@/views/AppSettings/components/AppSettingDialog';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
+import { DraggableInput } from '../components/custom/DraggableInput';
 
-type WhatsAppDialogProps = BaseNodeDialogProps<
-  WhatsappNodeData,
-  WhatsappNodeData
->;
+type WhatsAppDialogProps = BaseNodeDialogProps<WhatsappNodeData, WhatsappNodeData>;
 
 export const WhatsAppDialog: React.FC<WhatsAppDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
   const [name, setName] = useState(data.name);
-  const [textMsg, setMessage] = useState(data.message || "");
-  const [toNumber, setToNumber] = useState(data.recipient_number || "");
-  const [appSettingsId, setAppSettingsId] = useState(
-    data.app_settings_id || ""
-  );
+  const [textMsg, setMessage] = useState(data.message || '');
+  const [toNumber, setToNumber] = useState(data.recipient_number || '');
+  const [appSettingsId, setAppSettingsId] = useState(data.app_settings_id || '');
   const [appSettings, setAppSettings] = useState<AppSetting[]>([]);
   const [isLoadingAppSettings, setIsLoadingAppSettings] = useState(false);
   const [isCreateSettingOpen, setIsCreateSettingOpen] = useState(false);
@@ -39,9 +28,9 @@ export const WhatsAppDialog: React.FC<WhatsAppDialogProps> = (props) => {
   useEffect(() => {
     if (isOpen) {
       setName(data.name);
-      setMessage(data.message || "");
-      setToNumber(data.recipient_number || "");
-      setAppSettingsId(data.app_settings_id || "");
+      setMessage(data.message || '');
+      setToNumber(data.recipient_number || '');
+      setAppSettingsId(data.app_settings_id || '');
 
       // Fetch app settings
       const fetchAppSettings = async () => {
@@ -106,13 +95,13 @@ export const WhatsAppDialog: React.FC<WhatsAppDialogProps> = (props) => {
         <div className="space-y-2">
           <Label htmlFor="app-settings-id">Configuration Vars (Optional)</Label>
           <Select
-            value={appSettingsId || ""}
+            value={appSettingsId || ''}
             onValueChange={(value) => {
-              if (value === "__create__") {
+              if (value === '__create__') {
                 setIsCreateSettingOpen(true);
                 return;
               }
-              setAppSettingsId(value || "");
+              setAppSettingsId(value || '');
             }}
             disabled={isLoadingAppSettings}
           >
@@ -123,9 +112,7 @@ export const WhatsAppDialog: React.FC<WhatsAppDialogProps> = (props) => {
               {appSettings
                 .filter((setting) => {
                   const settingTypeLower = setting.type.toLowerCase();
-                  return (
-                    settingTypeLower === "whatsapp" && setting.is_active === 1
-                  );
+                  return settingTypeLower === 'whatsapp' && setting.is_active === 1;
                 })
                 .map((setting) => (
                   <SelectItem key={setting.id} value={setting.id}>
@@ -146,8 +133,7 @@ export const WhatsAppDialog: React.FC<WhatsAppDialogProps> = (props) => {
             className="w-full"
           />
           <p className="text-xs text-gray-500">
-            Include the country code in the phone number. You may use “+”, but
-            not “00”.
+            Include the country code in the phone number. You may use “+”, but not “00”.
           </p>
         </div>
 

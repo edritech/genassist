@@ -3,18 +3,19 @@ ChromaDB vector database implementation
 """
 
 import logging
-from typing import List, Dict, Any, Optional, Callable
-from chromadb import AsyncHttpClient, AsyncClientAPI
+from typing import Any, Callable, Dict, List, Optional
+
+from chromadb import AsyncClientAPI, AsyncHttpClient
 from langchain_chroma import Chroma
 
-
-from .base import BaseVectorDB, VectorDBConfig, SearchResult
+from .base import BaseVectorDB, SearchResult, VectorDBConfig
 
 logger = logging.getLogger(__name__)
 
 
 class ChromaVectorDB(BaseVectorDB):
     """ChromaDB vector database provider"""
+
     chroma_client: Optional[AsyncClientAPI]
     langchain_store: Optional[Chroma]
     embedding_function: Optional[Callable[[str], List[float]]]
@@ -33,8 +34,7 @@ class ChromaVectorDB(BaseVectorDB):
                     port=self.config.port,
                 )
             else:
-                raise ValueError(
-                    "Host and port must be provided for remote ChromaDB")
+                raise ValueError("Host and port must be provided for remote ChromaDB")
             return True
 
         except Exception as e:
@@ -50,7 +50,7 @@ class ChromaVectorDB(BaseVectorDB):
             self.langchain_store = Chroma(
                 client=self.chroma_client,
                 collection_name=self.config.collection_name,
-                embedding_function=self.embedding_function
+                embedding_function=self.embedding_function,
             )
 
     async def create_collection(self, dimension: int) -> bool:
@@ -72,12 +72,10 @@ class ChromaVectorDB(BaseVectorDB):
 
             # Use async method for all clients
             self.collection = await self.chroma_client.get_or_create_collection(
-                name=self.config.collection_name,
-                metadata=metadata
+                name=self.config.collection_name, metadata=metadata
             )
 
-            logger.info(
-                f"Created/accessed ChromaDB collection: {self.config.collection_name}")
+            logger.info(f"Created/accessed ChromaDB collection: {self.config.collection_name}")
             return True
 
         except Exception as e:
@@ -96,8 +94,7 @@ class ChromaVectorDB(BaseVectorDB):
             self.collection = None
             self.langchain_store = None
 
-            logger.info(
-                f"Deleted ChromaDB collection: {self.config.collection_name}")
+            logger.info(f"Deleted ChromaDB collection: {self.config.collection_name}")
             return True
 
         except Exception as e:
@@ -105,11 +102,7 @@ class ChromaVectorDB(BaseVectorDB):
             return False
 
     async def add_vectors(
-        self,
-        ids: List[str],
-        vectors: List[List[float]],
-        metadatas: List[Dict[str, Any]],
-        contents: List[str]
+        self, ids: List[str], vectors: List[List[float]], metadatas: List[Dict[str, Any]], contents: List[str]
     ) -> bool:
         """Add vectors to the collection"""
         try:
@@ -118,12 +111,7 @@ class ChromaVectorDB(BaseVectorDB):
                 return False
 
             # Use async method for all clients
-            await self.collection.add(
-                ids=ids,
-                embeddings=vectors,
-                metadatas=metadatas,
-                documents=contents
-            )
+            await self.collection.add(ids=ids, embeddings=vectors, metadatas=metadatas, documents=contents)
 
             logger.info(f"Added {len(ids)} vectors to ChromaDB collection")
             return True
@@ -147,8 +135,7 @@ class ChromaVectorDB(BaseVectorDB):
             if existing_ids:
                 await self.collection.delete(ids=existing_ids)
 
-                logger.info(
-                    f"Deleted {len(existing_ids)} vectors from ChromaDB")
+                logger.info(f"Deleted {len(existing_ids)} vectors from ChromaDB")
 
             return True
 
@@ -157,10 +144,7 @@ class ChromaVectorDB(BaseVectorDB):
             return False
 
     async def search(
-        self,
-        query_vector: List[float],
-        limit: int = 5,
-        filter_dict: Dict[str, Any] = None
+        self, query_vector: List[float], limit: int = 5, filter_dict: Dict[str, Any] = None
     ) -> List[SearchResult]:
         """Search for similar vectors"""
         try:
@@ -173,7 +157,7 @@ class ChromaVectorDB(BaseVectorDB):
                 query_embeddings=[query_vector],
                 n_results=limit,
                 where=filter_dict,
-                include=["documents", "metadatas", "distances"]
+                include=["documents", "metadatas", "distances"],
             )
 
             # Convert to SearchResult objects
@@ -183,10 +167,9 @@ class ChromaVectorDB(BaseVectorDB):
                     result = SearchResult(
                         id=results["ids"][0][i],
                         content=results["documents"][0][i] if results["documents"] else "",
-                        metadata=results["metadatas"][0][i] if results["metadatas"] else {
-                        },
+                        metadata=results["metadatas"][0][i] if results["metadatas"] else {},
                         score=None,  # Will be calculated from distance
-                        distance=results["distances"][0][i] if results["distances"] else 0.0
+                        distance=results["distances"][0][i] if results["distances"] else 0.0,
                     )
                     search_results.append(result)
 
@@ -204,10 +187,7 @@ class ChromaVectorDB(BaseVectorDB):
                 return []
 
             # Use async method for all clients
-            results = await self.collection.get(
-                ids=ids,
-                include=["documents", "metadatas"]
-            )
+            results = await self.collection.get(ids=ids, include=["documents", "metadatas"])
 
             # Convert to SearchResult objects
             search_results = []
@@ -216,10 +196,9 @@ class ChromaVectorDB(BaseVectorDB):
                     result = SearchResult(
                         id=doc_id,
                         content=results["documents"][i] if results["documents"] else "",
-                        metadata=results["metadatas"][i] if results["metadatas"] else {
-                        },
+                        metadata=results["metadatas"][i] if results["metadatas"] else {},
                         score=1.0,  # No distance for direct retrieval
-                        distance=0.0
+                        distance=0.0,
                     )
                     search_results.append(result)
 
@@ -239,7 +218,7 @@ class ChromaVectorDB(BaseVectorDB):
             # Use async method for all clients
             results = await self.collection.get(
                 where=filter_dict,
-                include=[]  # Only IDs
+                include=[],  # Only IDs
             )
 
             return results["ids"] if results["ids"] else []
@@ -259,7 +238,7 @@ class ChromaVectorDB(BaseVectorDB):
             # Use async method for all clients
             results = await self.collection.get(
                 where=filter_dict,
-                include=[]  # Only IDs
+                include=[],  # Only IDs
             )
 
             return len(results["ids"]) if results["ids"] else 0

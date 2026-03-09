@@ -1,71 +1,56 @@
-import React, { useState, useEffect } from "react";
-import { ZendeskTicketNodeData } from "../types/nodes";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { Save, Plus, X } from "lucide-react";
-import { BaseNodeDialogProps } from "./base";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { getAllAppSettings } from "@/services/appSettings";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { AppSettingDialog } from "@/views/AppSettings/components/AppSettingDialog";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
-import { DraggableInput } from "../components/custom/DraggableInput";
-import { DraggableTextArea } from "../components/custom/DraggableTextArea";
+import React, { useState, useEffect } from 'react';
+import { ZendeskTicketNodeData } from '../types/nodes';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { Save, Plus, X } from 'lucide-react';
+import { BaseNodeDialogProps } from './base';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { getAllAppSettings } from '@/services/appSettings';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { AppSettingDialog } from '@/views/AppSettings/components/AppSettingDialog';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
+import { DraggableInput } from '../components/custom/DraggableInput';
+import { DraggableTextArea } from '../components/custom/DraggableTextArea';
 
-type ZendeskTicketDialogProps = BaseNodeDialogProps<
-  ZendeskTicketNodeData,
-  ZendeskTicketNodeData
->;
+type ZendeskTicketDialogProps = BaseNodeDialogProps<ZendeskTicketNodeData, ZendeskTicketNodeData>;
 
-export const ZendeskTicketDialog: React.FC<ZendeskTicketDialogProps> = (
-  props
-) => {
+export const ZendeskTicketDialog: React.FC<ZendeskTicketDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
 
-  const [name, setName] = useState(data.name || "");
-  const [subject, setSubject] = useState(data.subject || "");
-  const [description, setDescription] = useState(data.description || "");
-  const [requesterName, setRequesterName] = useState(data.requester_name || "");
-  const [requesterEmail, setRequesterEmail] = useState(
-    data.requester_email || ""
-  );
-  const [tagsCsv, setTagsCsv] = useState((data.tags || []).join(", "));
-  const [appSettingsId, setAppSettingsId] = useState(
-    data.app_settings_id || ""
-  );
+  const [name, setName] = useState(data.name || '');
+  const [subject, setSubject] = useState(data.subject || '');
+  const [description, setDescription] = useState(data.description || '');
+  const [requesterName, setRequesterName] = useState(data.requester_name || '');
+  const [requesterEmail, setRequesterEmail] = useState(data.requester_email || '');
+  const [tagsCsv, setTagsCsv] = useState((data.tags || []).join(', '));
+  const [appSettingsId, setAppSettingsId] = useState(data.app_settings_id || '');
   const [appSettings, setAppSettings] = useState<AppSetting[]>([]);
   const [isLoadingAppSettings, setIsLoadingAppSettings] = useState(false);
   const [isCreateSettingOpen, setIsCreateSettingOpen] = useState(false);
-  const [customFields, setCustomFields] = useState<
-    Array<{ id: string; value: string | number }>
-  >(data.custom_fields || []);
+  const [customFields, setCustomFields] = useState<Array<{ id: string; value: string | number }>>(
+    data.custom_fields || []
+  );
 
   const getTagsArr = () => {
     return tagsCsv
-      .split(",")
+      .split(',')
       .map((t) => t.trim())
       .filter(Boolean);
   };
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setSubject(data.subject || "");
-      setDescription(data.description || "");
-      setRequesterName(data.requester_name || "");
-      setRequesterEmail(data.requester_email || "");
-      setTagsCsv((data.tags || []).join(", "));
+      setName(data.name || '');
+      setSubject(data.subject || '');
+      setDescription(data.description || '');
+      setRequesterName(data.requester_name || '');
+      setRequesterEmail(data.requester_email || '');
+      setTagsCsv((data.tags || []).join(', '));
       setCustomFields(data.custom_fields || []);
 
-      setAppSettingsId(data.app_settings_id || "");
+      setAppSettingsId(data.app_settings_id || '');
 
       const fetchAppSettings = async () => {
         setIsLoadingAppSettings(true);
@@ -99,21 +84,17 @@ export const ZendeskTicketDialog: React.FC<ZendeskTicketDialogProps> = (
   };
 
   const addCustomField = () => {
-    setCustomFields((prev) => [...prev, { id: "", value: "" }]);
+    setCustomFields((prev) => [...prev, { id: '', value: '' }]);
   };
 
   const removeCustomField = (index: number) => {
     setCustomFields((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateCustomField = (
-    index: number,
-    field: "id" | "value",
-    value: string | number
-  ) => {
+  const updateCustomField = (index: number, field: 'id' | 'value', value: string | number) => {
     setCustomFields((prev) => {
       const updated = [...prev];
-      if (field === "id") {
+      if (field === 'id') {
         updated[index] = { ...updated[index], id: String(value) };
       } else {
         updated[index] = { ...updated[index], value };
@@ -165,13 +146,13 @@ export const ZendeskTicketDialog: React.FC<ZendeskTicketDialogProps> = (
         <div className="space-y-2">
           <Label htmlFor="app-settings-id">Configuration Vars (Optional)</Label>
           <Select
-            value={appSettingsId || ""}
+            value={appSettingsId || ''}
             onValueChange={(value) => {
-              if (value === "__create__") {
+              if (value === '__create__') {
                 setIsCreateSettingOpen(true);
                 return;
               }
-              setAppSettingsId(value || "");
+              setAppSettingsId(value || '');
             }}
             disabled={isLoadingAppSettings}
           >
@@ -182,9 +163,7 @@ export const ZendeskTicketDialog: React.FC<ZendeskTicketDialogProps> = (
               {appSettings
                 .filter((setting) => {
                   const settingTypeLower = setting.type.toLowerCase();
-                  return (
-                    settingTypeLower === "zendesk" && setting.is_active === 1
-                  );
+                  return settingTypeLower === 'zendesk' && setting.is_active === 1;
                 })
                 .map((setting) => (
                   <SelectItem key={setting.id} value={setting.id}>
@@ -269,12 +248,7 @@ export const ZendeskTicketDialog: React.FC<ZendeskTicketDialogProps> = (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="font-bold">Custom Fields</Label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addCustomField}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={addCustomField}>
               <Plus className="w-4 h-4 mr-1" />
               Add Field
             </Button>
@@ -287,9 +261,7 @@ export const ZendeskTicketDialog: React.FC<ZendeskTicketDialogProps> = (
                   <DraggableInput
                     id={`custom-field-id-${index}`}
                     value={field.id}
-                    onChange={(e) =>
-                      updateCustomField(index, "id", e.target.value)
-                    }
+                    onChange={(e) => updateCustomField(index, 'id', e.target.value)}
                     placeholder="e.g., 123456"
                     className="w-full"
                   />
@@ -299,9 +271,7 @@ export const ZendeskTicketDialog: React.FC<ZendeskTicketDialogProps> = (
                   <DraggableInput
                     id={`custom-field-value-${index}`}
                     value={field.value.toString()}
-                    onChange={(e) =>
-                      updateCustomField(index, "value", e.target.value)
-                    }
+                    onChange={(e) => updateCustomField(index, 'value', e.target.value)}
                     placeholder="Enter field value"
                     className="w-full"
                   />
@@ -318,9 +288,7 @@ export const ZendeskTicketDialog: React.FC<ZendeskTicketDialogProps> = (
               </div>
             ))}
             {customFields.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No custom fields added. Click "Add Field" to add one.
-              </p>
+              <p className="text-sm text-muted-foreground">No custom fields added. Click "Add Field" to add one.</p>
             )}
           </div>
         </div>

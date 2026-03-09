@@ -14,7 +14,7 @@ import {
   UserRoundCog,
   Network,
   Waypoints,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -23,22 +23,22 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/sidebar";
-import { useLocation } from "react-router";
-import { Link, useNavigate } from "react-router-dom";
+} from '@/components/sidebar';
+import { useLocation } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/dropdown-menu";
-import { logout, getPermissions, hasAnyPermission, getAuthMe } from "@/services/auth";
-import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
-import { useFeatureFlag } from "@/context/FeatureFlagContext";
-import { FeatureFlag } from "@/components/featureFlag";
-import { FeatureFlags } from "@/config/featureFlags";
+} from '@/components/dropdown-menu';
+import { logout, getPermissions, hasAnyPermission, getAuthMe } from '@/services/auth';
+import toast from 'react-hot-toast';
+import { useEffect, useState } from 'react';
+import { useFeatureFlag } from '@/context/FeatureFlagContext';
+import { FeatureFlag } from '@/components/featureFlag';
+import { FeatureFlags } from '@/config/featureFlags';
 
 type MenuItem = {
   title: string;
@@ -51,141 +51,141 @@ type MenuItem = {
 
 const notifications = [
   {
-    id: "1",
-    title: "New Transcript Available",
-    description: "A new customer conversation transcript has been processed.",
-    time: "2 hours ago",
+    id: '1',
+    title: 'New Transcript Available',
+    description: 'A new customer conversation transcript has been processed.',
+    time: '2 hours ago',
     unread: true,
   },
   {
-    id: "2",
-    title: "Performance Update",
-    description: "Your weekly performance metrics are now available.",
-    time: "5 hours ago",
+    id: '2',
+    title: 'Performance Update',
+    description: 'Your weekly performance metrics are now available.',
+    time: '5 hours ago',
     unread: true,
   },
   {
-    id: "3",
-    title: "System Update",
-    description: "The system will undergo maintenance in 24 hours.",
-    time: "1 day ago",
+    id: '3',
+    title: 'System Update',
+    description: 'The system will undergo maintenance in 24 hours.',
+    time: '1 day ago',
     unread: false,
   },
 ];
 const mainMenuItems: MenuItem[] = [
   {
-    title: "Dashboard",
+    title: 'Dashboard',
     icon: Home,
-    url: "/dashboard",
+    url: '/dashboard',
   },
   {
-    title: "Analytics",
+    title: 'Analytics',
     icon: LineChart,
-    url: "/analytics",
-    permissionsRequired: ["read:metrics"],
+    url: '/analytics',
+    permissionsRequired: ['read:metrics'],
   },
   {
-    title: "Conversations",
+    title: 'Conversations',
     icon: MessageSquare,
-    url: "/transcripts",
-    permissionsRequired: ["read:conversation"],
+    url: '/transcripts',
+    permissionsRequired: ['read:conversation'],
   },
   {
-    title: "Operators",
+    title: 'Operators',
     icon: Users,
-    url: "/operators",
-    permissionsRequired: ["read:operator"],
+    url: '/operators',
+    permissionsRequired: ['read:operator'],
   },
   {
-    title: "Agent Studio",
+    title: 'Agent Studio',
     icon: UserRoundCog,
-    url: "/ai-agents",
-    permissionsRequired: ["read:llm_analyst"],
+    url: '/ai-agents',
+    permissionsRequired: ['read:llm_analyst'],
   },
   {
-    title: "Integrations",
+    title: 'Integrations',
     icon: Network,
-    url: "#",
+    url: '#',
     children: [
       {
-        title: "Knowledge Base",
-        url: "/knowledge-base",
-        permissionsRequired: ["*", "update:knowledge_base"],
+        title: 'Knowledge Base',
+        url: '/knowledge-base',
+        permissionsRequired: ['*', 'update:knowledge_base'],
       },
       {
-        title: "ML Models",
-        url: "/ml-models",
-        permissionsRequired: ["*", "update:ml_model"],
+        title: 'ML Models',
+        url: '/ml-models',
+        permissionsRequired: ['*', 'update:ml_model'],
       },
       {
-        title: "Data Sources",
-        url: "/data-sources",
-        permissionsRequired: ["read:data_source"],
+        title: 'Data Sources',
+        url: '/data-sources',
+        permissionsRequired: ['read:data_source'],
       },
       {
-        title: "API Keys",
-        url: "/api-keys",
-        permissionsRequired: ["read:api_key"],
+        title: 'API Keys',
+        url: '/api-keys',
+        permissionsRequired: ['read:api_key'],
       },
       {
-        title: "Webhooks",
-        url: "/webhooks",
-        permissionsRequired: ["read:webhook"],
+        title: 'Webhooks',
+        url: '/webhooks',
+        permissionsRequired: ['read:webhook'],
       },
       {
-        title: "MCP Servers",
-        url: "/mcp-servers",
-        permissionsRequired: ["read:mcp_server"],
+        title: 'MCP Servers',
+        url: '/mcp-servers',
+        permissionsRequired: ['read:mcp_server'],
       },
       {
-        title: "Configuration Vars",
-        url: "/app-settings",
-        permissionsRequired: ["read:app_setting"],
+        title: 'Configuration Vars',
+        url: '/app-settings',
+        permissionsRequired: ['read:app_setting'],
         feature_flag: FeatureFlags.ADMIN_TOOLS.APP_SETTINGS,
       },
     ],
   },
   {
-    title: "LLM Settings",
+    title: 'LLM Settings',
     icon: Waypoints,
-    url: "#",
+    url: '#',
     children: [
       {
-        title: "LLM Providers",
-        url: "/llm-providers",
-        permissionsRequired: ["read:llm_provider"],
+        title: 'LLM Providers',
+        url: '/llm-providers',
+        permissionsRequired: ['read:llm_provider'],
       },
       {
-        title: "LLM Analyst",
-        url: "/llm-analyst",
-        permissionsRequired: ["read:llm_analyst"],
+        title: 'LLM Analyst',
+        url: '/llm-analyst',
+        permissionsRequired: ['read:llm_analyst'],
       },
       {
-        title: "Fine-Tune",
-        url: "/fine-tune",
-        permissionsRequired: ["*", "update:llm_provider"],
+        title: 'Fine-Tune',
+        url: '/fine-tune',
+        permissionsRequired: ['*', 'update:llm_provider'],
       },
     ],
   },
   {
-    title: "Admin",
+    title: 'Admin',
     icon: Settings2,
-    url: "#",
+    url: '#',
     children: [
       {
-        title: "Users",
-        url: "/users",
-        permissionsRequired: ["read:user"],
+        title: 'Users',
+        url: '/users',
+        permissionsRequired: ['read:user'],
       },
       {
-        title: "Roles",
-        url: "/roles",
-        permissionsRequired: ["read:role"],
+        title: 'Roles',
+        url: '/roles',
+        permissionsRequired: ['read:role'],
       },
       {
-        title: "User Types",
-        url: "/user-types",
-        permissionsRequired: ["read:user_type"],
+        title: 'User Types',
+        url: '/user-types',
+        permissionsRequired: ['read:user_type'],
       },
     ],
   },
@@ -193,42 +193,38 @@ const mainMenuItems: MenuItem[] = [
 
 const settingsMenuItems: MenuItem[] = [
   {
-    title: "Audit Log",
+    title: 'Audit Log',
     icon: ScrollText,
-    url: "/audit-logs",
-    permissionsRequired: ["read:audit_log"],
+    url: '/audit-logs',
+    permissionsRequired: ['read:audit_log'],
   },
   {
-    title: "Settings",
+    title: 'Settings',
     icon: Settings,
-    url: "/settings",
+    url: '/settings',
   },
 ];
 
 const getInitialAdminToolsState = () => {
-  const savedState = localStorage.getItem("isLLMSettingsOpen");
+  const savedState = localStorage.getItem('isLLMSettingsOpen');
   return savedState ? JSON.parse(savedState) : false;
 };
 
 const getInitialConversationsState = () => {
-  const savedState = localStorage.getItem("isIntegrationOpen");
+  const savedState = localStorage.getItem('isIntegrationOpen');
   return savedState ? JSON.parse(savedState) : false;
 };
 
 const getInitialGenAgentState = () => {
-  const saved = localStorage.getItem("isAdminOpen");
+  const saved = localStorage.getItem('isAdminOpen');
   return saved ? JSON.parse(saved) : false;
 };
 
 export function AppSidebar() {
   const [permissions, setPermissions] = useState<string[]>([]);
-  const [username, setUsername] = useState<string>("");
-  const [isAdminToolsOpen, setIsAdminToolsOpen] = useState(
-    getInitialAdminToolsState
-  );
-  const [isConversationsOpen, setIsConversationsOpen] = useState(
-    getInitialConversationsState
-  );
+  const [username, setUsername] = useState<string>('');
+  const [isAdminToolsOpen, setIsAdminToolsOpen] = useState(getInitialAdminToolsState);
+  const [isConversationsOpen, setIsConversationsOpen] = useState(getInitialConversationsState);
   const [isGenAgentOpen, setIsGenAgentOpen] = useState(getInitialGenAgentState);
   const { isEnabled } = useFeatureFlag();
 
@@ -242,7 +238,7 @@ export function AppSidebar() {
   }, []);
 
   useEffect(() => {
-    const cached = localStorage.getItem("auth_username");
+    const cached = localStorage.getItem('auth_username');
     if (cached) {
       setUsername(cached);
       return;
@@ -252,32 +248,27 @@ export function AppSidebar() {
         const me = await getAuthMe();
         if (me?.username) {
           setUsername(me.username);
-          localStorage.setItem("auth_username", me.username);
+          localStorage.setItem('auth_username', me.username);
         }
       } catch {
-        setUsername("");
+        setUsername('');
       }
     };
     loadUser();
   }, []);
 
   useEffect(() => {
-    const integrationsChildren =
-      mainMenuItems.find((item) => item.title === "Integrations")?.children ??
-      [];
+    const integrationsChildren = mainMenuItems.find((item) => item.title === 'Integrations')?.children ?? [];
     if (integrationsChildren.some((child) => child.url === currentPath)) {
       setIsConversationsOpen(true);
     }
 
-    const adminChildren =
-      mainMenuItems.find((item) => item.title === "Admin")?.children ?? [];
+    const adminChildren = mainMenuItems.find((item) => item.title === 'Admin')?.children ?? [];
     if (adminChildren.some((child) => child.url === currentPath)) {
       setIsGenAgentOpen(true);
     }
 
-    const llmChildren =
-      mainMenuItems.find((item) => item.title === "LLM Settings")?.children ??
-      [];
+    const llmChildren = mainMenuItems.find((item) => item.title === 'LLM Settings')?.children ?? [];
     if (llmChildren.some((child) => child.url === currentPath)) {
       setIsAdminToolsOpen(true);
     }
@@ -291,10 +282,7 @@ export function AppSidebar() {
   const filterMenuItems = (items: MenuItem[]): MenuItem[] => {
     return items.filter((item) => {
       // Check permission
-      if (
-        item.permissionsRequired &&
-        !hasPermission(item.permissionsRequired)
-      ) {
+      if (item.permissionsRequired && !hasPermission(item.permissionsRequired)) {
         return false;
       }
 
@@ -319,7 +307,7 @@ export function AppSidebar() {
   const handleToggleLLMSettings = () => {
     setIsAdminToolsOpen((prev) => {
       const newAdminState = !prev;
-      localStorage.setItem("isLLMSettingsOpen", JSON.stringify(newAdminState));
+      localStorage.setItem('isLLMSettingsOpen', JSON.stringify(newAdminState));
       return newAdminState;
     });
   };
@@ -327,10 +315,7 @@ export function AppSidebar() {
   const handleToggleIntegration = () => {
     setIsConversationsOpen((prev) => {
       const newConversationsState = !prev;
-      localStorage.setItem(
-        "isIntegrationOpen",
-        JSON.stringify(newConversationsState)
-      );
+      localStorage.setItem('isIntegrationOpen', JSON.stringify(newConversationsState));
       return newConversationsState;
     });
   };
@@ -338,36 +323,31 @@ export function AppSidebar() {
   const handleToggleAdmin = () => {
     setIsGenAgentOpen((prev) => {
       const next = !prev;
-      localStorage.setItem("isAdminOpen", JSON.stringify(next));
+      localStorage.setItem('isAdminOpen', JSON.stringify(next));
       return next;
     });
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("isLLMSettingsOpen");
-    localStorage.removeItem("isIntegrationOpen");
-    localStorage.removeItem("isAdminOpen");
+    localStorage.removeItem('isLLMSettingsOpen');
+    localStorage.removeItem('isIntegrationOpen');
+    localStorage.removeItem('isAdminOpen');
     logout();
-    toast.success("Logged out successfully.");
-    window.location.href = "/login";
+    toast.success('Logged out successfully.');
+    window.location.href = '/login';
   };
 
   const linkClasses = `flex w-full h-full items-center gap-2 font-medium transition-colors duration-200 text-zinc-600 hover:text-black hover:bg-zinc-100 px-3 rounded-md`;
   const parentMenuClasses = `flex w-full items-center gap-2 font-medium transition-colors duration-200 text-zinc-700 hover:text-black hover:bg-zinc-100 px-3 rounded-md`;
   const submenuLinkClasses = `flex h-full items-center gap-2 font-medium transition-colors duration-200 text-zinc-600 hover:text-black hover:bg-zinc-100 py-2 px-3 text-sm rounded-md w-[calc(100%-24px)] ml-2`;
   const activeSubmenuClasses = `bg-[#F5F5F5] text-zinc-900 font-medium`;
-  const menuItemClasses = "h-8";
+  const menuItemClasses = 'h-8';
 
   return (
     <Sidebar variant="floating" side="left">
       <SidebarContent className="bg-white" style={{ height: '100%' }}>
         <div className="flex flex-row items-center justify-between p-4 mb-0">
-          <svg
-            width="175"
-            viewBox="0 0 449 80"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg width="175" viewBox="0 0 449 80" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M80 39.9985H63.301H40.0015V63.3039L16.699 40.0015L40.0015 16.6961L59.1801 35.8776H75.8791L40.0015 0L0 40.0015L40.0015 80L80.0029 40.0015L80 39.9985Z"
               fill="#2100B1"
@@ -396,18 +376,12 @@ export function AppSidebar() {
               d="M321.356 32.0755C321.356 33.0467 322.014 33.6164 323.327 33.7788C324.641 33.9411 325.984 34.1035 327.354 34.2659C328.724 34.4282 330.244 34.6083 331.92 34.8061C333.594 35.0038 335.153 35.2105 336.593 35.4289C338.034 35.6444 339.501 35.9248 340.998 36.2673C342.491 36.6097 343.781 37.1853 344.862 37.9971C345.942 38.8089 346.733 39.9247 347.238 41.3475C347.743 42.7703 347.994 44.4175 347.994 46.292C347.994 49.7133 347.265 52.3346 345.806 54.1529C344.348 55.9713 342.329 57.1787 339.755 57.772C337.178 58.3653 333.963 58.6635 330.111 58.6635C326.259 58.6635 322.817 58.3653 320.116 57.772C317.415 57.1787 315.118 56.0156 313.226 54.2887C311.334 52.5619 310.389 49.5332 310.389 45.2116H320.278C320.278 46.6875 321.096 47.8506 322.737 48.6948C324.375 49.542 326.725 49.9642 329.789 49.9642C333.066 49.9642 335.247 49.604 336.328 48.8838C337.408 48.1635 337.948 47.3547 337.948 46.4514C337.948 45.6957 337.399 45.1732 336.301 44.8839C335.203 44.5946 333.816 44.2994 332.142 43.9924C330.468 43.6854 328.809 43.4434 327.171 43.2633C325.533 43.0832 323.965 42.912 322.471 42.7497C320.978 42.5873 319.472 42.2892 317.961 41.8582C316.449 41.4272 315.133 40.8398 314.017 40.1018C312.901 39.3638 312.019 38.2657 311.369 36.8045C310.72 35.3463 310.398 33.7345 310.398 31.9693C310.398 29.0173 311.047 26.6824 312.343 24.9732C313.639 23.264 315.72 22.0656 318.584 21.3807C321.447 20.6959 324.951 20.3535 329.093 20.3535C333.234 20.3535 336.694 20.6959 339.141 21.3807C341.591 22.0656 343.66 23.3172 345.355 25.1356C347.046 26.954 347.893 29.6284 347.893 33.1589H338.276C338.276 32.0431 337.482 31.125 335.9 30.4018C334.314 29.6815 332.136 29.3214 329.361 29.3214C325.975 29.3214 323.797 29.5634 322.823 30.0505C321.851 30.5376 321.364 31.2136 321.364 32.0755H321.356Z"
               fill="#231F20"
             />
-            <path
-              d="M352.315 57.7956V21.056H363.337V57.7956H352.315Z"
-              fill="#231F20"
-            />
+            <path d="M352.315 57.7956V21.056H363.337V57.7956H352.315Z" fill="#231F20" />
             <path
               d="M378.629 32.0755C378.629 33.0467 379.287 33.6164 380.6 33.7788C381.914 33.9411 383.257 34.1035 384.627 34.2659C385.996 34.4282 387.517 34.6083 389.193 34.8061C390.867 35.0038 392.426 35.2105 393.866 35.4289C395.307 35.6444 396.774 35.9248 398.271 36.2673C399.764 36.6097 401.054 37.1853 402.135 37.9971C403.215 38.8089 404.006 39.9247 404.511 41.3475C405.016 42.7703 405.267 44.4175 405.267 46.292C405.267 49.7133 404.537 52.3346 403.079 54.1529C401.621 55.9713 399.602 57.1787 397.028 57.772C394.451 58.3653 391.236 58.6635 387.384 58.6635C383.532 58.6635 380.09 58.3653 377.389 57.772C374.688 57.1787 372.391 56.0156 370.499 54.2887C368.607 52.5619 367.662 49.5332 367.662 45.2116H377.551C377.551 46.6875 378.369 47.8506 380.01 48.6948C381.648 49.542 383.998 49.9642 387.062 49.9642C390.339 49.9642 392.52 49.604 393.601 48.8838C394.681 48.1635 395.221 47.3547 395.221 46.4514C395.221 45.6957 394.672 45.1732 393.574 44.8839C392.476 44.5946 391.089 44.2994 389.415 43.9924C387.741 43.6854 386.082 43.4434 384.444 43.2633C382.805 43.0832 381.238 42.912 379.744 42.7497C378.251 42.5873 376.745 42.2892 375.234 41.8582C373.722 41.4272 372.406 40.8398 371.29 40.1018C370.174 39.3638 369.292 38.2657 368.642 36.8045C367.993 35.3463 367.671 33.7345 367.671 31.9693C367.671 29.0173 368.32 26.6824 369.616 24.9732C370.912 23.264 372.993 22.0656 375.857 21.3807C378.72 20.6959 382.224 20.3535 386.365 20.3535C390.507 20.3535 393.967 20.6959 396.414 21.3807C398.864 22.0656 400.933 23.3172 402.628 25.1356C404.319 26.954 405.166 29.6284 405.166 33.1589H395.549C395.549 32.0431 394.755 31.125 393.173 30.4018C391.587 29.6815 389.409 29.3214 386.634 29.3214C383.248 29.3214 381.07 29.5634 380.096 30.0505C379.124 30.5376 378.637 31.2136 378.637 32.0755H378.629Z"
               fill="#231F20"
             />
-            <path
-              d="M422.069 57.7956V29.9708H407.968V21.056H447.193V29.9708H433.092V57.7956H422.069Z"
-              fill="#231F20"
-            />
+            <path d="M422.069 57.7956V29.9708H407.968V21.056H447.193V29.9708H433.092V57.7956H422.069Z" fill="#231F20" />
           </svg>
           {/* <FeatureFlag flagKey={FeatureFlags.UI.NOTIFICATIONS}>
             <DropdownMenu>
@@ -458,15 +432,9 @@ export function AppSidebar() {
               {filteredMainMenuItems.map((item, index) => (
                 <SidebarMenuItem
                   key={index}
-                  className={
-                    ["Integrations", "Admin", "LLM Settings"].includes(
-                      item.title
-                    )
-                      ? "h-fit"
-                      : menuItemClasses
-                  }
+                  className={['Integrations', 'Admin', 'LLM Settings'].includes(item.title) ? 'h-fit' : menuItemClasses}
                 >
-                  {item.title === "Integrations" && item.children ? (
+                  {item.title === 'Integrations' && item.children ? (
                     <div>
                       <div onClick={handleToggleIntegration}>
                         <SidebarMenuButton className={parentMenuClasses}>
@@ -486,21 +454,14 @@ export function AppSidebar() {
                           <div className="absolute top-0 bottom-0 w-[1.5px] bg-gray-200"></div>
                           <div>
                             {item.children.map((child, childIndex) => (
-                              <div
-                                key={childIndex}
-                                className={`${menuItemClasses} relative`}
-                              >
+                              <div key={childIndex} className={`${menuItemClasses} relative`}>
                                 <Link
                                   to={child.url}
                                   className={`${submenuLinkClasses} ${
-                                    child.url === currentPath
-                                      ? activeSubmenuClasses
-                                      : ""
+                                    child.url === currentPath ? activeSubmenuClasses : ''
                                   }`}
                                 >
-                                  {child.icon && (
-                                    <child.icon className="w-4 h-4 mr-2" />
-                                  )}
+                                  {child.icon && <child.icon className="w-4 h-4 mr-2" />}
                                   <span>{child.title}</span>
                                 </Link>
                               </div>
@@ -509,18 +470,14 @@ export function AppSidebar() {
                         </div>
                       )}
                     </div>
-                  ) : item.title === "Admin" && item.children ? (
+                  ) : item.title === 'Admin' && item.children ? (
                     <div>
                       <div onClick={handleToggleAdmin}>
                         <SidebarMenuButton className={parentMenuClasses}>
                           {item.icon && <item.icon className="w-4 h-4" />}
                           <span>{item.title}</span>
                           <div className="ml-auto transition-transform duration-200">
-                            {isGenAgentOpen ? (
-                              <ChevronUp className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )}
+                            {isGenAgentOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           </div>
                         </SidebarMenuButton>
                       </div>
@@ -529,21 +486,14 @@ export function AppSidebar() {
                           <div className="absolute top-0 bottom-0 w-[1.5px] bg-gray-200"></div>
                           <div>
                             {item.children.map((child, i) => (
-                              <div
-                                key={i}
-                                className={`${menuItemClasses} relative`}
-                              >
+                              <div key={i} className={`${menuItemClasses} relative`}>
                                 <Link
                                   to={child.url}
                                   className={`${submenuLinkClasses} ${
-                                    child.url === currentPath
-                                      ? activeSubmenuClasses
-                                      : ""
+                                    child.url === currentPath ? activeSubmenuClasses : ''
                                   }`}
                                 >
-                                  {child.icon && (
-                                    <child.icon className="w-4 h-4 mr-2" />
-                                  )}
+                                  {child.icon && <child.icon className="w-4 h-4 mr-2" />}
                                   <span>{child.title}</span>
                                 </Link>
                               </div>
@@ -559,11 +509,7 @@ export function AppSidebar() {
                           {item.icon && <item.icon className="w-4 h-4" />}
                           <span>{item.title}</span>
                           <div className="ml-auto transition-transform duration-200">
-                            {isAdminToolsOpen ? (
-                              <ChevronUp className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )}
+                            {isAdminToolsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           </div>
                         </SidebarMenuButton>
                       </div>
@@ -572,21 +518,14 @@ export function AppSidebar() {
                           <div className="absolute top-0 bottom-0 w-[1.5px] bg-gray-200"></div>
                           <div>
                             {item.children.map((child, childIndex) => (
-                              <div
-                                key={childIndex}
-                                className={`${menuItemClasses} relative`}
-                              >
+                              <div key={childIndex} className={`${menuItemClasses} relative`}>
                                 <Link
                                   to={child.url}
                                   className={`${submenuLinkClasses} ${
-                                    child.url === currentPath
-                                      ? activeSubmenuClasses
-                                      : ""
+                                    child.url === currentPath ? activeSubmenuClasses : ''
                                   }`}
                                 >
-                                  {child.icon && (
-                                    <child.icon className="w-4 h-4 mr-2" />
-                                  )}
+                                  {child.icon && <child.icon className="w-4 h-4 mr-2" />}
                                   <span>{child.title}</span>
                                 </Link>
                               </div>
@@ -598,9 +537,7 @@ export function AppSidebar() {
                   ) : (
                     <Link
                       to={item.url}
-                      className={`${linkClasses} ${
-                        item.url === currentPath ? activeSubmenuClasses : ""
-                      }`}
+                      className={`${linkClasses} ${item.url === currentPath ? activeSubmenuClasses : ''}`}
                     >
                       {item.icon && <item.icon className="w-4 h-4" />}
                       <span>{item.title}</span>
@@ -618,9 +555,7 @@ export function AppSidebar() {
               <SidebarMenu>
                 {username && (
                   <SidebarMenuItem className={menuItemClasses}>
-                    <div
-                      className="flex w-full h-full items-center gap-2 px-3 rounded-md text-sm font-semibold text-zinc-400 cursor-default"
-                    >
+                    <div className="flex w-full h-full items-center gap-2 px-3 rounded-md text-sm font-semibold text-zinc-400 cursor-default">
                       <span>{username}</span>
                     </div>
                   </SidebarMenuItem>
@@ -630,9 +565,7 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild className="h-full">
                       <Link
                         to={item.url}
-                        className={`${linkClasses} ${
-                          item.url === currentPath ? activeSubmenuClasses : ""
-                        }`}
+                        className={`${linkClasses} ${item.url === currentPath ? activeSubmenuClasses : ''}`}
                       >
                         {item.icon && <item.icon className="w-5 h-5" />}
                         <span>{item.title}</span>
@@ -650,23 +583,14 @@ export function AppSidebar() {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem
-                        asChild
-                        className="flex items-center gap-2"
-                      >
-                        <Link
-                          to="/change-password"
-                          className="flex items-center gap-2"
-                        >
+                      <DropdownMenuItem asChild className="flex items-center gap-2">
+                        <Link to="/change-password" className="flex items-center gap-2">
                           <Lock className="w-4 h-4" />
                           <span>Change Password</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 text-red-600"
-                      >
+                      <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-red-600">
                         <LogOut className="w-4 h-4" />
                         <span>Logout</span>
                       </DropdownMenuItem>

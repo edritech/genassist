@@ -1,7 +1,9 @@
-from playwright.async_api import async_playwright
-from bs4 import BeautifulSoup
 import re
+
 import httpx
+from bs4 import BeautifulSoup
+from playwright.async_api import async_playwright
+
 
 async def fetch_from_url(
     url: str,
@@ -16,10 +18,7 @@ async def fetch_from_url(
         # Merge custom headers with default headers (custom headers override defaults)
         headers = {**default_headers, **(headers or {})}
 
-        async with httpx.AsyncClient(
-                follow_redirects=True,
-                headers=headers
-        ) as client:
+        async with httpx.AsyncClient(follow_redirects=True, headers=headers) as client:
             r = await client.get(url)
             r.raise_for_status()
             return r.text
@@ -36,6 +35,7 @@ async def fetch_from_url(
 
         await browser.close()
         return html
+
 
 def html2text(html: str) -> str:
     soup = BeautifulSoup(html, "lxml")

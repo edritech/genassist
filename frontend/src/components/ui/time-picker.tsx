@@ -1,12 +1,6 @@
-import * as React from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { Input } from "@/components/input";
+import * as React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { Input } from '@/components/input';
 
 interface TimePickerProps {
   date: Date | undefined;
@@ -44,7 +38,7 @@ export function TimePicker({ date, onChange }: TimePickerProps) {
     <div className="flex items-center justify-around">
       <Input
         type="number"
-        value={String(hour).padStart(2, "0")}
+        value={String(hour).padStart(2, '0')}
         onChange={(e) => handleHourChange(e.target.value)}
         className="w-[80px]"
         min="0"
@@ -53,7 +47,7 @@ export function TimePicker({ date, onChange }: TimePickerProps) {
       <span>:</span>
       <Input
         type="number"
-        value={String(minute).padStart(2, "0")}
+        value={String(minute).padStart(2, '0')}
         onChange={(e) => handleMinuteChange(e.target.value)}
         className="w-[80px]"
         min="0"
@@ -61,4 +55,4 @@ export function TimePicker({ date, onChange }: TimePickerProps) {
       />
     </div>
   );
-} 
+}

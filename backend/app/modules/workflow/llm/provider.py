@@ -1,22 +1,22 @@
 import json
-import os
 import logging
+import os
+
 from injector import inject
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models import BaseChatModel
+
 from app.core.utils.encryption_utils import decrypt_key
 from app.core.utils.enums.open_ai_fine_tuning_enum import JobStatus
-from app.services.llm_providers import LlmProviderService
 from app.schemas.dynamic_form_schemas import LLM_FORM_SCHEMAS_DICT
+from app.services.llm_providers import LlmProviderService
 from app.services.open_ai_fine_tuning import OpenAIFineTuningService
-
 
 logger = logging.getLogger(__name__)
 
 
 @inject
 class LLMProvider:
-
     def __init__(self):
         logger.info("LLMProvider initialized")
 
@@ -26,13 +26,13 @@ class LLMProvider:
         """
         # Get fresh service instance to ensure correct tenant database session
         from app.dependencies.injector import injector
+
         fine_tuning_service = injector.get(OpenAIFineTuningService)
         successful_jobs = await fine_tuning_service.get_all_by_statuses([JobStatus.SUCCEEDED])
 
         # Transform successful jobs into options format
         fine_tuned_options = [
-            {"value": job.fine_tuned_model, "label": "fine-tuned:" + job.suffix}
-            for job in successful_jobs
+            {"value": job.fine_tuned_model, "label": "fine-tuned:" + job.suffix} for job in successful_jobs
         ]
 
         # Convert TypeSchema to dict for modification
@@ -51,23 +51,21 @@ class LLMProvider:
 
         return schemas
 
-
     async def get_model(self, model_id: str | None = None) -> BaseChatModel:
         from app.dependencies.injector import injector
+
         llm_provider_service = injector.get(LlmProviderService)
 
         if model_id is None:
             all_providers = await llm_provider_service.get_all()
 
-            llm_provider = all_providers[0] # default to the first provider
+            llm_provider = all_providers[0]  # default to the first provider
         else:
             llm_provider = await llm_provider_service.get_by_id(model_id)
 
         try:
             # Validate connection data
-            validated_data = json.loads(
-                json.dumps(llm_provider.connection_data)
-            )  # clone the data
+            validated_data = json.loads(json.dumps(llm_provider.connection_data))  # clone the data
 
             validated_data.pop("masked_api_key", None)
 

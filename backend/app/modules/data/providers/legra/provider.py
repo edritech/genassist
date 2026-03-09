@@ -5,11 +5,19 @@ Implements the BaseDataProvider interface for LEGRA-based graph search.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
-from .config import LegraConfig
+from typing import Any, Dict, List, Optional
+
 from ..base import FinalizableProvider, SearchResult
-from ..legra import FaissFlatIndexer, HuggingFaceGenerator, Legra, LeidenClusterer, SemanticChunker, \
-    SentenceTransformerEmbedder
+from ..legra import (
+    FaissFlatIndexer,
+    HuggingFaceGenerator,
+    Legra,
+    LeidenClusterer,
+    SemanticChunker,
+    SentenceTransformerEmbedder,
+)
+from .config import LegraConfig
+
 logger = logging.getLogger(__name__)
 
 
@@ -23,8 +31,9 @@ class LegraProvider(FinalizableProvider):
     - Graph-based retrieval with context
     - Generative responses from retrieved context
     """
+
     name = "legra"
-    
+
     def __init__(self, config: LegraConfig, knowledge_base_id: str):
         """
         Initialize the LEGRA provider
@@ -46,16 +55,13 @@ class LegraProvider(FinalizableProvider):
             chunker = SemanticChunker(
                 min_sents=self.config.min_sents,
                 max_sents=self.config.max_sents,
-                min_sent_length=self.config.min_sent_length
+                min_sent_length=self.config.min_sent_length,
             )
 
-            embedder = SentenceTransformerEmbedder(
-                model_name=self.config.embedding_model)
-            indexer = FaissFlatIndexer(
-                dim=embedder.dimension, use_gpu=self.config.use_gpu)
+            embedder = SentenceTransformerEmbedder(model_name=self.config.embedding_model)
+            indexer = FaissFlatIndexer(dim=embedder.dimension, use_gpu=self.config.use_gpu)
 
-            clusterer = LeidenClusterer(
-                resolution_parameter=self.config.cluster_resolution)
+            clusterer = LeidenClusterer(resolution_parameter=self.config.cluster_resolution)
             generator = HuggingFaceGenerator(
                 model_name=self.config.generator_model_name,
                 device="cuda" if self.config.use_gpu else "cpu",
@@ -63,7 +69,7 @@ class LegraProvider(FinalizableProvider):
             )
             # Create LEGRA instance
             self.legra_instance = Legra(
-                doc_folder="",               # we load files from memory, not disk
+                doc_folder="",  # we load files from memory, not disk
                 chunker=chunker,
                 embedder=embedder,
                 indexer=indexer,
@@ -73,20 +79,14 @@ class LegraProvider(FinalizableProvider):
             )
 
             self._initialized = True
-            logger.info(
-                f"LEGRA provider initialized for KB {self.knowledge_base_id}")
+            logger.info(f"LEGRA provider initialized for KB {self.knowledge_base_id}")
             return True
 
         except Exception as e:
             logger.error(f"Failed to initialize LEGRA provider: {e}")
             return False
 
-    async def add_document(
-        self,
-        doc_id: str,
-        content: str,
-        metadata: Dict[str, Any] = None
-    ) -> bool:
+    async def add_document(self, doc_id: str, content: str, metadata: Dict[str, Any] = None) -> bool:
         """Add a document to LEGRA"""
         if not self._initialized or self.legra_instance is None:
             logger.error("LEGRA provider not initialized")
@@ -101,8 +101,7 @@ class LegraProvider(FinalizableProvider):
             metadata["doc_id"] = doc_id
 
             # Add document to LEGRA
-            self.legra_instance.add_document(
-                doc_id, extracted_text=content, metadata=metadata)
+            self.legra_instance.add_document(doc_id, extracted_text=content, metadata=metadata)
 
             logger.info(f"Added document {doc_id} to LEGRA")
 
@@ -121,8 +120,7 @@ class LegraProvider(FinalizableProvider):
         try:
             self.legra_instance.delete_document(doc_id)
 
-            logger.warning(
-                f"LEGRA doesn't support direct document deletion for {doc_id}")
+            logger.warning(f"LEGRA doesn't support direct document deletion for {doc_id}")
             return False
 
         except Exception as e:
@@ -136,21 +134,14 @@ class LegraProvider(FinalizableProvider):
             return []
 
         try:
-            ids = [m["doc_id"] for m in self.legra_instance.docs_meta if m.get(
-                "kb_id") == self.knowledge_base_id]
+            ids = [m["doc_id"] for m in self.legra_instance.docs_meta if m.get("kb_id") == self.knowledge_base_id]
             return list(dict.fromkeys(ids))
 
         except Exception as e:
             logger.error(f"Failed to get document IDs from LEGRA: {e}")
             return []
 
-    async def search(
-        self,
-        query: str,
-        limit: int = 5,
-        mode: str = "local",
-        **kwargs
-    ) -> List[SearchResult]:
+    async def search(self, query: str, limit: int = 5, mode: str = "local", **kwargs) -> List[SearchResult]:
         """Search using LEGRA graph-based retrieval"""
         if not self._initialized or self.legra_instance is None:
             logger.error("LEGRA provider not initialized")
@@ -169,14 +160,10 @@ class LegraProvider(FinalizableProvider):
                     search_result = SearchResult(
                         id=f"legra_result_{len(search_results)}",
                         content=results,
-                        metadata={
-                            "kb_id": self.knowledge_base_id,
-                            "search_mode": mode,
-                            "provider": "legra"
-                        },
+                        metadata={"kb_id": self.knowledge_base_id, "search_mode": mode, "provider": "legra"},
                         score=1.0,  # LEGRA doesn't provide explicit scores
                         source="legra",
-                        chunk_count=1
+                        chunk_count=1,
                     )
                     search_results.append(search_result)
 
@@ -190,11 +177,11 @@ class LegraProvider(FinalizableProvider):
                                 "kb_id": self.knowledge_base_id,
                                 "search_mode": mode,
                                 "provider": "legra",
-                                "result_index": i
+                                "result_index": i,
                             },
                             score=1.0 - (i * 0.1),  # Decrease score by rank
                             source="legra",
-                            chunk_count=1
+                            chunk_count=1,
                         )
                         search_results.append(search_result)
 
@@ -208,11 +195,11 @@ class LegraProvider(FinalizableProvider):
                             "kb_id": self.knowledge_base_id,
                             "search_mode": mode,
                             "provider": "legra",
-                            "raw_result": results
+                            "raw_result": results,
                         },
                         score=1.0,
                         source="legra",
-                        chunk_count=1
+                        chunk_count=1,
                     )
                     search_results.append(search_result)
 
@@ -231,9 +218,8 @@ class LegraProvider(FinalizableProvider):
         try:
             # Build the graph and clusters
             self.legra_instance = Legra.load(str(self.knowledge_base_id), load_reason="finalize")
-            self.legra_instance.clusterer =  LeidenClusterer(resolution_parameter=0.5)
-            self.legra_instance.complete_index_graph(
-                str(self.knowledge_base_id))
+            self.legra_instance.clusterer = LeidenClusterer(resolution_parameter=0.5)
+            self.legra_instance.complete_index_graph(str(self.knowledge_base_id))
             return True
 
         except Exception as e:
@@ -246,7 +232,7 @@ class LegraProvider(FinalizableProvider):
             "provider_type": "legra",
             "knowledge_base_id": self.knowledge_base_id,
             "data_path": self.data_path,
-            "initialized": self._initialized
+            "initialized": self._initialized,
         }
 
         if self._initialized and self.legra_instance:

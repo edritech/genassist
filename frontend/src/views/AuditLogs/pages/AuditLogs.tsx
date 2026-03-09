@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
-import { fetchAuditLogs, fetchUsers } from "@/services/auditLogs";
-import { SidebarProvider, SidebarTrigger } from "@/components/sidebar";
-import { AppSidebar } from "@/layout/app-sidebar";
-import { AuditLogCard } from "@/views/AuditLogs/components/AuditLogCard";
-import { AuditLogDetailsDialog } from "@/views/AuditLogs/components/AuditLogDetailsDialog";
-import { useIsMobile } from "@/hooks/useMobile";
-import { Button } from "@/components/button";
-import { Select, SelectItem, SelectContent, SelectTrigger } from "@/components/select";
-import { format, startOfDay, subDays, endOfDay } from "date-fns";
-import { Calendar } from "@/components/calendar";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/popover";
+import { useState, useEffect } from 'react';
+import { fetchAuditLogs, fetchUsers } from '@/services/auditLogs';
+import { SidebarProvider, SidebarTrigger } from '@/components/sidebar';
+import { AppSidebar } from '@/layout/app-sidebar';
+import { AuditLogCard } from '@/views/AuditLogs/components/AuditLogCard';
+import { AuditLogDetailsDialog } from '@/views/AuditLogs/components/AuditLogDetailsDialog';
+import { useIsMobile } from '@/hooks/useMobile';
+import { Button } from '@/components/button';
+import { Select, SelectItem, SelectContent, SelectTrigger } from '@/components/select';
+import { format, startOfDay, subDays, endOfDay } from 'date-fns';
+import { Calendar } from '@/components/calendar';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/popover';
 import {
   Pagination,
   PaginationContent,
@@ -18,9 +18,9 @@ import {
   PaginationPrevious,
   PaginationNext,
   PaginationEllipsis,
-} from "@/components/pagination";
-import { getPageList } from "@/helpers/pagination";
-import { SearchInput } from "@/components/SearchInput";
+} from '@/components/pagination';
+import { getPageList } from '@/helpers/pagination';
+import { SearchInput } from '@/components/SearchInput';
 
 const getDefaultDateRange = () => {
   const today = new Date();
@@ -34,7 +34,7 @@ export default function AuditLogs() {
   const [filteredAuditLogs, setFilteredAuditLogs] = useState([]);
   const [selectedAuditLogId, setSelectedAuditLogId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [dateRange, setDateRange] = useState(defaultRange);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
@@ -47,34 +47,25 @@ export default function AuditLogs() {
   const pageList = getPageList(currentPage, totalPages);
 
   const fetchFilteredAuditLogs = async () => {
-    const date_from = dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : "";
-    const date_to = dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : "";
-    const action = selectedAction || "";
+    const date_from = dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : '';
+    const date_to = dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : '';
+    const action = selectedAction || '';
     const user = selectedUser ?? undefined;
     const offset = (currentPage - 1) * pageSize;
 
-
     try {
-      const logs = await fetchAuditLogs(
-        date_from,
-        date_to,
-        action,
-        user, 
-        pageSize,
-        offset
-      );
+      const logs = await fetchAuditLogs(date_from, date_to, action, user, pageSize, offset);
       const filtered = logs.filter((log) => {
         const matchesSearchQuery =
           log.table_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           log.action_name.toLowerCase().includes(searchQuery.toLowerCase());
-  
+
         const matchesUser = selectedUser ? log.modified_by === selectedUser : true;
-  
+
         const logDate = new Date(log.modified_at);
         const isWithinDateRange =
-          (!dateRange.from || logDate >= dateRange.from) &&
-          (!dateRange.to || logDate <= dateRange.to);
-  
+          (!dateRange.from || logDate >= dateRange.from) && (!dateRange.to || logDate <= dateRange.to);
+
         return matchesSearchQuery && matchesUser && isWithinDateRange;
       });
       setFilteredAuditLogs(filtered);
@@ -105,7 +96,7 @@ export default function AuditLogs() {
   };
 
   const handleClearFilters = () => {
-    setSearchQuery("");
+    setSearchQuery('');
     setDateRange(defaultRange);
     setSelectedUser(null);
     setSelectedAction(null);
@@ -133,8 +124,8 @@ export default function AuditLogs() {
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="rounded-full">
                         {dateRange.from && dateRange.to
-                          ? `${format(dateRange.from, "PPP")} - ${format(dateRange.to, "PPP")}`
-                          : "Select a date range"}
+                          ? `${format(dateRange.from, 'PPP')} - ${format(dateRange.to, 'PPP')}`
+                          : 'Select a date range'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -148,23 +139,31 @@ export default function AuditLogs() {
                   </Popover>
 
                   <div className="w-40">
-                    <Select value={selectedUser ?? ""} onValueChange={(value) => setSelectedUser(value === "" ? null : value)}>
+                    <Select
+                      value={selectedUser ?? ''}
+                      onValueChange={(value) => setSelectedUser(value === '' ? null : value)}
+                    >
                       <SelectTrigger className="w-full h-full text-sm border rounded-full px-4 py-2 bg-white focus:ring-0 focus:ring-offset-0">
-                        {selectedUser ? users.find((u) => u.id === selectedUser)?.username : "Select User"}
+                        {selectedUser ? users.find((u) => u.id === selectedUser)?.username : 'Select User'}
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={null}>All Users</SelectItem>
                         {users.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>{user.username}</SelectItem>
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.username}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="w-40">
-                    <Select value={selectedAction ?? undefined} onValueChange={(value) => setSelectedAction(value || null)}>
+                    <Select
+                      value={selectedAction ?? undefined}
+                      onValueChange={(value) => setSelectedAction(value || null)}
+                    >
                       <SelectTrigger className="w-full h-full text-sm border rounded-full px-4 py-2 bg-white focus:ring-0 focus:ring-offset-0">
-                        {selectedAction ? selectedAction : "Select Action"}
+                        {selectedAction ? selectedAction : 'Select Action'}
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={null}>All Actions</SelectItem>
@@ -177,13 +176,11 @@ export default function AuditLogs() {
                 </div>
 
                 <div className="relative flex gap-x-4">
-                  <SearchInput
-                    placeholder="Search audit logs..."
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                  />
+                  <SearchInput placeholder="Search audit logs..." value={searchQuery} onChange={setSearchQuery} />
                   <div className="flex justify-center items-center">
-                    <Button onClick={handleClearFilters} className="rounded-full">Clear</Button>
+                    <Button onClick={handleClearFilters} className="rounded-full">
+                      Clear
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -197,56 +194,52 @@ export default function AuditLogs() {
               />
 
               <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                  onClick={() => {
-                    if (currentPage <= 1) return;
-                    setCurrentPage((p) => Math.max(1, p - 1));
-                    }}
-                    aria-disabled={currentPage <= 1}
-                    className={currentPage <= 1 
-                      ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer"}
-                  />
-                </PaginationItem>
-
-                {pageList.map((pageNumber, idx) => (
-                  <PaginationItem key={idx}>
-                    {typeof pageNumber === "number" ? (
-                      <PaginationLink
-                        onClick={() => {
-                          if (pageNumber === currentPage) return;
-                          setCurrentPage(pageNumber);
-                        }}
-                        isActive={pageNumber === currentPage}
-                        href="#"
-                        className="rounded-xl"
-                      >
-                        {pageNumber}
-                      </PaginationLink>
-                    ) : (
-                      <PaginationEllipsis />
-                    )}
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => {
+                        if (currentPage <= 1) return;
+                        setCurrentPage((p) => Math.max(1, p - 1));
+                      }}
+                      aria-disabled={currentPage <= 1}
+                      className={currentPage <= 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    />
                   </PaginationItem>
-                ))}
 
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => {
-                      if (filteredAuditLogs.length < pageSize) return;
-                      setCurrentPage((p) => p + 1);
-                        }}
-                        aria-disabled={filteredAuditLogs.length < pageSize}
-                        className={filteredAuditLogs.length < pageSize 
-                          ? "opacity-50 cursor-not-allowed"
-                          : "cursor-pointer"}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+                  {pageList.map((pageNumber, idx) => (
+                    <PaginationItem key={idx}>
+                      {typeof pageNumber === 'number' ? (
+                        <PaginationLink
+                          onClick={() => {
+                            if (pageNumber === currentPage) return;
+                            setCurrentPage(pageNumber);
+                          }}
+                          isActive={pageNumber === currentPage}
+                          href="#"
+                          className="rounded-xl"
+                        >
+                          {pageNumber}
+                        </PaginationLink>
+                      ) : (
+                        <PaginationEllipsis />
+                      )}
+                    </PaginationItem>
+                  ))}
 
-
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => {
+                        if (filteredAuditLogs.length < pageSize) return;
+                        setCurrentPage((p) => p + 1);
+                      }}
+                      aria-disabled={filteredAuditLogs.length < pageSize}
+                      className={
+                        filteredAuditLogs.length < pageSize ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           </div>
         </main>

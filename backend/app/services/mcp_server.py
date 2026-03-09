@@ -1,19 +1,20 @@
 import logging
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 from uuid import UUID
-from injector import inject
-from fastapi import Request
 
+from fastapi import Request
+from injector import inject
+
+from app.auth.utils import get_current_user_id, hash_api_key
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.core.utils.encryption_utils import encrypt_key
-from app.auth.utils import get_current_user_id, hash_api_key
 from app.repositories.mcp_server import MCPServerRepository
 from app.repositories.workflow import WorkflowRepository
 from app.schemas.mcp_server import (
     MCPServerCreate,
-    MCPServerUpdate,
     MCPServerResponse,
+    MCPServerUpdate,
     MCPServerWorkflowResponse,
 )
 
@@ -23,10 +24,10 @@ logger = logging.getLogger(__name__)
 def _extract_input_schema_from_chat_input_node(workflow_model) -> Dict[str, Any]:
     """
     Extract input schema from the chatInputNode in a workflow.
-    
+
     Args:
         workflow_model: WorkflowModel instance
-        
+
     Returns:
         JSON Schema format input schema
     """
@@ -36,68 +37,68 @@ def _extract_input_schema_from_chat_input_node(workflow_model) -> Dict[str, Any]
         "properties": {},
         "required": [],
     }
-    
+
     if not workflow_model or not workflow_model.nodes:
         return input_schema
-    
+
     # Find the chatInputNode in the workflow's nodes
     chat_input_node = None
     for node in workflow_model.nodes:
         if isinstance(node, dict) and node.get("type") == "chatInputNode":
             chat_input_node = node
             break
-    
+
     if not chat_input_node:
         logger.debug(f"No chatInputNode found in workflow {workflow_model.id}")
         return input_schema
-    
+
     # Extract inputSchema from the chatInputNode's data
     node_data = chat_input_node.get("data", {})
     workflow_input_schema = node_data.get("inputSchema", {})
-    
+
     if not workflow_input_schema:
         logger.debug(f"No inputSchema found in chatInputNode for workflow {workflow_model.id}")
         return input_schema
-    
+
     # Convert workflow inputSchema format to JSON Schema format
     # Workflow format: { "field_name": { "type": "string", "required": false, "description": "..." } }
     # JSON Schema format: { "type": "object", "properties": { "field_name": { "type": "string", "description": "..." } }, "required": ["field_name"] }
-    
+
     properties = {}
     required_fields = []
-    
+
     for field_name, field_schema in workflow_input_schema.items():
         if isinstance(field_schema, dict):
             # Build property schema
             prop_schema = {
                 "type": field_schema.get("type", "string"),
             }
-            
+
             # Add description if present
             if "description" in field_schema:
                 prop_schema["description"] = field_schema["description"]
-            
+
             # Add default value if present
             if "defaultValue" in field_schema:
                 prop_schema["default"] = field_schema["defaultValue"]
             elif "default" in field_schema:
                 prop_schema["default"] = field_schema["default"]
-            
+
             # Handle array items if type is array
             if prop_schema["type"] == "array" and "items" in field_schema:
                 prop_schema["items"] = field_schema["items"]
-            
+
             properties[field_name] = prop_schema
-            
+
             # Check if field is required
             is_required = field_schema.get("required", False)
             if is_required:
                 required_fields.append(field_name)
-    
+
     input_schema["properties"] = properties
     if required_fields:
         input_schema["required"] = required_fields
-    
+
     return input_schema
 
 
@@ -113,9 +114,7 @@ class MCPServerService:
         self.repo = repo
         self.workflow_repo = workflow_repo
 
-    async def create(
-        self, data: MCPServerCreate, request: Optional[Request] = None
-    ) -> MCPServerResponse:
+    async def create(self, data: MCPServerCreate, request: Optional[Request] = None) -> MCPServerResponse:
         """Create a new MCP server."""
         user_id = get_current_user_id()
         if not user_id:
@@ -178,9 +177,7 @@ class MCPServerService:
         base_url = str(request.base_url).rstrip("/") if request else None
         return await self._to_response(mcp_server, base_url=base_url)
 
-    async def get_by_id(
-        self, mcp_server_id: UUID, request: Optional[Request] = None
-    ) -> MCPServerResponse:
+    async def get_by_id(self, mcp_server_id: UUID, request: Optional[Request] = None) -> MCPServerResponse:
         """Get MCP server by ID."""
         user_id = get_current_user_id()
         if not user_id:
@@ -197,9 +194,7 @@ class MCPServerService:
         base_url = str(request.base_url).rstrip("/") if request else None
         return await self._to_response(mcp_server, base_url=base_url)
 
-    async def get_all(
-        self, request: Optional[Request] = None
-    ) -> List[MCPServerResponse]:
+    async def get_all(self, request: Optional[Request] = None) -> List[MCPServerResponse]:
         """Get all MCP servers for the current user."""
         user_id = get_current_user_id()
         if not user_id:
@@ -327,9 +322,7 @@ class MCPServerService:
         # No base_url for MCP protocol endpoints (not needed for tool listing/execution)
         return await self._to_response(mcp_server, base_url=None)
 
-    async def _to_response(
-        self, mcp_server, base_url: Optional[str] = None
-    ) -> MCPServerResponse:
+    async def _to_response(self, mcp_server, base_url: Optional[str] = None) -> MCPServerResponse:
         """Convert MCP server model to response schema."""
         workflows = []
         for wf in mcp_server.workflows:
@@ -344,7 +337,7 @@ class MCPServerService:
                     input_schema = _extract_input_schema_from_chat_input_node(workflow_model)
             except Exception as e:
                 logger.warning(f"Failed to extract input schema for workflow {wf.workflow_id}: {e}")
-            
+
             workflows.append(
                 MCPServerWorkflowResponse(
                     id=wf.id,

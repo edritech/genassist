@@ -1,43 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { NodeProps } from "reactflow";
-import { ChatInputNodeData } from "../../types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import { ParameterSection } from "../../components/custom/ParameterSection";
-import { NodeSchema, SchemaField } from "../../types/schemas";
-import BaseNodeContainer from "../BaseNodeContainer";
-import nodeRegistry from "../../registry/nodeRegistry";
+import React, { useEffect, useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { ChatInputNodeData } from '../../types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import { ParameterSection } from '../../components/custom/ParameterSection';
+import { NodeSchema, SchemaField } from '../../types/schemas';
+import BaseNodeContainer from '../BaseNodeContainer';
+import nodeRegistry from '../../registry/nodeRegistry';
 
-export const CHAT_INPUT_NODE_TYPE = "chatInputNode";
+export const CHAT_INPUT_NODE_TYPE = 'chatInputNode';
 
 const DEFAULT_SUGGESTED_PARAMS: NodeSchema = {
   thread_id: {
-    type: "string",
-    description: "The thread id of the parameter",
+    type: 'string',
+    description: 'The thread id of the parameter',
     required: false,
   },
-    conversation_history: {
-    type: "string",
-    description: "The conversation history",
+  conversation_history: {
+    type: 'string',
+    description: 'The conversation history',
     required: false,
     stateful: true,
   },
   language: {
-    type: "string",
-    description: "The language of the conversation",
+    type: 'string',
+    description: 'The language of the conversation',
     required: false,
   },
 };
 
-const ChatInputNode: React.FC<NodeProps<ChatInputNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const ChatInputNode: React.FC<NodeProps<ChatInputNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(CHAT_INPUT_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
-  const [dynamicParams, setDynamicParams] = useState<NodeSchema>(
-    data.inputSchema
-  );
+  const [dynamicParams, setDynamicParams] = useState<NodeSchema>(data.inputSchema);
 
   // Update local state when the input schema changes (e.g., when loading from JSON)
   useEffect(() => {
@@ -55,10 +49,7 @@ const ChatInputNode: React.FC<NodeProps<ChatInputNodeData>> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dynamicParams]);
 
-  const addItem = (
-    setter: React.Dispatch<React.SetStateAction<NodeSchema>>,
-    template: SchemaField
-  ) => {
+  const addItem = (setter: React.Dispatch<React.SetStateAction<NodeSchema>>, template: SchemaField) => {
     const newName = `param_${Date.now()}`;
     setter((prev) => ({
       ...prev,
@@ -66,10 +57,7 @@ const ChatInputNode: React.FC<NodeProps<ChatInputNodeData>> = ({
     }));
   };
 
-  const removeItem = (
-    setter: React.Dispatch<React.SetStateAction<NodeSchema>>,
-    name: string
-  ) => {
+  const removeItem = (setter: React.Dispatch<React.SetStateAction<NodeSchema>>, name: string) => {
     setter((prev) => {
       const newParams = { ...prev };
       delete newParams[name];

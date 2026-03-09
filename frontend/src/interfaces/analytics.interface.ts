@@ -13,7 +13,7 @@ export interface MetricsDataPoint {
 }
 
 export interface MetricsAPIResponse {
-  data: MetricsDataPoint[]; 
+  data: MetricsDataPoint[];
 }
 
 export interface TimeDataPoint {
@@ -24,7 +24,7 @@ export interface TimeDataPoint {
 export interface MetricDataPoint {
   value: number;
   timestamp: string;
-} 
+}
 
 export interface ChartDataItem {
   name: string;

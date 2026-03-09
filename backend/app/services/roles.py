@@ -1,11 +1,12 @@
 from injector import inject
 from sqlalchemy import UUID
+
+from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
 from app.db.models import RoleModel
+from app.repositories.roles import RolesRepository
 from app.schemas.filter import BaseFilterModel
 from app.schemas.role import RoleCreate, RoleUpdate
-from app.repositories.roles import RolesRepository
-from app.core.exceptions.exception_classes import AppException
-from app.core.exceptions.error_messages import ErrorKey
 
 
 @inject
@@ -23,8 +24,7 @@ class RolesService:
     async def get_by_id(self, role_id: UUID):
         model = await self.repository.get_by_id(role_id)
         if not model:
-            raise AppException(
-                error_key=ErrorKey.ROLE_NOT_FOUND, status_code=404)
+            raise AppException(error_key=ErrorKey.ROLE_NOT_FOUND, status_code=404)
         return model
 
     async def update_partial(self, role_id: UUID, update_data: RoleUpdate):

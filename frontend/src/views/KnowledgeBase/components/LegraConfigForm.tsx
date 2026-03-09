@@ -1,7 +1,7 @@
-import React from "react";
-import { Textarea } from "@/components/textarea";
-import { Switch } from "@/components/switch";
-import { HelpCircle } from "lucide-react";
+import React from 'react';
+import { Textarea } from '@/components/textarea';
+import { Switch } from '@/components/switch';
+import { HelpCircle } from 'lucide-react';
 
 export interface Legra {
   enabled: boolean;
@@ -13,10 +13,7 @@ interface LegraConfigFormProps {
   onChange: (updatedConfig: Legra) => void;
 }
 
-const LegraConfigForm: React.FC<LegraConfigFormProps> = ({
-  legraConfig,
-  onChange,
-}) => {
+const LegraConfigForm: React.FC<LegraConfigFormProps> = ({ legraConfig, onChange }) => {
   const handleLegraChange = (name: string, value: unknown) => {
     onChange({
       ...legraConfig,
@@ -31,14 +28,12 @@ const LegraConfigForm: React.FC<LegraConfigFormProps> = ({
           <HelpCircle className="h-5 w-5 text-gray-500" />
           <div>
             <div className="font-medium">Legra</div>
-            <p className="text-sm text-gray-500">
-              Enable Legra for graph building with custom questions
-            </p>
+            <p className="text-sm text-gray-500">Enable Legra for graph building with custom questions</p>
           </div>
         </div>
         <Switch
           checked={legraConfig.enabled || false}
-          onCheckedChange={(checked) => handleLegraChange("enabled", checked)}
+          onCheckedChange={(checked) => handleLegraChange('enabled', checked)}
         />
       </div>
 
@@ -48,16 +43,15 @@ const LegraConfigForm: React.FC<LegraConfigFormProps> = ({
             <div className="mb-1">Questions for Graph Building</div>
             <Textarea
               placeholder="Enter questions (one per line) that will be used by Legra during graph building..."
-              value={legraConfig.questions || ""}
-              onChange={(e) => handleLegraChange("questions", e.target.value)}
+              value={legraConfig.questions || ''}
+              onChange={(e) => handleLegraChange('questions', e.target.value)}
               rows={6}
               className="min-h-32"
             />
           </div>
 
           <p className="text-sm text-gray-500 mt-4">
-            Add one question per line. These questions will guide Legra during
-            the graph building process.
+            Add one question per line. These questions will guide Legra during the graph building process.
           </p>
         </div>
       )}

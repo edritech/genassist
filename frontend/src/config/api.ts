@@ -1,7 +1,14 @@
-import axios, { Method, AxiosRequestConfig, AxiosError } from "axios";
-import { setServerDown, setServerUp } from "@/config/serverStatus";
+import axios, { Method, AxiosRequestConfig, AxiosError } from 'axios';
+import { setServerDown, setServerUp } from '@/config/serverStatus';
 
-const AUTH_KEYS = ["access_token", "refresh_token", "token_type", "isAuthenticated", "force_upd_pass_date", "tenant_id"] as const;
+const AUTH_KEYS = [
+  'access_token',
+  'refresh_token',
+  'token_type',
+  'isAuthenticated',
+  'force_upd_pass_date',
+  'tenant_id',
+] as const;
 
 const clearAuthStorage = () => AUTH_KEYS.forEach((key) => localStorage.removeItem(key));
 
@@ -18,12 +25,11 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
-const ensureTrailingSlash = (url: string): string =>
-  url.endsWith("/") ? url : `${url}/`;
+const ensureTrailingSlash = (url: string): string => (url.endsWith('/') ? url : `${url}/`);
 
 const api = axios.create({
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
   timeout: 120000, // Increased to 2 minutes for SQL operations
 });
@@ -31,18 +37,18 @@ const api = axios.create({
 // Interceptor: Request
 api.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("access_token");
-    const tokenType = localStorage.getItem("token_type") || "Bearer";
-    const tenantId = localStorage.getItem("tenant_id");
+    const accessToken = localStorage.getItem('access_token');
+    const tokenType = localStorage.getItem('token_type') || 'Bearer';
+    const tenantId = localStorage.getItem('tenant_id');
 
     if (accessToken && !config.headers.Authorization) {
-      const properTokenType = tokenType.toLowerCase() === "bearer" ? "Bearer" : tokenType;
+      const properTokenType = tokenType.toLowerCase() === 'bearer' ? 'Bearer' : tokenType;
       config.headers.Authorization = `${properTokenType} ${accessToken}`;
     }
 
     // Add tenant ID header if available
     if (tenantId) {
-      config.headers["x-tenant-id"] = tenantId;
+      config.headers['x-tenant-id'] = tenantId;
     }
 
     return config;
@@ -63,18 +69,20 @@ api.interceptors.response.use(
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(token => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return api(originalRequest);
-        }).catch(err => {
-          return Promise.reject(err);
-        });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem("refresh_token");
+      const refreshToken = localStorage.getItem('refresh_token');
 
       if (!refreshToken) {
         isRefreshing = false;
@@ -85,23 +93,23 @@ api.interceptors.response.use(
 
       try {
         const baseURL = await getApiUrl();
-        const tenantId = localStorage.getItem("tenant_id");
+        const tenantId = localStorage.getItem('tenant_id');
         const params = new URLSearchParams({ refresh_token: refreshToken });
 
         const { data } = await axios.post(`${baseURL}auth/refresh_token`, params, {
           headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            ...(tenantId ? { "x-tenant-id": tenantId } : {}),
+            'Content-Type': 'application/x-www-form-urlencoded',
+            ...(tenantId ? { 'x-tenant-id': tenantId } : {}),
           },
         });
 
-        localStorage.setItem("access_token", data.access_token);
-        localStorage.setItem("token_type", data.token_type || "Bearer");
-        localStorage.setItem("isAuthenticated", "true");
-        if (data.refresh_token) localStorage.setItem("refresh_token", data.refresh_token);
-        if (data.force_upd_pass_date) localStorage.setItem("force_upd_pass_date", data.force_upd_pass_date);
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('token_type', data.token_type || 'Bearer');
+        localStorage.setItem('isAuthenticated', 'true');
+        if (data.refresh_token) localStorage.setItem('refresh_token', data.refresh_token);
+        if (data.force_upd_pass_date) localStorage.setItem('force_upd_pass_date', data.force_upd_pass_date);
 
-        originalRequest.headers.Authorization = `${data.token_type || "Bearer"} ${data.access_token}`;
+        originalRequest.headers.Authorization = `${data.token_type || 'Bearer'} ${data.access_token}`;
         processQueue(null, data.access_token);
         isRefreshing = false;
 
@@ -118,13 +126,12 @@ api.interceptors.response.use(
   }
 );
 
-const API_URL = import.meta.env.VITE_PUBLIC_API_URL
-const WEBSOCKET_URL = import.meta.env.VITE_WEBSOCKET_PUBLIC_URL
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
+const WEBSOCKET_URL = import.meta.env.VITE_WEBSOCKET_PUBLIC_URL;
 
 /** Whether WebSocket connections are enabled (VITE_WS=true/false). Defaults to true when unset.
  *  Note: Vite reads env at dev server start / build time; restart the dev server after changing .env. */
-export const isWsEnabled =
-  (import.meta.env.VITE_WS ?? "true").toString().toLowerCase() === "true";
+export const isWsEnabled = (import.meta.env.VITE_WS ?? 'true').toString().toLowerCase() === 'true';
 
 export const getApiUrl = async (): Promise<string> => {
   return ensureTrailingSlash(API_URL);
@@ -134,7 +141,7 @@ export const getApiUrlString = ensureTrailingSlash(API_URL);
 
 export const getWsUrl = async (): Promise<string> => {
   if (!isWsEnabled) {
-    return Promise.reject(new Error("WebSocket is disabled (VITE_WS=false)"));
+    return Promise.reject(new Error('WebSocket is disabled (VITE_WS=false)'));
   }
   return WEBSOCKET_URL;
 };
@@ -147,9 +154,9 @@ export const apiRequest = async <T>(
 ): Promise<T | null> => {
   const baseURL = await getApiUrl();
   // remove starting slash from endpoint
-  let fullUrl = `${baseURL}${endpoint.replace(/^\//, "")}`
+  let fullUrl = `${baseURL}${endpoint.replace(/^\//, '')}`;
   // remove last slash && remove last slash also before ? or & or #
-  fullUrl = fullUrl.replace(/\/$/, "").replace(/\/([?&#])/, "$1");
+  fullUrl = fullUrl.replace(/\/$/, '').replace(/\/([?&#])/, '$1');
 
   try {
     const response = await api.request<T>({
@@ -179,14 +186,14 @@ export const apiRequest = async <T>(
       setServerUp();
     } else {
       const networkCodes = new Set([
-        "ERR_NETWORK",
-        "ECONNABORTED",
-        "ERR_CONNECTION_REFUSED",
-        "ERR_CONNECTION_RESET",
-        "ERR_SOCKET_NOT_CONNECTED",
-        "ENOTFOUND",
+        'ERR_NETWORK',
+        'ECONNABORTED',
+        'ERR_CONNECTION_REFUSED',
+        'ERR_CONNECTION_RESET',
+        'ERR_SOCKET_NOT_CONNECTED',
+        'ENOTFOUND',
       ]);
-      if (networkCodes.has(code ?? "")) {
+      if (networkCodes.has(code ?? '')) {
         const healthy = await probeApiHealth();
         if (!healthy) {
           setServerDown();
@@ -205,8 +212,8 @@ export { api };
 export const probeApiHealth = async (): Promise<boolean> => {
   const baseURL = await getApiUrl();
   const candidates = [
-    `${baseURL.replace(/\/$/, "")}/playground/health`,
-    `${baseURL.replace(/\/$/, "")}/health`,
+    `${baseURL.replace(/\/$/, '')}/playground/health`,
+    `${baseURL.replace(/\/$/, '')}/health`,
     baseURL,
   ];
   for (const url of candidates) {
@@ -231,4 +238,4 @@ export const probeApiHealth = async (): Promise<boolean> => {
 /** Whether Heartbeat polling is enabled (VITE_USE_POLL=true/false). Defaults to true when unset.
  *  Note: Vite reads env at dev server start / build time; restart the dev server after changing .env. */
 export const isPollEnabled =
-  (import.meta.env.VITE_USE_POLL ?? "true").toString().toLowerCase() === "true" && !isWsEnabled;
+  (import.meta.env.VITE_USE_POLL ?? 'true').toString().toLowerCase() === 'true' && !isWsEnabled;

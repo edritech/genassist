@@ -1,14 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from uuid import UUID, uuid4
 from urllib.parse import urlencode
-from app.schemas.webhook import WebhookCreate, WebhookUpdate, WebhookResponse
-from app.services.webhook import WebhookService
-from app.auth.dependencies import auth
-from app.core.tenant_scope import get_tenant_context
-from app.core.config.settings import settings
+from uuid import UUID, uuid4
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi_injector import Injected
 
+from app.auth.dependencies import auth
+from app.core.config.settings import settings
+from app.core.tenant_scope import get_tenant_context
+from app.schemas.webhook import WebhookCreate, WebhookResponse, WebhookUpdate
+from app.services.webhook import WebhookService
+
 router = APIRouter(tags=["Webhooks"], dependencies=[Depends(auth)])
+
 
 @router.get("", response_model=list[WebhookResponse], dependencies=[Depends(auth)])
 async def list_webhooks(service: WebhookService = Injected(WebhookService)):
@@ -34,11 +37,7 @@ async def create_webhook(
     else:
         url = str(
             request.url_for(
-                (
-                    "webhook_handler_post"
-                    if data.method == "POST"
-                    else "webhook_handler_get"
-                ),
+                ("webhook_handler_post" if data.method == "POST" else "webhook_handler_get"),
                 webhook_id=str(generated_id),
             )
         )
@@ -54,22 +53,15 @@ async def create_webhook(
     return await service.create_webhook(data, execution_url, webhook_id=generated_id)
 
 
-@router.get(
-    "/{webhook_id}", response_model=WebhookResponse, dependencies=[Depends(auth)]
-)
-async def read_webhook(
-    webhook_id: UUID, service: WebhookService = Injected(WebhookService)
-):
+@router.get("/{webhook_id}", response_model=WebhookResponse, dependencies=[Depends(auth)])
+async def read_webhook(webhook_id: UUID, service: WebhookService = Injected(WebhookService)):
     webhook = await service.get_webhook_by_id(webhook_id)
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook not found")
     return webhook
 
 
-
-@router.put(
-    "/{webhook_id}", response_model=WebhookResponse, dependencies=[Depends(auth)]
-)
+@router.put("/{webhook_id}", response_model=WebhookResponse, dependencies=[Depends(auth)])
 async def update_webhook(
     webhook_id: UUID,
     data: WebhookUpdate,
@@ -86,8 +78,6 @@ async def update_webhook(
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(auth)],
 )
-async def delete_webhook(
-    webhook_id: UUID, service: WebhookService = Injected(WebhookService)
-):
+async def delete_webhook(webhook_id: UUID, service: WebhookService = Injected(WebhookService)):
     if not await service.delete_webhook(webhook_id):
         raise HTTPException(status_code=404, detail="Webhook not found")

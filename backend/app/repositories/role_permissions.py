@@ -1,11 +1,12 @@
-from fastapi import Depends
-from injector import inject
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from app.db.models.role_permission import RolePermissionModel
 from uuid import UUID
 
+from injector import inject
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.models.role_permission import RolePermissionModel
 from app.schemas.role_permission import RolePermissionCreate
+
 
 @inject
 class RolePermissionsRepository:
@@ -35,9 +36,7 @@ class RolePermissionsRepository:
         return rp
 
     async def get_by_id(self, rp_id: UUID) -> RolePermissionModel:
-        result = await self.db.execute(
-            select(RolePermissionModel).where(RolePermissionModel.id == rp_id)
-        )
+        result = await self.db.execute(select(RolePermissionModel).where(RolePermissionModel.id == rp_id))
         return result.scalars().first()
 
     async def get_all(self) -> list[RolePermissionModel]:
@@ -48,9 +47,7 @@ class RolePermissionsRepository:
         await self.db.delete(rp)
         await self.db.commit()
 
-    async def update(
-        self, rp_id: UUID, data: RolePermissionCreate
-    ) -> RolePermissionModel:
+    async def update(self, rp_id: UUID, data: RolePermissionCreate) -> RolePermissionModel:
         rp = await self.get_by_id(rp_id)
         if not rp:
             return None

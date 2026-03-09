@@ -1,16 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Textarea } from "@/components/textarea";
-import { Badge } from "@/components/badge";
-import { ScrollArea } from "@/components/scroll-area";
-import { createSimpleSchema, NodeSchema } from "../../types/schemas";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Textarea } from '@/components/textarea';
+import { Badge } from '@/components/badge';
+import { ScrollArea } from '@/components/scroll-area';
+import { createSimpleSchema, NodeSchema } from '../../types/schemas';
 
 interface DynamicTemplateInputProps {
   initialTemplate?: string;
-  onChange?: (data: {
-    template: string;
-    fields: string[];
-    inputSchema: NodeSchema;
-  }) => void;
+  onChange?: (data: { template: string; fields: string[]; inputSchema: NodeSchema }) => void;
   showProcessedOutput?: boolean;
   inputValues?: Record<string, string>;
   height?: string;
@@ -19,17 +15,17 @@ interface DynamicTemplateInputProps {
 }
 
 const DynamicTemplateInput: React.FC<DynamicTemplateInputProps> = ({
-  initialTemplate = "",
+  initialTemplate = '',
   onChange,
   showProcessedOutput = false,
   inputValues = {},
-  height = "100px",
-  placeholder = "Enter your template with {{placeholders}}",
+  height = '100px',
+  placeholder = 'Enter your template with {{placeholders}}',
   readOnly = false,
 }) => {
   const [template, setTemplate] = useState(initialTemplate);
   const [dynamicFields, setDynamicFields] = useState<string[]>([]);
-  const [processedOutput, setProcessedOutput] = useState("");
+  const [processedOutput, setProcessedOutput] = useState('');
 
   // Memoized callbacks for performance
   const extractDynamicFields = useCallback((templateText: string) => {
@@ -48,7 +44,7 @@ const DynamicTemplateInput: React.FC<DynamicTemplateInputProps> = ({
         (acc, field) => ({
           ...acc,
           [field]: {
-            type: "string",
+            type: 'string',
             required: true,
             description: `The ${field} for the template`,
           },
@@ -59,17 +55,14 @@ const DynamicTemplateInput: React.FC<DynamicTemplateInputProps> = ({
     return { inputSchema };
   }, []);
 
-  const processTemplate = useCallback(
-    (templateText: string, values: Record<string, string>) => {
-      let processed = templateText;
-      Object.entries(values).forEach(([key, value]) => {
-        const regex = new RegExp(`\\{${key}\\}`, "g");
-        processed = processed.replace(regex, value || `{${key}}`);
-      });
-      return processed;
-    },
-    []
-  );
+  const processTemplate = useCallback((templateText: string, values: Record<string, string>) => {
+    let processed = templateText;
+    Object.entries(values).forEach(([key, value]) => {
+      const regex = new RegExp(`\\{${key}\\}`, 'g');
+      processed = processed.replace(regex, value || `{${key}}`);
+    });
+    return processed;
+  }, []);
 
   // Effect to sync state with the initialTemplate prop
   useEffect(() => {
@@ -103,15 +96,7 @@ const DynamicTemplateInput: React.FC<DynamicTemplateInputProps> = ({
     return () => {
       clearTimeout(handler);
     };
-  }, [
-    template,
-    inputValues,
-    onChange,
-    showProcessedOutput,
-    extractDynamicFields,
-    createSchemas,
-    processTemplate,
-  ]);
+  }, [template, inputValues, onChange, showProcessedOutput, extractDynamicFields, createSchemas, processTemplate]);
 
   return (
     <div className="space-y-4">

@@ -1,30 +1,30 @@
-import pytest
 from unittest.mock import AsyncMock, create_autospec
-from uuid import uuid4, UUID
+from uuid import uuid4
 
-from app.services.feature_flag import FeatureFlagService
+import pytest
+
+from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
+from app.db.models.feature_flag import FeatureFlagModel
 from app.repositories.feature_flag import FeatureFlagRepository
 from app.schemas.feature_flag import FeatureFlagCreate, FeatureFlagUpdate
-from app.core.exceptions.exception_classes import AppException
-from app.core.exceptions.error_messages import ErrorKey
-from app.db.models.feature_flag import FeatureFlagModel
+from app.services.feature_flag import FeatureFlagService
+
 
 @pytest.fixture
 def mock_repo():
     return AsyncMock(spec=FeatureFlagRepository)
 
+
 @pytest.fixture
 def svc(mock_repo):
     return FeatureFlagService(repo=mock_repo)
 
+
 @pytest.fixture
 def sample_data():
-    return {
-        "key": "flag_key",
-        "val": "on",
-        "description": "A test flag",
-        "is_active": 1
-    }
+    return {"key": "flag_key", "val": "on", "description": "A test flag", "is_active": 1}
+
 
 @pytest.mark.asyncio
 async def test_create_success(svc, mock_repo, sample_data):
@@ -43,6 +43,7 @@ async def test_create_success(svc, mock_repo, sample_data):
     assert result.description == sample_data["description"]
     assert result.is_active == sample_data["is_active"]
 
+
 @pytest.mark.asyncio
 async def test_get_by_id_success(svc, mock_repo, sample_data):
     flag_id = uuid4()
@@ -55,6 +56,7 @@ async def test_get_by_id_success(svc, mock_repo, sample_data):
     assert result.id == flag_id
     assert result.key == sample_data["key"]
 
+
 @pytest.mark.asyncio
 async def test_get_by_id_not_found(svc, mock_repo):
     flag_id = uuid4()
@@ -64,6 +66,7 @@ async def test_get_by_id_not_found(svc, mock_repo):
         await svc.get_by_id(flag_id)
     assert exc.value.error_key == ErrorKey.FEATURE_FLAG_NOT_FOUND
     mock_repo.get_by_id.assert_called_once_with(flag_id)
+
 
 @pytest.mark.asyncio
 async def test_get_all(svc, mock_repo, sample_data):
@@ -76,6 +79,7 @@ async def test_get_all(svc, mock_repo, sample_data):
     mock_repo.get_all.assert_called_once()
     assert len(result) == 2
     assert result[0].key == sample_data["key"]
+
 
 @pytest.mark.asyncio
 async def test_update_success(svc, mock_repo, sample_data):
@@ -95,6 +99,7 @@ async def test_update_success(svc, mock_repo, sample_data):
     assert result.description == "Updated"
     assert result.is_active == 0
 
+
 @pytest.mark.asyncio
 async def test_update_not_found(svc, mock_repo):
     flag_id = uuid4()
@@ -107,6 +112,7 @@ async def test_update_not_found(svc, mock_repo):
     assert exc.value.error_key == ErrorKey.FEATURE_FLAG_NOT_FOUND
     mock_repo.get_by_id.assert_called_once_with(flag_id)
 
+
 @pytest.mark.asyncio
 async def test_delete_success(svc, mock_repo, sample_data):
     flag_id = uuid4()
@@ -118,6 +124,7 @@ async def test_delete_success(svc, mock_repo, sample_data):
 
     mock_repo.get_by_id.assert_called_once_with(flag_id)
     mock_repo.delete.assert_called_once_with(flag_id)
+
 
 @pytest.mark.asyncio
 async def test_delete_not_found(svc, mock_repo):

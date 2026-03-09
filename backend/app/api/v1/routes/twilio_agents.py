@@ -1,27 +1,26 @@
-import os
-import json
-import base64
 import asyncio
-from uuid import UUID
-import uuid
-import websockets
-import httpx  # For making HTTP requests to the TTS API
 import audioop  # For audio format conversion
-import wave
+import base64
 import io
+import json
 import logging
+import os
+import wave
+from uuid import UUID
 
-from fastapi import FastAPI, WebSocket, Request, APIRouter, Depends, Query
-from fastapi_injector import Injected
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.websockets import WebSocketDisconnect, WebSocketState
-from twilio.twiml.voice_response import VoiceResponse, Connect, Say, Stream
+import httpx  # For making HTTP requests to the TTS API
+import websockets
 from dotenv import load_dotenv
+from fastapi import APIRouter, Depends, Request, WebSocket
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.websockets import WebSocketState
+from fastapi_injector import Injected
+from twilio.twiml.voice_response import Connect, VoiceResponse
+
 from app.api.v1.routes.voice import get_openai_session_key
 from app.auth.dependencies import auth
 from app.modules.workflow.registry import RegistryItem
 from app.services.agent_config import AgentConfigService
-
 
 router = APIRouter()
 load_dotenv()
@@ -62,22 +61,16 @@ async def process_with_agent(
             "message": "I'm sorry, there was an issue with the call session.",
         }
 
-    logger.debug(
-        f"AGENT: Calling agent '{agent_id}' for thread '{thread_id}' with text: '{transcribed_text}'"
-    )
+    logger.debug(f"AGENT: Calling agent '{agent_id}' for thread '{thread_id}' with text: '{transcribed_text}'")
 
     try:
         agent = await agent_service.get_by_id_full(UUID(agent_id))
         agent = RegistryItem(agent)
-        agent_response = await agent.execute(
-            session_message=transcribed_text, metadata={"thread_id": thread_id}
-        )
+        agent_response = await agent.execute(session_message=transcribed_text, metadata={"thread_id": thread_id})
         agent_response_text = agent_response.get("output")
 
         if not agent_response_text:
-            logger.error(
-                f"AGENT ERROR: Agent response was empty. Full response: {agent_response}"
-            )
+            logger.error(f"AGENT ERROR: Agent response was empty. Full response: {agent_response}")
             return {
                 "success": False,
                 "message": "I received an empty response from the agent.",
@@ -125,18 +118,14 @@ async def text_to_speech_openai(text: str) -> bytes:
                 sample_width = wav_file.getsampwidth()
                 channels = wav_file.getnchannels()
 
-                logger.debug(
-                    f"Original audio: {sample_rate}Hz, {sample_width}-byte samples, {channels} channels"
-                )
+                logger.debug(f"Original audio: {sample_rate}Hz, {sample_width}-byte samples, {channels} channels")
 
                 # Read all audio data
                 audio_data = wav_file.readframes(wav_file.getnframes())
 
                 # Downsample to 8kHz if needed
                 if sample_rate != 8000:
-                    audio_data, _ = audioop.ratecv(
-                        audio_data, sample_width, channels, sample_rate, 8000, None
-                    )
+                    audio_data, _ = audioop.ratecv(audio_data, sample_width, channels, sample_rate, 8000, None)
 
                 # Convert to mono if stereo
                 if channels == 2:
@@ -148,30 +137,34 @@ async def text_to_speech_openai(text: str) -> bytes:
                 return ulaw_data
 
         except httpx.HTTPStatusError as e:
-            logger.error(
-                f"TTS API request failed with status {e.response.status_code}: {e.response.text}"
-            )
+            logger.error(f"TTS API request failed with status {e.response.status_code}: {e.response.text}")
             return None
         except Exception as e:
             logger.error(f"An unexpected error occurred during TTS processing: {e}")
             return None
 
 
-@router.get("", summary="Twilio Voice API Root Endpoint", dependencies=[
-    Depends(auth),
-    ])
+@router.get(
+    "",
+    summary="Twilio Voice API Root Endpoint",
+    dependencies=[
+        Depends(auth),
+    ],
+)
 async def sample():
     return JSONResponse(
-        content={
-            "message": "Welcome to the Twilio Voice API. Use /incoming-call to handle incoming calls."
-        },
+        content={"message": "Welcome to the Twilio Voice API. Use /incoming-call to handle incoming calls."},
         status_code=200,
     )
 
 
-@router.get("/incoming-call/{agent_id}", summary="Handle Incoming Call", dependencies=[
-    Depends(auth),
-    ])
+@router.get(
+    "/incoming-call/{agent_id}",
+    summary="Handle Incoming Call",
+    dependencies=[
+        Depends(auth),
+    ],
+)
 async def handle_incoming_call(request: Request, agent_id: str):
     response = VoiceResponse()
     response.say("Welcome to the Genassist!")
@@ -180,9 +173,8 @@ async def handle_incoming_call(request: Request, agent_id: str):
 
     host = request.url.hostname
 
-    protocol = request.url.scheme
     ws_protocol = "wss"
-    #if protocol == "http":
+    # if protocol == "http":
     #    ws_protocol = "ws"
 
     port = request.url.port
@@ -192,17 +184,18 @@ async def handle_incoming_call(request: Request, agent_id: str):
         port = f":{port}"
 
     connect = Connect()
-    connect.stream(
-        url=f"{ws_protocol}://{host}{port}/api/twilio/media-stream/{agent_id}"
-    )
+    connect.stream(url=f"{ws_protocol}://{host}{port}/api/twilio/media-stream/{agent_id}")
     response.append(connect)
 
     return HTMLResponse(content=str(response), media_type="application/xml")
 
 
-@router.websocket("/media-stream/{agent_id}", dependencies=[
-    Depends(auth),
-    ])
+@router.websocket(
+    "/media-stream/{agent_id}",
+    dependencies=[
+        Depends(auth),
+    ],
+)
 async def handle_media_stream(
     twilio_inbound_socket: WebSocket,
     agent_id: str,
@@ -214,9 +207,7 @@ async def handle_media_stream(
 
     session_id: str = ""
 
-    session_key = await get_openai_session_key(
-        lang_code="", input_audio_format="g711_ulaw"
-    )
+    session_key = await get_openai_session_key(lang_code="", input_audio_format="g711_ulaw")
 
     async with websockets.connect(
         "wss://api.openai.com/v1/realtime",
@@ -277,31 +268,25 @@ async def handle_media_stream(
                         final_transcript = incoming_transcription_response["transcript"]
                         logger.debug(f"Final Transcript: '{final_transcript}'")
 
-                        agent_response = await process_with_agent(
-                            agent_id, session_id, final_transcript, agent_service
-                        )
+                        agent_response = await process_with_agent(agent_id, session_id, final_transcript, agent_service)
                         if not agent_response.get("success"):
                             logger.error(f"AGENT ERROR: {agent_response.get('message')}")
-                            agent_response_text = "I'm sorry, I could not process your request at this time. Please try again later. Bye!"
+                            agent_response_text = (
+                                "I'm sorry, I could not process your request at this time. Please try again later. Bye!"
+                            )
                         else:
                             agent_response_text = str(agent_response.get("message"))
 
                         audio_bytes = await text_to_speech_openai(agent_response_text)
 
                         if audio_bytes and session_id:
-                            logger.debug(
-                                f"Streaming {len(audio_bytes)} bytes of TTS audio to Twilio."
-                            )
+                            logger.debug(f"Streaming {len(audio_bytes)} bytes of TTS audio to Twilio.")
                             for i in range(0, len(audio_bytes), CHUNK_SIZE):
                                 chunk = audio_bytes[i : i + CHUNK_SIZE]
                                 media_message = {
                                     "event": "media",
                                     "streamSid": session_id,
-                                    "media": {
-                                        "payload": base64.b64encode(chunk).decode(
-                                            "utf-8"
-                                        )
-                                    },
+                                    "media": {"payload": base64.b64encode(chunk).decode("utf-8")},
                                 }
                                 await twilio_inbound_socket.send_json(media_message)
 

@@ -1,10 +1,10 @@
 import os
-import re
-from fastapi import APIRouter, Query, Depends, UploadFile, HTTPException
-from typing import Optional, List, Union
-from pydantic import BaseModel
-from app.auth.dependencies import auth, permissions
+from typing import List, Optional, Union
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+
+from app.auth.dependencies import auth
 from app.services.smb_share_service import SMBShareFSService
 from app.tasks.share_folder_tasks import transcribe_audio_files_async_with_scope
 
@@ -31,27 +31,19 @@ def get_safe_path(user_path: str) -> str:
     # After normalization, check if it still contains parent directory references
     # or starts with absolute path indicators
     if ".." in normalized:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid path: path traversal not allowed"
-        )
+        raise HTTPException(status_code=400, detail="Invalid path: path traversal not allowed")
 
     # Reject absolute paths - all paths should be relative to root
     if os.path.isabs(normalized) or normalized.startswith("/") or normalized.startswith("\\"):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid path: absolute paths not allowed"
-        )
+        raise HTTPException(status_code=400, detail="Invalid path: absolute paths not allowed")
 
     # Check for URL-encoded traversal attempts
     user_path_lower = user_path.lower()
     if "%2e" in user_path_lower or "%252e" in user_path_lower:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid path: encoded traversal not allowed"
-        )
+        raise HTTPException(status_code=400, detail="Invalid path: encoded traversal not allowed")
 
     return normalized
+
 
 router = APIRouter()
 router = APIRouter(prefix="/smb", tags=["SMB Share / Local FS"])
@@ -89,6 +81,7 @@ class FolderRequest(PathRequest):
 # API Endpoints
 # -----------------------------------------------------------------------------
 
+
 @router.get("/list", response_model=List[str])
 async def list_dir(
     smb_host: Optional[str] = None,
@@ -104,7 +97,7 @@ async def list_dir(
     extension: Optional[str] = None,
     name_contains: Optional[str] = None,
     pattern: Optional[str] = None,
-    dependencies=[Depends(auth)]
+    dependencies=[Depends(auth)],
 ):
     """List directory contents with optional filters."""
     try:
@@ -140,7 +133,7 @@ async def read_file(
     local_root: Optional[str] = None,
     filepath: str = "",
     binary: bool = False,
-    dependencies=[Depends(auth)]
+    dependencies=[Depends(auth)],
 ):
     """Read file content."""
     # Sanitize filepath to prevent path traversal attacks
@@ -199,7 +192,7 @@ async def delete_file(req: FileRequest, dependencies=[Depends(auth)]):
             smb_pass=req.smb_pass,
             smb_port=req.smb_port,
             use_local_fs=req.use_local_fs,
-            local_root=req.local_root, 
+            local_root=req.local_root,
         ) as svc:
             await svc.delete_file(req.filepath)
         return {"status": "success", "message": f"File '{req.filepath}' deleted."}
@@ -218,7 +211,7 @@ async def create_folder(req: FolderRequest, dependencies=[Depends(auth)]):
             smb_pass=req.smb_pass,
             smb_port=req.smb_port,
             use_local_fs=req.use_local_fs,
-            local_root=req.local_root, 
+            local_root=req.local_root,
         ) as svc:
             await svc.create_folder(req.folderpath)
         return {"status": "success", "message": f"Folder '{req.folderpath}' created."}
@@ -258,7 +251,7 @@ async def exists(
     use_local_fs: bool = False,
     local_root: Optional[str] = None,
     path: str = "",
-    dependencies=[Depends(auth)]
+    dependencies=[Depends(auth)],
 ):
     """Check if a path exists."""
     try:
@@ -269,12 +262,12 @@ async def exists(
             smb_pass=smb_pass,
             smb_port=smb_port,
             use_local_fs=use_local_fs,
-            local_root=local_root, 
+            local_root=local_root,
         ) as svc:
             return {"exists": await svc.exists(path)}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
 
 @router.get("/execute-celery-jobs")
 async def execute_celery_jobs():

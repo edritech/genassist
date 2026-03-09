@@ -1,23 +1,16 @@
-import { Navigate, useLocation } from "react-router-dom";
-import { isAuthenticated, isPasswordUpdateRequired } from "@/services/auth";
-import {
-  usePermissions,
-  useIsLoadingPermissions,
-  useRefreshPermissions,
-} from "@/context/PermissionContext";
-import { Skeleton } from "@/components/skeleton";
-import { useEffect } from "react";
-import { useServerStatus } from "@/context/ServerStatusContext";
+import { Navigate, useLocation } from 'react-router-dom';
+import { isAuthenticated, isPasswordUpdateRequired } from '@/services/auth';
+import { usePermissions, useIsLoadingPermissions, useRefreshPermissions } from '@/context/PermissionContext';
+import { Skeleton } from '@/components/skeleton';
+import { useEffect } from 'react';
+import { useServerStatus } from '@/context/ServerStatusContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredPermissions?: string | string[];
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  children,
-  requiredPermissions = [],
-}) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredPermissions = [] }) => {
   const location = useLocation();
   const permissions = usePermissions();
   const isLoading = useIsLoadingPermissions();
@@ -26,12 +19,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Removed proactive refresh to avoid duplicate API calls when server is down
 
   useEffect(() => {
-    if (
-      isAuthenticated() &&
-      permissions.length === 0 &&
-      !isLoading &&
-      !(status.down || isOffline)
-    ) {
+    if (isAuthenticated() && permissions.length === 0 && !isLoading && !(status.down || isOffline)) {
       refreshPermissions();
     }
   }, [permissions, isLoading, refreshPermissions, status.down, isOffline]);
@@ -41,7 +29,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Allow access to change-password route even if password update is required
-  if (isPasswordUpdateRequired() && location.pathname !== "/change-password") {
+  if (isPasswordUpdateRequired() && location.pathname !== '/change-password') {
     return <Navigate to="/change-password" state={{ from: location }} replace />;
   }
 
@@ -59,11 +47,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (
-    permissions.length === 0 &&
-    Array.isArray(requiredPermissions) &&
-    requiredPermissions.length > 0
-  ) {
+  if (permissions.length === 0 && Array.isArray(requiredPermissions) && requiredPermissions.length > 0) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="flex flex-col space-y-3">
@@ -77,18 +61,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  const normalize = (input?: string | string[]) =>
-    typeof input === "string" ? [input] : input ?? [];
+  const normalize = (input?: string | string[]) => (typeof input === 'string' ? [input] : (input ?? []));
 
   const required = normalize(requiredPermissions);
-  const hasFullAccess = permissions.includes("*");
+  const hasFullAccess = permissions.includes('*');
   const hasPermission = required.some((p) => permissions.includes(p));
 
-  if (
-    required.length > 0 &&
-    !hasFullAccess &&
-    !hasPermission
-  ) {
+  if (required.length > 0 && !hasFullAccess && !hasPermission) {
     return <Navigate to="/unauthorized" replace />;
   }
 

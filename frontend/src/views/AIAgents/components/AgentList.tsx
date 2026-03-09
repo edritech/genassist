@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { AgentListItem, AgentConfig } from "@/interfaces/ai-agent.interface";
-import { Button } from "@/components/button";
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AgentListItem, AgentConfig } from '@/interfaces/ai-agent.interface';
+import { Button } from '@/components/button';
 import {
   Plus,
   MoreVertical,
@@ -13,19 +13,19 @@ import {
   Shield,
   Loader2,
   Workflow,
-} from "lucide-react";
-import { Switch } from "@/components/switch";
+} from 'lucide-react';
+import { Switch } from '@/components/switch';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "@/components/dropdown-menu";
-import { AgentFormDialog } from "./AgentForm";
-import { SearchInput } from "@/components/SearchInput";
-import { getAgentConfig } from "@/services/api";
-import { toast } from "react-hot-toast";
+} from '@/components/dropdown-menu';
+import { AgentFormDialog } from './AgentForm';
+import { SearchInput } from '@/components/SearchInput';
+import { getAgentConfig } from '@/services/api';
+import { toast } from 'react-hot-toast';
 
 interface AgentListProps {
   agents: AgentListItem[];
@@ -52,7 +52,7 @@ const AgentList: React.FC<AgentListProps> = ({
   hasMore,
   loadingMore,
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -109,9 +109,9 @@ const AgentList: React.FC<AgentListProps> = ({
       const formData = {
         id: config.id,
         name: config.name,
-        description: config.description ?? "",
-        welcome_message: config.welcome_message ?? "",
-        welcome_title: config.welcome_title ?? "",
+        description: config.description ?? '',
+        welcome_message: config.welcome_message ?? '',
+        welcome_title: config.welcome_title ?? '',
         thinking_phrase_delay: config.thinking_phrase_delay ?? 0,
         possible_queries: config.possible_queries ?? [],
         thinking_phrases: config.thinking_phrases ?? [],
@@ -124,9 +124,7 @@ const AgentList: React.FC<AgentListProps> = ({
       // interpreting the dropdown close as an outside click that closes the Sheet
       setSettingsDialogOpen(true);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to load agent settings"
-      );
+      toast.error(error instanceof Error ? error.message : 'Failed to load agent settings');
     } finally {
       // setSettingsLoadingAgentId(null);
     }
@@ -144,22 +142,14 @@ const AgentList: React.FC<AgentListProps> = ({
         <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
           <h3 className="mt-4 text-lg font-semibold">No workflows found</h3>
           <p className="mb-4 mt-2 text-sm text-muted-foreground">
-            You haven't created any workflows yet. Get started by creating your
-            first agent.
+            You haven't created any workflows yet. Get started by creating your first agent.
           </p>
-          <Button
-            className="flex items-center gap-2"
-            onClick={() => setOpenAgentForm(true)}
-          >
+          <Button className="flex items-center gap-2" onClick={() => setOpenAgentForm(true)}>
             <Plus className="h-4 w-4" />
             New Workflow
           </Button>
         </div>
-        <AgentFormDialog
-          isOpen={openAgentForm}
-          onClose={() => setOpenAgentForm(false)}
-          data={null}
-        />
+        <AgentFormDialog isOpen={openAgentForm} onClose={() => setOpenAgentForm(false)} data={null} />
       </div>
     );
   }
@@ -167,15 +157,14 @@ const AgentList: React.FC<AgentListProps> = ({
   const renderAgent = (agent: AgentListItem) => {
     const agentName = agent.name;
     const isActive = !!agent.is_active;
-    const truncatedPrompt = agent.possible_queries?.join(" ") ?? "";
-    const isAgentModalOpen =
-      settingsLoadingAgentId === agent.id && settingsDialogOpen;
+    const truncatedPrompt = agent.possible_queries?.join(' ') ?? '';
+    const isAgentModalOpen = settingsLoadingAgentId === agent.id && settingsDialogOpen;
 
     return (
       <div
         key={agent.id}
         className={`px-6 py-4 hover:bg-muted/50 cursor-pointer ${
-          settingsDialogOpen && !isAgentModalOpen ? "blur-sm opacity-50 bg-muted/100" : ""
+          settingsDialogOpen && !isAgentModalOpen ? 'blur-sm opacity-50 bg-muted/100' : ''
         }`}
         onClick={() => {
           handleOpenWorkflow(agent.id);
@@ -197,8 +186,7 @@ const AgentList: React.FC<AgentListProps> = ({
                 <span className="font-medium">ID:</span> {agent.id}
               </div>
               <div>
-                <span className="font-medium">Workflow ID:</span>{" "}
-                {agent.workflow_id}
+                <span className="font-medium">Workflow ID:</span> {agent.workflow_id}
               </div>
 
               <div>
@@ -208,10 +196,7 @@ const AgentList: React.FC<AgentListProps> = ({
           </div>
           <div className="flex items-center gap-4">
             <div onClick={(e) => e.stopPropagation()}>
-              <Switch
-                checked={isActive}
-                onCheckedChange={() => onUpdate(agent.id)}
-              />
+              <Switch checked={isActive} onCheckedChange={() => onUpdate(agent.id)} />
             </div>
             <div onClick={(e) => e.stopPropagation()}>
               <DropdownMenu>
@@ -227,10 +212,7 @@ const AgentList: React.FC<AgentListProps> = ({
                       <span>Edit Workflow</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-black"
-                    onClick={() => onManageKeys(agent.id)}
-                  >
+                  <DropdownMenuItem className="text-black" onClick={() => onManageKeys(agent.id)}>
                     <KeyRoundIcon className="mr-2 h-4 w-4" />
                     <span>Manage Keys</span>
                   </DropdownMenuItem>
@@ -290,8 +272,10 @@ const AgentList: React.FC<AgentListProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold">
-            Agent Studio{" "}
-            <span className="text-2xl text-zinc-400 font-normal">({activeAgents.length} Active, {inactiveAgents.length} Inactive)</span>
+            Agent Studio{' '}
+            <span className="text-2xl text-zinc-400 font-normal">
+              ({activeAgents.length} Active, {inactiveAgents.length} Inactive)
+            </span>
           </h2>
           <p className="text-zinc-400 font-normal">View and manage workflows</p>
         </div>
@@ -302,10 +286,7 @@ const AgentList: React.FC<AgentListProps> = ({
             placeholder="Search agents..."
             className="w-[200px]"
           />
-          <Button
-            className="flex items-center gap-2 rounded-full"
-            onClick={() => setOpenAgentForm(true)}
-          >
+          <Button className="flex items-center gap-2 rounded-full" onClick={() => setOpenAgentForm(true)}>
             <Plus className="h-4 w-4" />
             New Workflow
           </Button>
@@ -328,11 +309,7 @@ const AgentList: React.FC<AgentListProps> = ({
         )}
         <div ref={sentinelRef} className="h-1" />
       </div>
-      <AgentFormDialog
-        isOpen={openAgentForm}
-        onClose={handleFormClose}
-        data={null}
-      />
+      <AgentFormDialog isOpen={openAgentForm} onClose={handleFormClose} data={null} />
       <AgentFormDialog
         isOpen={settingsDialogOpen}
         onClose={handleSettingsDialogClose}

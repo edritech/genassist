@@ -1,15 +1,17 @@
+import logging
+from typing import List, Optional
 from uuid import UUID
+
 from injector import inject
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.exc import IntegrityError
-from typing import List, Optional
+from starlette_context import context
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.ml_model import MLModel
 from app.schemas.ml_model import MLModelCreate
-from starlette_context import context
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -41,16 +43,11 @@ class MLModelsRepository:
         except IntegrityError as e:
             await self.db.rollback()
             logger.error(f"IntegrityError while creating ML model: {str(e)}")
-            raise AppException(
-                error_key=ErrorKey.ML_MODEL_NAME_EXISTS
-            ) from e
+            raise AppException(error_key=ErrorKey.ML_MODEL_NAME_EXISTS) from e
 
     async def get_by_id(self, ml_model_id: UUID) -> MLModel:
         """Fetch ML model by ID."""
-        query = select(MLModel).where(
-            MLModel.id == ml_model_id,
-            MLModel.is_deleted == 0
-        )
+        query = select(MLModel).where(MLModel.id == ml_model_id, MLModel.is_deleted == 0)
         result = await self.db.execute(query)
         ml_model = result.scalars().first()
 
@@ -61,20 +58,13 @@ class MLModelsRepository:
 
     async def get_by_name(self, name: str) -> Optional[MLModel]:
         """Fetch ML model by name."""
-        query = select(MLModel).where(
-            MLModel.name == name,
-            MLModel.is_deleted == 0
-        )
+        query = select(MLModel).where(MLModel.name == name, MLModel.is_deleted == 0)
         result = await self.db.execute(query)
         return result.scalars().first()
 
     async def get_all(self) -> List[MLModel]:
         """Fetch all ML models."""
-        query = (
-            select(MLModel)
-            .where(MLModel.is_deleted == 0)
-            .order_by(MLModel.created_at.desc())
-        )
+        query = select(MLModel).where(MLModel.is_deleted == 0).order_by(MLModel.created_at.desc())
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
@@ -100,9 +90,7 @@ class MLModelsRepository:
         except IntegrityError as e:
             await self.db.rollback()
             logger.error(f"IntegrityError while updating ML model: {str(e)}")
-            raise AppException(
-                error_key=ErrorKey.ML_MODEL_NAME_EXISTS
-            ) from e
+            raise AppException(error_key=ErrorKey.ML_MODEL_NAME_EXISTS) from e
 
     async def delete(self, ml_model_id: UUID) -> MLModel:
         """Soft delete an ML model."""
@@ -110,5 +98,3 @@ class MLModelsRepository:
         ml_model.is_deleted = 1
         await self.db.commit()
         return ml_model
-
-

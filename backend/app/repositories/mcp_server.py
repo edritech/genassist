@@ -1,13 +1,13 @@
-from typing import Optional, List
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from sqlalchemy.orm import selectinload
-from uuid import UUID
-from injector import inject
 import logging
+from typing import List, Optional
+from uuid import UUID
+
+from injector import inject
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.db.models.mcp_server import MCPServerModel, MCPServerWorkflowModel
-from app.auth.utils import get_current_user_id
 
 logger = logging.getLogger(__name__)
 
@@ -177,4 +177,3 @@ class MCPServerRepository:
         await self.db.commit()
         await self.db.refresh(mcp_server)
         return True
-

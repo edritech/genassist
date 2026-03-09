@@ -1,7 +1,7 @@
-import { Card } from "@/components/card";
-import { Toggle } from "@/components/toggle";
-import { SettingSectionType, SettingFieldType } from "../../../interfaces/settings.interface";
-import { cn } from "@/lib/utils";
+import { Card } from '@/components/card';
+import { Toggle } from '@/components/toggle';
+import { SettingSectionType, SettingFieldType } from '../../../interfaces/settings.interface';
+import { cn } from '@/lib/utils';
 
 interface SettingSectionProps {
   section: SettingSectionType;
@@ -12,7 +12,7 @@ interface SettingSectionProps {
 export const SettingSection = ({ section, toggleStates, onToggle }: SettingSectionProps) => {
   const renderField = (field: SettingFieldType) => {
     switch (field.type) {
-      case "toggle":
+      case 'toggle':
         return (
           <Toggle
             pressed={toggleStates[field.label] || false}
@@ -20,13 +20,13 @@ export const SettingSection = ({ section, toggleStates, onToggle }: SettingSecti
             aria-label={field.label}
             className="relative px-0 h-6 w-11 bg-zinc-200 hover:bg-zinc-300 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground rounded-full"
           >
-            <span 
-              className="absolute left-[2px] transition-transform h-5 w-5 rounded-full bg-white data-[state=on]:translate-x-[20px]" 
-              data-state={toggleStates[field.label] ? 'on' : 'off'} 
+            <span
+              className="absolute left-[2px] transition-transform h-5 w-5 rounded-full bg-white data-[state=on]:translate-x-[20px]"
+              data-state={toggleStates[field.label] ? 'on' : 'off'}
             />
           </Toggle>
         );
-      case "select":
+      case 'select':
         return (
           <select className="rounded-full border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring">
             {field.options?.map((option) => (
@@ -39,9 +39,12 @@ export const SettingSection = ({ section, toggleStates, onToggle }: SettingSecti
           <input
             type={field.type}
             placeholder={field.placeholder}
-            value={typeof field.value === "string" || typeof field.value === "number" ? field.value : undefined}
+            value={typeof field.value === 'string' || typeof field.value === 'number' ? field.value : undefined}
             readOnly={field.readOnly}
-            className={cn("rounded-full border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-75", field.className)}
+            className={cn(
+              'rounded-full border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-75',
+              field.className
+            )}
             disabled={field.readOnly}
           />
         );
@@ -68,4 +71,4 @@ export const SettingSection = ({ section, toggleStates, onToggle }: SettingSecti
       </div>
     </Card>
   );
-}; 
+};

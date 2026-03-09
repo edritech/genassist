@@ -1,8 +1,9 @@
-import pytest
 import logging
-from app.schemas.role import RoleRead, RoleCreate, RoleUpdate
+
+import pytest
 
 logger = logging.getLogger(__name__)
+
 
 @pytest.fixture(scope="module")
 def new_role_data():
@@ -12,9 +13,9 @@ def new_role_data():
         "is_active": True,
     }
 
+
 @pytest.mark.asyncio
 async def test_create_role(authorized_client, new_role_data):
-
     response = authorized_client.post("/api/roles", json=new_role_data)
     print(response.json())
 
@@ -54,6 +55,7 @@ async def test_update_role(authorized_client, new_role_data):
     print(data)
     assert data["id"] == id
     assert data["name"] == new_role_data["name"]
+
 
 @pytest.mark.asyncio
 async def test_delete_role(authorized_client, new_role_data):

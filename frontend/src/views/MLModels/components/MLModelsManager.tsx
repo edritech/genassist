@@ -1,24 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
-import {
-  getAllMLModels,
-  createMLModel,
-  updateMLModel,
-  deleteMLModel,
-  uploadModelFile,
-} from "@/services/mlModels";
-import { v4 as uuidv4 } from "uuid";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Textarea } from "@/components/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { getAllMLModels, createMLModel, updateMLModel, deleteMLModel, uploadModelFile } from '@/services/mlModels';
+import { v4 as uuidv4 } from 'uuid';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Textarea } from '@/components/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
 import {
   Upload,
   X,
@@ -32,22 +20,22 @@ import {
   FileCode,
   FileIcon,
   Download,
-} from "lucide-react";
-import { SearchInput } from "@/components/SearchInput";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { MLModel } from "@/interfaces/ml-model.interface";
-import { Badge } from "@/components/badge";
-import { downloadFile, getFileDownloadUrl } from "@/helpers/utils";
-import { getApiUrlString } from "@/config/api";
+} from 'lucide-react';
+import { SearchInput } from '@/components/SearchInput';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { MLModel } from '@/interfaces/ml-model.interface';
+import { Badge } from '@/components/badge';
+import { downloadFile, getFileDownloadUrl } from '@/helpers/utils';
+import { getApiUrlString } from '@/config/api';
 
 const DEFAULT_FORM_DATA: MLModel = {
   id: uuidv4(),
-  name: "",
-  description: "",
-  model_type: "xgboost",
+  name: '',
+  description: '',
+  model_type: 'xgboost',
   pkl_file: null,
   features: [],
-  target_variable: "",
+  target_variable: '',
   inference_params: {},
 };
 
@@ -59,9 +47,9 @@ const MLModelsManager: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [showForm, setShowForm] = useState<boolean>(false);
-  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>('all');
 
   const [modelToDelete, setModelToDelete] = useState<Partial<MLModel> | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -69,10 +57,8 @@ const MLModelsManager: React.FC = () => {
 
   const [editingItem, setEditingItem] = useState<MLModel | null>(null);
   const [formData, setFormData] = useState<MLModel>(DEFAULT_FORM_DATA);
-  const [featuresInput, setFeaturesInput] = useState<string>("");
-  const [inferenceParamsKV, setInferenceParamsKV] = useState<
-    { key: string; value: string }[]
-  >([]);
+  const [featuresInput, setFeaturesInput] = useState<string>('');
+  const [inferenceParamsKV, setInferenceParamsKV] = useState<{ key: string; value: string }[]>([]);
 
   useEffect(() => {
     fetchItems();
@@ -85,15 +71,13 @@ const MLModelsManager: React.FC = () => {
       setItems(data);
       setError(null);
     } catch (err) {
-      setError("Failed to load ML models");
+      setError('Failed to load ML models');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -114,11 +98,7 @@ const MLModelsManager: React.FC = () => {
     try {
       return await uploadModelFile(selectedFile);
     } catch (error) {
-      setError(
-        `Failed to upload file: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      setError(`Failed to upload file: ${error instanceof Error ? error.message : String(error)}`);
       return null;
     } finally {
       setIsUploading(false);
@@ -131,8 +111,8 @@ const MLModelsManager: React.FC = () => {
     // Parse comma-separated values and update formData
     const featuresArray = value
       .split(', ')
-      .map(f => f.trim())
-      .filter(f => f.length > 0);
+      .map((f) => f.trim())
+      .filter((f) => f.length > 0);
 
     setFormData((prev) => ({
       ...prev,
@@ -141,13 +121,16 @@ const MLModelsManager: React.FC = () => {
   };
 
   const syncInferenceParamsToForm = (kv: { key: string; value: string }[]) => {
-    const paramsObject = kv.reduce((acc, { key, value }) => {
-      const trimmedKey = key.trim();
-      if (trimmedKey.length > 0) {
-        acc[trimmedKey] = value;
-      }
-      return acc;
-    }, {} as Record<string, string>);
+    const paramsObject = kv.reduce(
+      (acc, { key, value }) => {
+        const trimmedKey = key.trim();
+        if (trimmedKey.length > 0) {
+          acc[trimmedKey] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, string>
+    );
     setFormData((prev) => ({
       ...prev,
       inference_params: paramsObject,
@@ -156,7 +139,7 @@ const MLModelsManager: React.FC = () => {
 
   const addParamRow = () => {
     setInferenceParamsKV((prev) => {
-      const next = [...prev, { key: "", value: "" }];
+      const next = [...prev, { key: '', value: '' }];
       syncInferenceParamsToForm(next);
       return next;
     });
@@ -190,10 +173,10 @@ const MLModelsManager: React.FC = () => {
     e.preventDefault();
 
     const requiredFields = [
-      { label: "name", isEmpty: !formData.name },
-      { label: "description", isEmpty: !formData.description },
-      { label: "model type", isEmpty: !formData.model_type },
-      { label: "target variable", isEmpty: !formData.target_variable },
+      { label: 'name', isEmpty: !formData.name },
+      { label: 'description', isEmpty: !formData.description },
+      { label: 'model type', isEmpty: !formData.model_type },
+      { label: 'target variable', isEmpty: !formData.target_variable },
     ];
 
     const missingFields = requiredFields
@@ -205,13 +188,13 @@ const MLModelsManager: React.FC = () => {
       if (missingFields.length === 1) {
         toast.error(`${missingFields[0]} is required.`);
       } else {
-        toast.error(`Please provide: ${missingFields.join(", ")}.`);
+        toast.error(`Please provide: ${missingFields.join(', ')}.`);
       }
       return;
     }
 
     if (formData.features.length === 0) {
-      toast.error("Please add at least one feature.");
+      toast.error('Please add at least one feature.');
       return;
     }
 
@@ -227,7 +210,7 @@ const MLModelsManager: React.FC = () => {
         const uploadResult = await uploadFile();
 
         if (!uploadResult) {
-          throw new Error("File upload failed");
+          throw new Error('File upload failed');
         }
 
         dataToSubmit.pkl_file = uploadResult?.file_path;
@@ -255,15 +238,11 @@ const MLModelsManager: React.FC = () => {
     } catch (err) {
       let errorMessage = err instanceof Error ? err.message : String(err);
 
-      if (errorMessage.includes("400")) {
-        errorMessage = "An ML model with this name already exists.";
+      if (errorMessage.includes('400')) {
+        errorMessage = 'An ML model with this name already exists.';
       }
 
-      toast.error(
-        `Failed to ${
-          editingItem ? "update" : "create"
-        } ML model: ${errorMessage}`
-      );
+      toast.error(`Failed to ${editingItem ? 'update' : 'create'} ML model: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -276,7 +255,7 @@ const MLModelsManager: React.FC = () => {
     setError(null);
     setSuccess(null);
     setShowForm(false);
-    setFeaturesInput("");
+    setFeaturesInput('');
     setInferenceParamsKV([]);
   };
 
@@ -291,7 +270,7 @@ const MLModelsManager: React.FC = () => {
     setInferenceParamsKV(
       Object.entries(item.inference_params || {}).map(([key, value]) => ({
         key,
-        value: String(value ?? ""),
+        value: String(value ?? ''),
       }))
     );
     setSelectedFile(null);
@@ -312,7 +291,7 @@ const MLModelsManager: React.FC = () => {
       toast.success(`ML model deleted successfully.`);
       setItems((prev) => prev.filter((s) => s.id !== modelToDelete.id));
     } catch (err) {
-      toast.error("Failed to delete ML model.");
+      toast.error('Failed to delete ML model.');
     } finally {
       setModelToDelete(null);
       setIsDeleteDialogOpen(false);
@@ -322,11 +301,11 @@ const MLModelsManager: React.FC = () => {
 
   const downloadModelFile = async (fileId: string) => {
     try {
-      const tenantId = localStorage.getItem("tenant_id");
-      const fileUrl = getFileDownloadUrl(fileId, getApiUrlString, tenantId || "");
-      await downloadFile(fileUrl, `${formData.name || "model"}.pkl`);
+      const tenantId = localStorage.getItem('tenant_id');
+      const fileUrl = getFileDownloadUrl(fileId, getApiUrlString, tenantId || '');
+      await downloadFile(fileUrl, `${formData.name || 'model'}.pkl`);
     } catch (error) {
-      toast.error("Failed to download model file");
+      toast.error('Failed to download model file');
       console.error(error);
     }
   };
@@ -336,19 +315,16 @@ const MLModelsManager: React.FC = () => {
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return (
-      matchesQuery &&
-      (item.model_type === typeFilter || typeFilter === "all")
-    );
+    return matchesQuery && (item.model_type === typeFilter || typeFilter === 'all');
   });
 
   const getModelTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      xgboost: "XGBoost",
-      random_forest: "Random Forest",
-      linear_regression: "Linear Regression",
-      logistic_regression: "Logistic Regression",
-      other: "Other",
+      xgboost: 'XGBoost',
+      random_forest: 'Random Forest',
+      linear_regression: 'Linear Regression',
+      logistic_regression: 'Logistic Regression',
+      other: 'Other',
     };
     return labels[type] || type;
   };
@@ -358,17 +334,10 @@ const MLModelsManager: React.FC = () => {
       {showForm ? (
         <>
           <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCancel}
-              className="mr-2"
-            >
+            <Button variant="ghost" size="icon" onClick={handleCancel} className="mr-2">
               <ChevronLeft className="h-5 w-5" />
             </Button>
-            <h2 className="text-2xl font-bold tracking-tight">
-              {editingItem ? "Edit ML Model" : "New ML Model"}
-            </h2>
+            <h2 className="text-2xl font-bold tracking-tight">{editingItem ? 'Edit ML Model' : 'New ML Model'}</h2>
           </div>
 
           {error && (
@@ -392,12 +361,8 @@ const MLModelsManager: React.FC = () => {
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <h3 className="text-lg font-semibold">
-                        Basic Information
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Basic information about the ML model.
-                      </p>
+                      <h3 className="text-lg font-semibold">Basic Information</h3>
+                      <p className="text-sm text-gray-500 mt-1">Basic information about the ML model.</p>
                     </div>
 
                     <div className="md:col-span-2 space-y-6">
@@ -419,7 +384,7 @@ const MLModelsManager: React.FC = () => {
                             value={formData.model_type}
                             onValueChange={(value) =>
                               handleInputChange({
-                                target: { name: "model_type", value },
+                                target: { name: 'model_type', value },
                               } as React.ChangeEvent<HTMLInputElement>)
                             }
                           >
@@ -473,8 +438,8 @@ const MLModelsManager: React.FC = () => {
                                 {selectedFile
                                   ? selectedFile.name
                                   : formData.pkl_file
-                                  ? "Replace file"
-                                  : "Select .pkl file to upload (optional)"}
+                                    ? 'Replace file'
+                                    : 'Select .pkl file to upload (optional)'}
                               </span>
                               <input
                                 id="file-upload"
@@ -492,8 +457,7 @@ const MLModelsManager: React.FC = () => {
                               <div className="flex items-center gap-2">
                                 <FileCode className="h-4 w-4" />
                                 <span className="text-sm">
-                                  {selectedFile.name} (
-                                  {(selectedFile.size / 1024).toFixed(1)} KB)
+                                  {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
                                 </span>
                               </div>
                               <Button
@@ -512,9 +476,7 @@ const MLModelsManager: React.FC = () => {
                             <div className="flex items-center justify-between p-2 bg-muted rounded-md">
                               <div className="flex items-center gap-2">
                                 <FileCode className="h-4 w-4" />
-                                <span className="text-sm">
-                                  File: {formData.pkl_file}
-                                </span>
+                                <span className="text-sm">File: {formData.pkl_file}</span>
                               </div>
                             </div>
                           )}
@@ -523,27 +485,23 @@ const MLModelsManager: React.FC = () => {
                             <div className="flex items-center justify-between p-2 bg-muted rounded-md">
                               <div className="flex items-center gap-2">
                                 <FileIcon className="h-4 w-4" />
-                                <span className="text-sm">
-                                  {formData.name}
-                                </span>
+                                <span className="text-sm">{formData.name}</span>
                               </div>
 
                               <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => downloadModelFile(formData.pkl_file_id as string)}
-                                  className="h-8 w-8 ml-auto"
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => downloadModelFile(formData.pkl_file_id as string)}
+                                className="h-8 w-8 ml-auto"
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
                             </div>
                           )}
 
                           {isUploading && (
-                            <div className="p-2 text-sm text-muted-foreground">
-                              Uploading file... Please wait.
-                            </div>
+                            <div className="p-2 text-sm text-muted-foreground">Uploading file... Please wait.</div>
                           )}
                         </div>
                       </div>
@@ -558,9 +516,7 @@ const MLModelsManager: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <h3 className="text-lg font-semibold">Features</h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Enter comma-separated feature names for the model.
-                      </p>
+                      <p className="text-sm text-gray-500 mt-1">Enter comma-separated feature names for the model.</p>
                     </div>
 
                     <div className="md:col-span-2 space-y-4">
@@ -572,7 +528,8 @@ const MLModelsManager: React.FC = () => {
                         />
                         {formData.features.length > 0 && (
                           <p className="text-sm text-gray-500 mt-2">
-                            {formData.features.length} feature{formData.features.length !== 1 ? 's' : ''} defined: {formData.features.join(', ')}
+                            {formData.features.length} feature
+                            {formData.features.length !== 1 ? 's' : ''} defined: {formData.features.join(', ')}
                           </p>
                         )}
                       </div>
@@ -586,9 +543,7 @@ const MLModelsManager: React.FC = () => {
                 <div className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <h3 className="text-lg font-semibold">
-                        Inference Parameters
-                      </h3>
+                      <h3 className="text-lg font-semibold">Inference Parameters</h3>
                       <p className="text-sm text-gray-500 mt-1">
                         Define parameter names and their default values for inference.
                       </p>
@@ -646,11 +601,7 @@ const MLModelsManager: React.FC = () => {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={loading || isUploading}>
-                  {loading || isUploading
-                    ? "Saving..."
-                    : editingItem
-                    ? "Update ML Model"
-                    : "Create ML Model"}
+                  {loading || isUploading ? 'Saving...' : editingItem ? 'Update ML Model' : 'Create ML Model'}
                 </Button>
               </div>
             </div>
@@ -662,17 +613,11 @@ const MLModelsManager: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-3xl font-bold">ML Models</h2>
-                <p className="text-zinc-400 font-normal">
-                  Manage machine learning model definitions
-                </p>
+                <p className="text-zinc-400 font-normal">Manage machine learning model definitions</p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <Select
-                    value={typeFilter}
-                    onValueChange={(value) => setTypeFilter(value)}
-                    defaultValue="all"
-                  >
+                  <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value)} defaultValue="all">
                     <SelectTrigger className="min-w-32 bg-white">
                       <SelectValue placeholder="Filter by type" />
                     </SelectTrigger>
@@ -716,17 +661,15 @@ const MLModelsManager: React.FC = () => {
             <div className="rounded-lg border bg-white overflow-hidden">
               {loading ? (
                 <div className="flex justify-center items-center py-12">
-                  <div className="text-sm text-gray-500">
-                    Loading ML models...
-                  </div>
+                  <div className="text-sm text-gray-500">Loading ML models...</div>
                 </div>
               ) : filteredItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
                   <Brain className="h-12 w-12 text-gray-400" />
                   <h3 className="font-medium text-lg">No ML models found</h3>
                   <p className="text-sm text-gray-500 max-w-sm">
-                    {searchQuery ? "Try adjusting your search query or" : ""}{" "}
-                    add your first ML model to start defining your models.
+                    {searchQuery ? 'Try adjusting your search query or' : ''} add your first ML model to start defining
+                    your models.
                   </p>
                 </div>
               ) : (
@@ -746,16 +689,12 @@ const MLModelsManager: React.FC = () => {
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="flex-1 flex flex-col space-y-2">
                           <div className="flex items-center gap-2">
-                            <h4 className="text-lg font-semibold">
-                              {item.name}
-                            </h4>
+                            <h4 className="text-lg font-semibold">{item.name}</h4>
                             <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800">
                               {getModelTypeLabel(item.model_type)}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-500">
-                            {item.description}
-                          </p>
+                          <p className="text-sm text-gray-500">{item.description}</p>
                           <div className="flex flex-wrap gap-3 text-sm text-gray-500 mt-1">
                             <span>
                               <strong>Target:</strong> {item.target_variable}
@@ -810,7 +749,7 @@ const MLModelsManager: React.FC = () => {
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDelete}
         isInProgress={isDeleting}
-        itemName={modelToDelete?.name || ""}
+        itemName={modelToDelete?.name || ''}
         description={`This action cannot be undone. This will permanently delete the ML model "${modelToDelete?.name}".`}
       />
     </div>
@@ -818,4 +757,3 @@ const MLModelsManager: React.FC = () => {
 };
 
 export default MLModelsManager;
-

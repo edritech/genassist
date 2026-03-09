@@ -5,9 +5,10 @@ Defines the common interface that all data providers must implement.
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 from .models import SearchResult
+
 
 class BaseDataProvider(ABC):
     """
@@ -16,8 +17,9 @@ class BaseDataProvider(ABC):
     This interface ensures consistency across different provider implementations
     (vector, LEGRA, etc.) and enables polymorphic usage.
     """
+
     name: str
-    
+
     def __init__(self, knowledge_base_id: str):
         """
         Initialize the provider with a knowledge base ID
@@ -39,12 +41,7 @@ class BaseDataProvider(ABC):
         pass
 
     @abstractmethod
-    async def add_document(
-        self,
-        doc_id: str,
-        content: str,
-        metadata: Dict[str, Any] = None
-    ) -> bool:
+    async def add_document(self, doc_id: str, content: str, metadata: Dict[str, Any] = None) -> bool:
         """
         Add a document to the provider
 
@@ -82,12 +79,7 @@ class BaseDataProvider(ABC):
         pass
 
     @abstractmethod
-    async def search(
-        self,
-        query: str,
-        limit: int = 5,
-        **kwargs
-    ) -> List[SearchResult]:
+    async def search(self, query: str, limit: int = 5, **kwargs) -> List[SearchResult]:
         """
         Search for documents using the provider's search mechanism
 

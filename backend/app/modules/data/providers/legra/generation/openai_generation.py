@@ -5,7 +5,7 @@ import openai
 from .base import Generator
 
 __all__ = [
-    'OpenAIGenerator',
+    "OpenAIGenerator",
 ]
 
 

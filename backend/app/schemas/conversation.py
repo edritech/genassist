@@ -1,16 +1,18 @@
-from uuid import UUID
-from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
+from pydantic import BaseModel, ConfigDict
+
+from app.schemas.agent_security_settings import AgentSecuritySettingsUpdate
 from app.schemas.conversation_analysis import ConversationAnalysisRead
 from app.schemas.recording import RecordingRead
 from app.schemas.transcript_message import TranscriptMessageRead
-from app.schemas.agent_security_settings import AgentSecuritySettingsUpdate
 
 
 class InProgressPollResponse(BaseModel):
     """Lightweight response for in-progress conversation heartbeat polling (no WebSocket)."""
+
     status: str
     messages: list[TranscriptMessageRead] = []
 
@@ -19,6 +21,7 @@ class InProgressPollResponse(BaseModel):
 
 class AgentMinimalForCache(BaseModel):
     """Minimal agent schema for caching - contains only fields needed for security checks."""
+
     id: UUID
     name: str
     is_active: bool = False
@@ -29,6 +32,7 @@ class AgentMinimalForCache(BaseModel):
 
 class OperatorWithAgentForCache(BaseModel):
     """Operator schema with nested agent for caching."""
+
     id: UUID
     agent: Optional[AgentMinimalForCache] = None
 
@@ -37,6 +41,7 @@ class OperatorWithAgentForCache(BaseModel):
 
 class ConversationWithOperatorAgentRead(BaseModel):
     """Conversation schema with operator and agent for caching in security dependencies."""
+
     id: UUID
     operator_id: UUID
     operator: Optional[OperatorWithAgentForCache] = None
@@ -58,13 +63,12 @@ class ConversationBase(BaseModel):
     status: Optional[str] = None
     conversation_type: Optional[str] = None
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ConversationCreate(ConversationBase):
     id: Optional[UUID] = None
+
 
 class ConversationRead(ConversationBase):
     id: UUID
@@ -81,15 +85,12 @@ class ConversationRead(ConversationBase):
     thumbs_down_count: int = 0
     thumbs_up_count: int = 0
 
-
-
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ConversationPaginatedResponse(BaseModel):
     """Paginated response for conversations list."""
+
     items: list[ConversationRead]
     total: int
     page: int

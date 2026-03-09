@@ -1,12 +1,12 @@
 import React from 'react';
 import MLModelsManager from '../components/MLModelsManager';
-import { SidebarProvider, SidebarTrigger } from "@/components/sidebar";
-import { AppSidebar } from "@/layout/app-sidebar";
-import { useIsMobile } from "@/hooks/useMobile";
+import { SidebarProvider, SidebarTrigger } from '@/components/sidebar';
+import { AppSidebar } from '@/layout/app-sidebar';
+import { useIsMobile } from '@/hooks/useMobile';
 
 const MLModels: React.FC = () => {
   const isMobile = useIsMobile();
-  
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full overflow-x-hidden">
@@ -25,4 +25,3 @@ const MLModels: React.FC = () => {
 };
 
 export default MLModels;
-

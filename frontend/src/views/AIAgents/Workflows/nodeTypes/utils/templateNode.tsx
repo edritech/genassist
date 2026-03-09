@@ -1,20 +1,16 @@
-import React, { useState } from "react";
-import { NodeProps } from "reactflow";
-import { TemplateNodeData } from "../../types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import { TemplateNodeDialog } from "../../nodeDialogs/TemplateNodeDialog";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { extractDynamicVariablesAsRecord } from "../../utils/helpers";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
+import React, { useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { TemplateNodeData } from '../../types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import { TemplateNodeDialog } from '../../nodeDialogs/TemplateNodeDialog';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { extractDynamicVariablesAsRecord } from '../../utils/helpers';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
 
-export const TEMPLATE_NODE_TYPE = "templateNode";
+export const TEMPLATE_NODE_TYPE = 'templateNode';
 
-const TemplateNode: React.FC<NodeProps<TemplateNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const TemplateNode: React.FC<NodeProps<TemplateNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(TEMPLATE_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -30,9 +26,9 @@ const TemplateNode: React.FC<NodeProps<TemplateNodeData>> = ({
   };
 
   const nodeContent: NodeContentRow[] = [
-    { label: "Template", value: data.template, isTextArea: true },
+    { label: 'Template', value: data.template, isTextArea: true },
     {
-      label: "Variables",
+      label: 'Variables',
       value: extractDynamicVariablesAsRecord(JSON.stringify(data)),
       areDynamicVars: true,
     },

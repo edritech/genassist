@@ -1,27 +1,18 @@
 // Office365Connection.tsx
-import { useEffect, useState } from "react";
-import { Button } from "@/components/button";
-import { Alert, AlertDescription } from "@/components/alert";
-import { Badge } from "@/components/badge";
-import { Label } from "@/components/label";
-import { Mail, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
-import { toast } from "react-hot-toast";
-import {
-  createTempOffice365DataSource,
-  buildOffice365OAuthUrl,
-} from "@/services/dataSources";
-import { DataSource } from "@/interfaces/dataSource.interface";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { getAllAppSettings } from "@/services/appSettings";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
-import { AppSettingDialog } from "@/views/AppSettings/components/AppSettingDialog";
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/button';
+import { Alert, AlertDescription } from '@/components/alert';
+import { Badge } from '@/components/badge';
+import { Label } from '@/components/label';
+import { Mail, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { createTempOffice365DataSource, buildOffice365OAuthUrl } from '@/services/dataSources';
+import { DataSource } from '@/interfaces/dataSource.interface';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { getAllAppSettings } from '@/services/appSettings';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
+import { AppSettingDialog } from '@/views/AppSettings/components/AppSettingDialog';
 
 interface Office365ConnectionProps {
   dataSource?: DataSource;
@@ -29,22 +20,16 @@ interface Office365ConnectionProps {
   onDataSourceCreated?: (id: string) => void;
 }
 
-export function Office365Connection({
-  dataSource,
-  dataSourceName,
-  onDataSourceCreated,
-}: Office365ConnectionProps) {
-  const [appSettingsId, setAppSettingsId] = useState(
-    (dataSource?.connection_data.app_settings_id as string) || ""
-  );
+export function Office365Connection({ dataSource, dataSourceName, onDataSourceCreated }: Office365ConnectionProps) {
+  const [appSettingsId, setAppSettingsId] = useState((dataSource?.connection_data.app_settings_id as string) || '');
   const [appSettings, setAppSettings] = useState<AppSetting[]>([]);
   const [isLoadingAppSettings, setIsLoadingAppSettings] = useState(false);
   const [isCreateSettingOpen, setIsCreateSettingOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
   const isConnected = dataSource?.connection_data.user_email;
-  const isPending = dataSource?.oauth_status === "pending";
-  const hasError = dataSource?.oauth_status === "error";
+  const isPending = dataSource?.oauth_status === 'pending';
+  const hasError = dataSource?.oauth_status === 'error';
 
   const fetchAppSettings = async () => {
     setIsLoadingAppSettings(true);
@@ -52,56 +37,49 @@ export function Office365Connection({
       const settings = await getAllAppSettings();
       const filteredSettings = settings.filter((setting) => {
         const settingTypeLower = setting.type.toLowerCase();
-        return settingTypeLower === "microsoft" && setting.is_active === 1;
+        return settingTypeLower === 'microsoft' && setting.is_active === 1;
       });
       setAppSettings(filteredSettings);
     } catch (error) {
-      console.error("Error fetching app settings:", error);
+      console.error('Error fetching app settings:', error);
     } finally {
       setIsLoadingAppSettings(false);
     }
   };
 
   useEffect(() => {
-    setAppSettingsId(
-      (dataSource?.connection_data.app_settings_id as string) || ""
-    );
+    setAppSettingsId((dataSource?.connection_data.app_settings_id as string) || '');
 
     fetchAppSettings();
   }, [dataSource]);
 
   const handleConnect = async () => {
     if (!dataSourceName.trim()) {
-      toast.error("Data source name is required.");
+      toast.error('Data source name is required.');
       return;
     }
 
     if (!appSettingsId) {
-      toast.error("Configuration variables are required.");
+      toast.error('Configuration variables are required.');
       return;
     }
 
     setIsConnecting(true);
     try {
-      const selectedAppSettings = appSettings.find(
-        (setting) => setting.id === appSettingsId
-      );
+      const selectedAppSettings = appSettings.find((setting) => setting.id === appSettingsId);
       const clientId = selectedAppSettings?.values?.microsoft_client_id;
       const tenantId = selectedAppSettings?.values?.microsoft_tenant_id;
       let datasourceId = dataSource?.id;
 
       if (!datasourceId) {
-        datasourceId = await createTempOffice365DataSource(
-          dataSourceName,
-          appSettingsId
-        );
+        datasourceId = await createTempOffice365DataSource(dataSourceName, appSettingsId);
         onDataSourceCreated?.(datasourceId);
       }
 
       const oauthUrl = buildOffice365OAuthUrl(clientId, tenantId, datasourceId);
       window.location.href = oauthUrl;
     } catch (error) {
-      toast.error("Failed to initiate Office 365 connection.");
+      toast.error('Failed to initiate Office 365 connection.');
     } finally {
       setIsConnecting(false);
     }
@@ -150,8 +128,7 @@ export function Office365Connection({
         <Alert>
           <CheckCircle className="h-4 w-4" />
           <AlertDescription>
-            Connected to Office365 account:{" "}
-            <strong>{dataSource.connection_data.user_email}</strong>
+            Connected to Office365 account: <strong>{dataSource.connection_data.user_email}</strong>
           </AlertDescription>
         </Alert>
       )}
@@ -161,8 +138,8 @@ export function Office365Connection({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             {hasError
-              ? "Please reauthorize Office365 access before saving."
-              : "Please authorize Office365 access before saving."}
+              ? 'Please reauthorize Office365 access before saving.'
+              : 'Please authorize Office365 access before saving.'}
           </AlertDescription>
         </Alert>
       )}
@@ -173,9 +150,9 @@ export function Office365Connection({
           Configuration Vars <span className="text-red-500">*</span>
         </Label>
         <Select
-          value={appSettingsId || ""}
+          value={appSettingsId || ''}
           onValueChange={(value) => {
-            if (value === "__create__") {
+            if (value === '__create__') {
               setIsCreateSettingOpen(true);
             } else {
               setAppSettingsId(value);
@@ -201,12 +178,12 @@ export function Office365Connection({
         type="button"
         onClick={handleConnect}
         disabled={isConnecting}
-        variant={isConnected ? "outline" : "default"}
+        variant={isConnected ? 'outline' : 'default'}
         className="w-full"
       >
         {isConnecting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         <Mail className="mr-2 h-4 w-4" />
-        {isConnected ? "Reauthorize Office365" : "Connect Office365"}
+        {isConnected ? 'Reauthorize Office365' : 'Connect Office365'}
       </Button>
 
       <AppSettingDialog

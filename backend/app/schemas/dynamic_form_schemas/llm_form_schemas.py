@@ -6,8 +6,10 @@ All schemas use the unified TypeSchema structure from base.py.
 """
 
 from typing import Dict
-from .base import FieldSchema, TypeSchema, convert_typed_schemas_to_dict
+
 from app.core.utils.gpt_utils import get_openai_model_options
+
+from .base import FieldSchema, TypeSchema, convert_typed_schemas_to_dict
 
 # Define LLM schemas using direct Pydantic models
 LLM_FORM_SCHEMAS: Dict[str, TypeSchema] = {

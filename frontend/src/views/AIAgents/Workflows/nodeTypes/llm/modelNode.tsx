@@ -1,32 +1,26 @@
-import React, { useEffect, useState } from "react";
-import { NodeProps } from "reactflow";
-import { LLMModelNodeData } from "../../types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { getLLMProvider } from "@/services/llmProviders";
-import { LLModelDialog } from "../../nodeDialogs/LLModelDialog";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
+import React, { useEffect, useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { LLMModelNodeData } from '../../types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { getLLMProvider } from '@/services/llmProviders';
+import { LLModelDialog } from '../../nodeDialogs/LLModelDialog';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
 
-export const LL_MODEL_NODE_TYPE = "llmModelNode";
+export const LL_MODEL_NODE_TYPE = 'llmModelNode';
 
-const LLModelNode: React.FC<NodeProps<LLMModelNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const LLModelNode: React.FC<NodeProps<LLMModelNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(LL_MODEL_NODE_TYPE);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [providerName, setProviderName] = useState("");
+  const [providerName, setProviderName] = useState('');
   const color = getNodeColor(nodeDefinition.category);
 
   useEffect(() => {
     if (data.providerId) {
       getLLMProvider(data.providerId).then((provider) => {
         if (provider) {
-          setProviderName(
-            `${provider.name} (${provider.llm_model_provider} - ${provider.llm_model})`
-          );
+          setProviderName(`${provider.name} (${provider.llm_model_provider} - ${provider.llm_model})`);
         }
       });
     }
@@ -44,15 +38,15 @@ const LLModelNode: React.FC<NodeProps<LLMModelNodeData>> = ({
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "LLM Provider",
+      label: 'LLM Provider',
       value: providerName,
-      placeholder: "None selected",
+      placeholder: 'None selected',
     },
     {
-      label: "Mode",
-      value: `${data.type} (${data.memory ? "with" : "without"} memory)`,
+      label: 'Mode',
+      value: `${data.type} (${data.memory ? 'with' : 'without'} memory)`,
     },
-    { label: "System Prompt", value: data.systemPrompt },
+    { label: 'System Prompt', value: data.systemPrompt },
   ];
 
   return (

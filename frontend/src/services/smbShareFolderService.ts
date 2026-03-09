@@ -1,6 +1,6 @@
 // src/services/smbShareFolderService.ts
 
-import { apiRequest } from "@/config/api";
+import { apiRequest } from '@/config/api';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -53,7 +53,7 @@ export const listDirectory = async (
         .map(([k, v]) => [k, String(v)])
     ).toString();
 
-    const data = await apiRequest<string[]>("GET", `smb-share/smb/list?${query}`);
+    const data = await apiRequest<string[]>('GET', `smb-share/smb/list?${query}`);
     if (!data) return [];
     return data;
   } catch (error) {
@@ -64,9 +64,7 @@ export const listDirectory = async (
 /**
  * Read a file (text or binary).
  */
-export const readFile = async (
-  params: Omit<SMBFileRequest, "content" | "overwrite">
-): Promise<string | Blob> => {
+export const readFile = async (params: Omit<SMBFileRequest, 'content' | 'overwrite'>): Promise<string | Blob> => {
   try {
     const query = new URLSearchParams(
       Object.entries(params)
@@ -74,7 +72,7 @@ export const readFile = async (
         .map(([k, v]) => [k, String(v)])
     ).toString();
 
-    const data = await apiRequest<string | Blob>("GET", `smb-share/smb/read?${query}`);
+    const data = await apiRequest<string | Blob>('GET', `smb-share/smb/read?${query}`);
     return data;
   } catch (error) {
     throw error;
@@ -86,9 +84,9 @@ export const readFile = async (
  */
 export const writeFile = async (payload: SMBFileRequest): Promise<void> => {
   try {
-    const response = await apiRequest("POST", "smb-share/smb/write", payload as unknown as Record<string, unknown>);
+    const response = await apiRequest('POST', 'smb-share/smb/write', payload as unknown as Record<string, unknown>);
     if (!response) {
-      throw new Error("Failed to write SMB file");
+      throw new Error('Failed to write SMB file');
     }
   } catch (error) {
     throw error;
@@ -100,9 +98,9 @@ export const writeFile = async (payload: SMBFileRequest): Promise<void> => {
  */
 export const deleteFile = async (payload: SMBFileRequest): Promise<void> => {
   try {
-    const response = await apiRequest("DELETE", "smb-share/smb/file", payload as unknown as Record<string, unknown>);
+    const response = await apiRequest('DELETE', 'smb-share/smb/file', payload as unknown as Record<string, unknown>);
     if (!response) {
-      throw new Error("Failed to delete SMB file");
+      throw new Error('Failed to delete SMB file');
     }
   } catch (error) {
     throw error;
@@ -114,9 +112,9 @@ export const deleteFile = async (payload: SMBFileRequest): Promise<void> => {
  */
 export const createFolder = async (payload: SMBFolderRequest): Promise<void> => {
   try {
-    const response = await apiRequest("POST", "smb-share/smb/folder", payload as unknown as Record<string, unknown>);
+    const response = await apiRequest('POST', 'smb-share/smb/folder', payload as unknown as Record<string, unknown>);
     if (!response) {
-      throw new Error("Failed to create SMB folder");
+      throw new Error('Failed to create SMB folder');
     }
   } catch (error) {
     throw error;
@@ -128,9 +126,9 @@ export const createFolder = async (payload: SMBFolderRequest): Promise<void> => 
  */
 export const deleteFolder = async (payload: SMBFolderRequest): Promise<void> => {
   try {
-    const response = await apiRequest("DELETE", "smb-share/smb/folder", payload as unknown as Record<string, unknown>);
+    const response = await apiRequest('DELETE', 'smb-share/smb/folder', payload as unknown as Record<string, unknown>);
     if (!response) {
-      throw new Error("Failed to delete SMB folder");
+      throw new Error('Failed to delete SMB folder');
     }
   } catch (error) {
     throw error;
@@ -140,9 +138,7 @@ export const deleteFolder = async (payload: SMBFolderRequest): Promise<void> => 
 /**
  * Check if a path exists (file or folder).
  */
-export const checkPathExists = async (
-  params: SMBConnection & { path: string }
-): Promise<boolean> => {
+export const checkPathExists = async (params: SMBConnection & { path: string }): Promise<boolean> => {
   try {
     const query = new URLSearchParams(
       Object.entries(params)
@@ -150,7 +146,7 @@ export const checkPathExists = async (
         .map(([k, v]) => [k, String(v)])
     ).toString();
 
-    const data = await apiRequest<{ exists: boolean }>("GET", `smb-share/smb/exists?${query}`);
+    const data = await apiRequest<{ exists: boolean }>('GET', `smb-share/smb/exists?${query}`);
     return data?.exists ?? false;
   } catch (error) {
     throw error;

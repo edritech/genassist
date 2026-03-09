@@ -1,10 +1,13 @@
 from uuid import UUID
+
 from injector import inject
 from sqlalchemy import select
-from sqlalchemy.orm import load_only
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import load_only
+
 from app.db.models.audit_log import AuditLogModel
 from app.schemas.audit_log import AuditLogSearchParams
+
 
 @inject
 class AuditLogRepository:
@@ -31,19 +34,19 @@ class AuditLogRepository:
         # Apply filters based on search parameters
         if search_params.start_date:
             query = query.where(AuditLogModel.modified_at >= search_params.start_date)
-        
+
         if search_params.end_date:
             query = query.where(AuditLogModel.modified_at <= search_params.end_date)
-        
+
         if search_params.action:
             query = query.where(AuditLogModel.action_name == search_params.action)
-        
+
         if search_params.table_name:
             query = query.where(AuditLogModel.table_name == search_params.table_name)
-        
+
         if search_params.entity_id:
             query = query.where(AuditLogModel.record_id == search_params.entity_id)
-        
+
         if search_params.modified_by:
             query = query.where(AuditLogModel.modified_by == search_params.modified_by)
 
@@ -54,7 +57,7 @@ class AuditLogRepository:
             query = query.offset(search_params.offset)
         if search_params.limit is not None:
             query = query.limit(search_params.limit)
-        
+
         result = await self.db.execute(query)
         return result.scalars().all()
 
@@ -83,10 +86,6 @@ class AuditLogRepository:
         """
         Get the most recent audit log entries.
         """
-        query = (
-            select(AuditLogModel)
-            .order_by(AuditLogModel.modified_at.desc())
-            .limit(limit)
-        )
+        query = select(AuditLogModel).order_by(AuditLogModel.modified_at.desc()).limit(limit)
         result = await self.db.execute(query)
-        return result.scalars().all() 
+        return result.scalars().all()

@@ -1,13 +1,16 @@
+from typing import List, Optional
 from uuid import UUID
+
 from injector import inject
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from typing import List, Optional
+from starlette_context import context
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.datasource import DataSourceModel
 from app.schemas.datasource import DataSourceCreate
-from starlette_context import context
+
 
 @inject
 class DataSourcesRepository:
@@ -43,20 +46,17 @@ class DataSourcesRepository:
 
     async def get_all(self) -> List[DataSourceModel]:
         """Fetch all datasources."""
-        query = (
-            select(DataSourceModel)
-            .order_by(DataSourceModel.created_at.asc())
-        )
+        query = select(DataSourceModel).order_by(DataSourceModel.created_at.asc())
         result = await self.db.execute(query)
         return result.scalars().all()
 
     async def update(self, datasource_id: UUID, update_data: dict) -> DataSourceModel:
         """Update an existing datasource."""
         datasource = await self.get_by_id(datasource_id)
-        
+
         for key, value in update_data.items():
             setattr(datasource, key, value)
-        
+
         datasource.updated_by = context.get("user_id")
         await self.db.commit()
         await self.db.refresh(datasource)
@@ -78,4 +78,4 @@ class DataSourcesRepository:
         """Fetch datasources by their type."""
         query = select(DataSourceModel).where(DataSourceModel.source_type == source_type)
         result = await self.db.execute(query)
-        return result.scalars().all() 
+        return result.scalars().all()

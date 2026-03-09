@@ -1,7 +1,7 @@
-import { jwtDecode } from "jwt-decode";
-import { apiRequest } from "@/config/api";
-import { User } from "@/interfaces/user.interface";
-import { Role } from "@/interfaces/role.interface";
+import { jwtDecode } from 'jwt-decode';
+import { apiRequest } from '@/config/api';
+import { User } from '@/interfaces/user.interface';
+import { Role } from '@/interfaces/role.interface';
 
 interface AuthTokens {
   access_token: string;
@@ -20,7 +20,7 @@ interface TokenPayload {
 
 export interface AuthMeResponse {
   permissions: string[];
-  roles: Role[]
+  roles: Role[];
 }
 
 interface LoginCredentials extends Record<string, unknown> {
@@ -28,55 +28,44 @@ interface LoginCredentials extends Record<string, unknown> {
   password: string;
 }
 
-export const login = async (
-  credentials: LoginCredentials,
-  tenant?: string
-): Promise<AuthTokens> => {
-    const formData = new URLSearchParams();
-    formData.append("username", credentials.username);
-    formData.append("password", credentials.password);
-    formData.append("grant_type", "password");
-    const response = await apiRequest<AuthTokens>(
-      "POST",
-      "auth/token",
-      formData,
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Accept: "application/json",
-          ...(tenant ? { "x-tenant-id": tenant } : {}),
-        },
-      }
-    );
+export const login = async (credentials: LoginCredentials, tenant?: string): Promise<AuthTokens> => {
+  const formData = new URLSearchParams();
+  formData.append('username', credentials.username);
+  formData.append('password', credentials.password);
+  formData.append('grant_type', 'password');
+  const response = await apiRequest<AuthTokens>('POST', 'auth/token', formData, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
+      ...(tenant ? { 'x-tenant-id': tenant } : {}),
+    },
+  });
 
-    if (response?.access_token) {
-      localStorage.setItem("access_token", response.access_token);
-      localStorage.setItem("refresh_token", response.refresh_token);
-      localStorage.setItem("tenant_id", tenant ? tenant : "");
-      const tokenType = response.token_type || "bearer";
-      localStorage.setItem("token_type", tokenType.toLowerCase() === "bearer" ? "Bearer" : tokenType);
-      localStorage.setItem("isAuthenticated", "true");
-    
+  if (response?.access_token) {
+    localStorage.setItem('access_token', response.access_token);
+    localStorage.setItem('refresh_token', response.refresh_token);
+    localStorage.setItem('tenant_id', tenant ? tenant : '');
+    const tokenType = response.token_type || 'bearer';
+    localStorage.setItem('token_type', tokenType.toLowerCase() === 'bearer' ? 'Bearer' : tokenType);
+    localStorage.setItem('isAuthenticated', 'true');
+
     // Store force_upd_pass_date if provided
-      if (response.force_upd_pass_date) {
-        localStorage.setItem("force_upd_pass_date", response.force_upd_pass_date);
-      }
+    if (response.force_upd_pass_date) {
+      localStorage.setItem('force_upd_pass_date', response.force_upd_pass_date);
     }
+  }
 
-    return response;
-  };
+  return response;
+};
 
 export const fetchUserPermissions = async (): Promise<void> => {
-  const permissionsResponse = await apiRequest<AuthMeResponse>(
-    "GET",
-    "/auth/me"
-  );
+  const permissionsResponse = await apiRequest<AuthMeResponse>('GET', '/auth/me');
   const userPermissions = permissionsResponse?.permissions || [];
-  localStorage.setItem("permissions", JSON.stringify(userPermissions));
+  localStorage.setItem('permissions', JSON.stringify(userPermissions));
 };
 
 export const getPermissions = (): string[] => {
-  const permissions = localStorage.getItem("permissions");
+  const permissions = localStorage.getItem('permissions');
 
   if (!permissions) {
     return [];
@@ -106,40 +95,39 @@ export const hasAnyPermission = (requiredPermissions: string[]): boolean => {
 
   const userPermissions = getPermissions();
 
-  if (userPermissions.includes("*")) return true;
-  
+  if (userPermissions.includes('*')) return true;
+
   return requiredPermissions.some((perm) => userPermissions.includes(perm));
 };
 
 export const logout = (): void => {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  localStorage.removeItem("token_type");
-  localStorage.removeItem("isAuthenticated");
-  localStorage.removeItem("permissions");
-  localStorage.removeItem("force_upd_pass_date");
-  localStorage.removeItem("tenant_id");
-  localStorage.removeItem("auth_username");
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('token_type');
+  localStorage.removeItem('isAuthenticated');
+  localStorage.removeItem('permissions');
+  localStorage.removeItem('force_upd_pass_date');
+  localStorage.removeItem('tenant_id');
+  localStorage.removeItem('auth_username');
 
-  const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem('access_token');
   if (token) {
     try {
-      apiRequest("POST", "auth/logout", {});
-    } catch (error) {
-    }
+      apiRequest('POST', 'auth/logout', {});
+    } catch (error) {}
   }
 };
 
 export const getAccessToken = (): string | null => {
-  return localStorage.getItem("access_token");
+  return localStorage.getItem('access_token');
 };
 
 export const getRefreshToken = (): string | null => {
-  return localStorage.getItem("refresh_token");
+  return localStorage.getItem('refresh_token');
 };
 
 export const getTenantId = (): string | null => {
-  return localStorage.getItem("tenant_id");
+  return localStorage.getItem('tenant_id');
 };
 
 /**
@@ -188,7 +176,7 @@ export const isTokenValid = (): boolean => {
 export const isAuthenticated = (): boolean => {
   const accessToken = getAccessToken();
   const refreshToken = getRefreshToken();
-  
+
   // No tokens at all means not authenticated
   if (!accessToken && !refreshToken) {
     return false;
@@ -205,7 +193,7 @@ export const isAuthenticated = (): boolean => {
     return true;
   }
 
-  // If access token is expired but we have a refresh token, 
+  // If access token is expired but we have a refresh token,
   // consider user still authenticated (refresh will handle it)
   if (accessToken && refreshToken && isTokenExpired(accessToken)) {
     return true;
@@ -216,15 +204,15 @@ export const isAuthenticated = (): boolean => {
 };
 
 export const isPasswordUpdateRequired = (): boolean => {
-  const forceUpdPassDate = localStorage.getItem("force_upd_pass_date");
-  
+  const forceUpdPassDate = localStorage.getItem('force_upd_pass_date');
+
   if (!forceUpdPassDate) return false;
-  
+
   try {
     const forceUpdateDate = new Date(forceUpdPassDate);
     const today = new Date();
     today.setHours(23, 59, 59, 999); // End of today
-    
+
     // If force_upd_pass_date is today or in the past, password update is required
     return forceUpdateDate <= today;
   } catch (error) {
@@ -233,13 +221,10 @@ export const isPasswordUpdateRequired = (): boolean => {
 };
 
 export const getForceUpdatePassDate = (): string | null => {
-  return localStorage.getItem("force_upd_pass_date");
+  return localStorage.getItem('force_upd_pass_date');
 };
 
 export async function getAuthMe(): Promise<User> {
-  const response = await apiRequest<User>(
-    "GET",
-    "/auth/me"
-  );
+  const response = await apiRequest<User>('GET', '/auth/me');
   return response;
 }

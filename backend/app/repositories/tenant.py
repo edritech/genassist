@@ -1,8 +1,10 @@
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
+
 from injector import inject
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.db.models.tenant import TenantModel
 
 
@@ -15,9 +17,7 @@ class TenantRepository:
 
     async def get_by_slug(self, slug: str) -> Optional[TenantModel]:
         """Get tenant by slug"""
-        result = await self.db.execute(
-            select(TenantModel).where(TenantModel.slug == slug)
-        )
+        result = await self.db.execute(select(TenantModel).where(TenantModel.slug == slug))
         return result.scalar_one_or_none()
 
     async def get_by_id(self, tenant_id: UUID) -> Optional[TenantModel]:
@@ -26,23 +26,17 @@ class TenantRepository:
 
     async def get_active_tenants(self) -> List[TenantModel]:
         """Get all active tenants"""
-        result = await self.db.execute(
-            select(TenantModel).where(TenantModel.is_active == True)
-        )
+        result = await self.db.execute(select(TenantModel).where(TenantModel.is_active is True))
         return result.scalars().all()
 
     async def get_by_domain(self, domain: str) -> Optional[TenantModel]:
         """Get tenant by domain"""
-        result = await self.db.execute(
-            select(TenantModel).where(TenantModel.domain == domain)
-        )
+        result = await self.db.execute(select(TenantModel).where(TenantModel.domain == domain))
         return result.scalar_one_or_none()
 
     async def get_by_subdomain(self, subdomain: str) -> Optional[TenantModel]:
         """Get tenant by subdomain"""
-        result = await self.db.execute(
-            select(TenantModel).where(TenantModel.subdomain == subdomain)
-        )
+        result = await self.db.execute(select(TenantModel).where(TenantModel.subdomain == subdomain))
         return result.scalar_one_or_none()
 
     async def create(self, tenant: TenantModel) -> TenantModel:

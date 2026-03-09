@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { ActionButtons } from "@/components/ActionButtons";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { TableCell, TableRow } from "@/components/table";
-import { Badge } from "@/components/badge";
-import { Webhook } from "@/interfaces/webhook.interface";
-import { getAllWebhooks, deleteWebhook } from "@/services/webhook";
-import { toast } from "react-hot-toast";
-import { formatDate } from "@/helpers/utils";
+import { useEffect, useState } from 'react';
+import { DataTable } from '@/components/DataTable';
+import { ActionButtons } from '@/components/ActionButtons';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { TableCell, TableRow } from '@/components/table';
+import { Badge } from '@/components/badge';
+import { Webhook } from '@/interfaces/webhook.interface';
+import { getAllWebhooks, deleteWebhook } from '@/services/webhook';
+import { toast } from 'react-hot-toast';
+import { formatDate } from '@/helpers/utils';
 
 interface Props {
   searchQuery: string;
@@ -16,12 +16,7 @@ interface Props {
   updatedWebhook?: Webhook | null;
 }
 
-export function WebhookCard({
-  searchQuery,
-  refreshKey = 0,
-  onEditWebhook,
-  updatedWebhook = null,
-}: Props) {
+export function WebhookCard({ searchQuery, refreshKey = 0, onEditWebhook, updatedWebhook = null }: Props) {
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [loading, setLoading] = useState(true);
   const [webhookToDelete, setWebhookToDelete] = useState<Webhook | null>(null);
@@ -35,9 +30,7 @@ export function WebhookCard({
   useEffect(() => {
     if (updatedWebhook) {
       setWebhooks((prevWebhooks) =>
-        prevWebhooks.map((webhook) =>
-          webhook.id === updatedWebhook.id ? updatedWebhook : webhook
-        )
+        prevWebhooks.map((webhook) => (webhook.id === updatedWebhook.id ? updatedWebhook : webhook))
       );
     }
   }, [updatedWebhook]);
@@ -48,7 +41,7 @@ export function WebhookCard({
       const data = await getAllWebhooks();
       setWebhooks(data);
     } catch (err) {
-      toast.error("Failed to fetch webhooks.");
+      toast.error('Failed to fetch webhooks.');
     } finally {
       setLoading(false);
     }
@@ -59,10 +52,10 @@ export function WebhookCard({
     setIsDeleting(true);
     try {
       await deleteWebhook(webhookToDelete.id);
-      toast.success("Webhook deleted successfully.");
+      toast.success('Webhook deleted successfully.');
       setWebhooks((prev) => prev.filter((s) => s.id !== webhookToDelete.id));
     } catch {
-      toast.error("Failed to delete webhook.");
+      toast.error('Failed to delete webhook.');
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
@@ -75,7 +68,7 @@ export function WebhookCard({
       w.url.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const headers = ["Name", "URL", "Method", "Status", "Created", "Actions"];
+  const headers = ['Name', 'URL', 'Method', 'Status', 'Created', 'Actions'];
 
   const renderRow = (w: Webhook) => (
     <TableRow key={w.id}>
@@ -83,9 +76,7 @@ export function WebhookCard({
       <TableCell className="font-mono truncate">{w.url}</TableCell>
       <TableCell className="truncate">{w.method}</TableCell>
       <TableCell className="overflow-hidden whitespace-nowrap text-clip">
-        <Badge variant={w.is_active === 1 ? "default" : "secondary"}>
-          {w.is_active === 1 ? "Active" : "Inactive"}
-        </Badge>
+        <Badge variant={w.is_active === 1 ? 'default' : 'secondary'}>{w.is_active === 1 ? 'Active' : 'Inactive'}</Badge>
       </TableCell>
       <TableCell className="truncate">{formatDate(w.created_at)}</TableCell>
       <TableCell>
@@ -119,7 +110,7 @@ export function WebhookCard({
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDelete}
         isInProgress={isDeleting}
-        itemName={webhookToDelete?.name || ""}
+        itemName={webhookToDelete?.name || ''}
         description={`This will permanently delete "${webhookToDelete?.name}". This action cannot be undone.`}
       />
     </>

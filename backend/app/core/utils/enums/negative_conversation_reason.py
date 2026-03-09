@@ -7,7 +7,6 @@ class NegativeConversationReason(Enum):
     BAD_WORDS_USED = "Bad Words Used"
     OTHER = "Other"
 
-
     @classmethod
     def as_csv(cls) -> str:
         return ", ".join(topic.value for topic in cls)

@@ -1,8 +1,11 @@
+from uuid import UUID
+
 from injector import inject
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from uuid import UUID
+
 from app.db.models.llm import LlmProvidersModel
+
 
 @inject
 class LlmProviderRepository:
@@ -30,8 +33,5 @@ class LlmProviderRepository:
         await self.db.commit()
 
     async def get_all(self):
-        result = await self.db.execute(
-            select(LlmProvidersModel)
-            .order_by(LlmProvidersModel.created_at.asc())
-        )
+        result = await self.db.execute(select(LlmProvidersModel).order_by(LlmProvidersModel.created_at.asc()))
         return result.scalars().all()

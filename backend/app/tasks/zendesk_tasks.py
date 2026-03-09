@@ -1,22 +1,19 @@
 import asyncio
+import json
 import logging
 from uuid import UUID
-import json
 
+from celery import shared_task
 
+from app.core.config.settings import settings
 from app.core.utils.date_time_utils import utc_now
-from app.services.conversations import ConversationService
-
-from app.schemas.conversation import ConversationCreate
 from app.core.utils.enums.conversation_status_enum import ConversationStatus
 from app.core.utils.enums.conversation_type_enum import ConversationType
 from app.db.seed.seed_data_config import seed_test_data
-
-from app.modules.integration.zendesk import ZendeskConnector
-from app.core.config.settings import settings
 from app.dependencies.injector import injector
-
-from celery import shared_task
+from app.modules.integration.zendesk import ZendeskConnector
+from app.schemas.conversation import ConversationCreate
+from app.services.conversations import ConversationService
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +37,7 @@ async def analyze_zendesk_tickets_async_with_scope():
     """Wrapper to run Zendesk analysis for all tenants"""
     from app.tasks.base import run_task_with_tenant_support
 
-    result = await run_task_with_tenant_support(
-        process_zendesk_tickets, "Zendesk ticket analysis"
-    )
+    result = await run_task_with_tenant_support(process_zendesk_tickets, "Zendesk ticket analysis")
     # Update status key to match expected format
     if result.get("status") == "success":
         result["status"] = "completed"
@@ -90,14 +85,10 @@ async def process_zendesk_tickets():
                 zendesk_ticket_id=ticket_id,
             )
 
-            saved_conversation = (
-                await conversation_service.conversation_repo.save_conversation(
-                    conversation_transcript
-                )
-            )
+            saved_conversation = await conversation_service.conversation_repo.save_conversation(conversation_transcript)
             conversation_id = str(saved_conversation.id)
-            conversation_analysis = (
-                await conversation_service.finalize_in_progress_conversation(conversation_id=saved_conversation.id)
+            conversation_analysis = await conversation_service.finalize_in_progress_conversation(
+                conversation_id=saved_conversation.id
             )
 
             # UPDATE Zendesk
@@ -142,12 +133,12 @@ async def process_zendesk_tickets():
             # if ticket status is 'closed' - no update is allowed so related followup ticket must be created
             # otherwise is status is 'solved' it is allowed to update it and change the status to 'closed'
             if ticket_status == "closed":
-                x = await zendesk_connector.create_followup_ticket(
+                await zendesk_connector.create_followup_ticket(
                     ticket_id, payload
                 )  # creates new related ticket (POST)
             else:
                 payload["ticket"]["subject"] = f"ANALYZED: {ticket_subject}"
-                x = await zendesk_connector.update_ticket(
+                await zendesk_connector.update_ticket(
                     ticket_id, payload=payload
                 )  # updates existing ticket with evaluation and closes it (PUT)
 

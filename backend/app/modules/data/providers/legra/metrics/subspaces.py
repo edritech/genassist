@@ -88,8 +88,7 @@ def compute_grassmannian_distance(
                 np.array(
                     [
                         np.linalg.svd(
-                            tensor_basis[np.random.permutation(
-                                tensor_basis.shape[0]), :].T @ reference_basis,
+                            tensor_basis[np.random.permutation(tensor_basis.shape[0]), :].T @ reference_basis,
                             full_matrices=True,
                             compute_uv=False,
                         )
@@ -101,8 +100,7 @@ def compute_grassmannian_distance(
             )
         )
         dists_rand = np.array(
-            [[v(theta_rand[i, :]) for k, v in dist_funcs.items()]
-                for i in range(theta_rand.shape[0])]
+            [[v(theta_rand[i, :]) for k, v in dist_funcs.items()] for i in range(theta_rand.shape[0])]
         )
         metrics_rand = pd.DataFrame(
             {
@@ -110,8 +108,7 @@ def compute_grassmannian_distance(
                 for j, (k, v) in enumerate(dist_funcs.items())
             }
         ).to_numpy()
-        metrics_z = (np.array(list(metrics.values())) -
-                     metrics_rand.mean(axis=0)) / metrics_rand.std(axis=0)
+        metrics_z = (np.array(list(metrics.values())) - metrics_rand.mean(axis=0)) / metrics_rand.std(axis=0)
     else:
         metrics_z = np.zeros(len(metrics))
 

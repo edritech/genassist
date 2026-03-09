@@ -1,20 +1,25 @@
+from unittest.mock import AsyncMock
+from uuid import uuid4
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock
-from uuid import UUID, uuid4
-from app.services.agent_tool import ToolService
-from app.repositories.tool import ToolRepository
-from app.schemas.agent_tool import ToolConfigBase, ToolConfigRead
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.tool import ToolModel
+from app.repositories.tool import ToolRepository
+from app.schemas.agent_tool import ToolConfigBase, ToolConfigRead
+from app.services.agent_tool import ToolService
+
 
 @pytest.fixture
 def mock_repository():
     return AsyncMock(spec=ToolRepository)
 
+
 @pytest.fixture
 def tool_service(mock_repository):
     return ToolService(repository=mock_repository)
+
 
 @pytest.fixture
 def sample_tool_data():
@@ -27,10 +32,11 @@ def sample_tool_data():
             "method": "GET",
             "headers": {},
             "query_params": {},
-            "body": {}
+            "body": {},
         },
-        "parameters_schema": {}
+        "parameters_schema": {},
     }
+
 
 @pytest.mark.asyncio
 async def test_create_success(tool_service, mock_repository, sample_tool_data):
@@ -49,6 +55,7 @@ async def test_create_success(tool_service, mock_repository, sample_tool_data):
     assert result.description == sample_tool_data["description"]
     assert result.type == sample_tool_data["type"]
 
+
 @pytest.mark.asyncio
 async def test_get_by_id_success(tool_service, mock_repository, sample_tool_data):
     # Setup
@@ -66,6 +73,7 @@ async def test_get_by_id_success(tool_service, mock_repository, sample_tool_data
     assert result.name == sample_tool_data["name"]
     assert result.description == sample_tool_data["description"]
 
+
 @pytest.mark.asyncio
 async def test_get_by_id_not_found(tool_service, mock_repository):
     # Setup
@@ -75,23 +83,15 @@ async def test_get_by_id_not_found(tool_service, mock_repository):
     # Execute and Assert
     with pytest.raises(AppException) as exc_info:
         await tool_service.get_by_id(tool_id)
-    
+
     assert exc_info.value.error_key == ErrorKey.TOOL_NOT_FOUND
     mock_repository.get_by_id.assert_called_once_with(tool_id)
+
 
 @pytest.mark.asyncio
 async def test_get_all_success(tool_service, mock_repository, sample_tool_data):
     # Setup
-    mock_tools = [
-        ToolModel(
-            id=uuid4(),
-            **{
-                **sample_tool_data,
-                "name": f"tool{i}"
-            }
-        )
-        for i in range(3)
-    ]
+    mock_tools = [ToolModel(id=uuid4(), **{**sample_tool_data, "name": f"tool{i}"}) for i in range(3)]
     mock_repository.get_all.return_value = mock_tools
 
     # Execute
@@ -105,6 +105,7 @@ async def test_get_all_success(tool_service, mock_repository, sample_tool_data):
         assert tool.name == f"tool{i}"
         assert tool.type == sample_tool_data["type"]
 
+
 @pytest.mark.asyncio
 async def test_update_success(tool_service, mock_repository, sample_tool_data):
     # Setup
@@ -113,18 +114,12 @@ async def test_update_success(tool_service, mock_repository, sample_tool_data):
         name="updated_tool",
         description="Updated description",
         type="function",
-        parameters_schema={"param1": {"type": "string"}}
+        parameters_schema={"param1": {"type": "string"}},
     )
     mock_tool = ToolModel(id=tool_id, **sample_tool_data)
     mock_repository.get_by_id.return_value = mock_tool
-    
-    updated_tool = ToolModel(
-        id=tool_id,
-        **{
-            **sample_tool_data,
-            **update_data.model_dump(exclude_unset=True)
-        }
-    )
+
+    updated_tool = ToolModel(id=tool_id, **{**sample_tool_data, **update_data.model_dump(exclude_unset=True)})
     mock_repository.update.return_value = updated_tool
 
     # Execute
@@ -139,6 +134,7 @@ async def test_update_success(tool_service, mock_repository, sample_tool_data):
     assert result.description == update_data.description
     assert result.type == update_data.type
 
+
 @pytest.mark.asyncio
 async def test_delete_success(tool_service, mock_repository, sample_tool_data):
     # Setup
@@ -151,4 +147,4 @@ async def test_delete_success(tool_service, mock_repository, sample_tool_data):
 
     # Assert
     mock_repository.get_by_id.assert_called_once_with(tool_id)
-    mock_repository.delete.assert_called_once_with(mock_tool) 
+    mock_repository.delete.assert_called_once_with(mock_tool)

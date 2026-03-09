@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, overload
 
 __all__ = [
-    'Chunker',
+    "Chunker",
 ]
 
 
@@ -10,17 +10,16 @@ class Chunker(ABC):
     """
     Abstract base class for text chunking strategies.
     """
+
     @abstractmethod
     def _chunk_single(self, text: str) -> List[str]:
         raise NotImplementedError
 
     @overload
-    def __call__(self, docs: str) -> List[str]:
-        ...
+    def __call__(self, docs: str) -> List[str]: ...
 
     @overload
-    def __call__(self, docs: List[str]) -> List[List[str]]:
-        ...
+    def __call__(self, docs: List[str]) -> List[List[str]]: ...
 
     def __call__(self, docs: str | List[str]) -> List[str] | List[List[str]]:
         """

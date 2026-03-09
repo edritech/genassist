@@ -1,4 +1,4 @@
-import { ArrowUp } from "lucide-react";
+import { ArrowUp } from 'lucide-react';
 
 interface OnboardingInputProps {
   value: string;
@@ -19,7 +19,7 @@ export const OnboardingInput = ({ value, disabled, onChange, onSubmit }: Onboard
       value={value}
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
           e.currentTarget.form?.requestSubmit();
         }

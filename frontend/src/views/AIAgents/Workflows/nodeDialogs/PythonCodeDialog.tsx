@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { PythonCodeNodeData } from "../types/nodes";
-import { Button } from "@/components/button";
-import { Label } from "@/components/label";
-import { Save, Sparkles } from "lucide-react";
-import { toast } from "react-hot-toast";
-import "ace-builds/src-noconflict/mode-python";
-import "ace-builds/src-noconflict/theme-twilight";
-import { generatePythonTemplate } from "@/services/workflows";
-import { DraggableAceEditor } from "../components/custom/DraggableAceEditor";
+import React, { useState, useEffect } from 'react';
+import { PythonCodeNodeData } from '../types/nodes';
+import { Button } from '@/components/button';
+import { Label } from '@/components/label';
+import { Save, Sparkles } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/theme-twilight';
+import { generatePythonTemplate } from '@/services/workflows';
+import { DraggableAceEditor } from '../components/custom/DraggableAceEditor';
 import {
   Dialog,
   DialogContent,
@@ -15,30 +15,27 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
-import { Input } from "@/components/input";
+} from '@/components/ui/dialog';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
+import { Input } from '@/components/input';
 
-type PythonCodeDialogProps = BaseNodeDialogProps<
-  PythonCodeNodeData,
-  PythonCodeNodeData
->;
+type PythonCodeDialogProps = BaseNodeDialogProps<PythonCodeNodeData, PythonCodeNodeData>;
 
 export const PythonCodeDialog: React.FC<PythonCodeDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
-  const [code, setCode] = useState(data.code || "");
+  const [code, setCode] = useState(data.code || '');
   const [loading, setLoading] = useState(false);
 
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
-  const [templatePrompt, setTemplatePrompt] = useState("");
-  const [name, setName] = useState(data.name || "");
+  const [templatePrompt, setTemplatePrompt] = useState('');
+  const [name, setName] = useState(data.name || '');
   const [unwrap, setUnwrap] = useState(data.unwrap || false);
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setCode(data.code || "");
+      setName(data.name || '');
+      setCode(data.code || '');
       setUnwrap(data.unwrap || false);
     }
   }, [isOpen, data]);
@@ -58,12 +55,12 @@ export const PythonCodeDialog: React.FC<PythonCodeDialogProps> = (props) => {
     try {
       setLoading(true);
       const result = await generatePythonTemplate({}, prompt);
-      if (result && typeof result === "object" && "template" in result) {
+      if (result && typeof result === 'object' && 'template' in result) {
         setCode(result.template as string);
-        toast.success("Template generated successfully.");
+        toast.success('Template generated successfully.');
       }
     } catch (err) {
-      toast.error("Failed to generate template.");
+      toast.error('Failed to generate template.');
     } finally {
       setLoading(false);
     }
@@ -142,20 +139,13 @@ export const PythonCodeDialog: React.FC<PythonCodeDialogProps> = (props) => {
           <div className="text-xs text-gray-500">
             <ul className="list-disc list-inside space-y-1">
               <li className="break-words">
-                Use <code className="bg-gray-100 px-1 rounded">params</code>{" "}
-                dictionary to access input parameters
+                Use <code className="bg-gray-100 px-1 rounded">params</code> dictionary to access input parameters
               </li>
               <li className="break-words">
-                Store your return value in{" "}
-                <code className="bg-gray-100 px-1 rounded">result</code>{" "}
-                variable
+                Store your return value in <code className="bg-gray-100 px-1 rounded">result</code> variable
               </li>
-              <li className="break-words">
-                Available libraries: json, requests, datetime, math, re
-              </li>
-              <li className="break-words">
-                Code runs in a sandboxed environment with limited resources
-              </li>
+              <li className="break-words">Available libraries: json, requests, datetime, math, re</li>
+              <li className="break-words">Code runs in a sandboxed environment with limited resources</li>
               <li className="break-words">Maximum execution time: 5 seconds</li>
             </ul>
           </div>
@@ -168,8 +158,7 @@ export const PythonCodeDialog: React.FC<PythonCodeDialogProps> = (props) => {
           <DialogHeader>
             <DialogTitle>Include a prompt?</DialogTitle>
             <DialogDescription>
-              Would you like to include a prompt for template generation?
-              (Optional)
+              Would you like to include a prompt for template generation? (Optional)
             </DialogDescription>
           </DialogHeader>
           <textarea
@@ -184,7 +173,7 @@ export const PythonCodeDialog: React.FC<PythonCodeDialogProps> = (props) => {
               variant="outline"
               onClick={() => {
                 setIsPromptDialogOpen(false);
-                setTemplatePrompt("");
+                setTemplatePrompt('');
               }}
             >
               Cancel
@@ -193,7 +182,7 @@ export const PythonCodeDialog: React.FC<PythonCodeDialogProps> = (props) => {
               onClick={() => {
                 setIsPromptDialogOpen(false);
                 handleGenerateTemplate(templatePrompt);
-                setTemplatePrompt("");
+                setTemplatePrompt('');
               }}
               disabled={loading}
             >

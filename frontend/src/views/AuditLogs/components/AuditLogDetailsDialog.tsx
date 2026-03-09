@@ -1,24 +1,13 @@
-import { useState, useEffect } from "react";
-import { tryParse } from "@/helpers/utils";
-import {
-  Dialog,
-  DialogDescription,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/dialog";
-import { Button } from "@/components/button";
-import { JsonViewer } from "./JsonViewer";
-import { Loader2 } from "lucide-react";
-import { AuditLogDetailsDialogProps } from "@/interfaces/audit-log.interface";
-import { fetchAuditLogDetails } from "@/services/auditLogs";
+import { useState, useEffect } from 'react';
+import { tryParse } from '@/helpers/utils';
+import { Dialog, DialogDescription, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/dialog';
+import { Button } from '@/components/button';
+import { JsonViewer } from './JsonViewer';
+import { Loader2 } from 'lucide-react';
+import { AuditLogDetailsDialogProps } from '@/interfaces/audit-log.interface';
+import { fetchAuditLogDetails } from '@/services/auditLogs';
 
-export function AuditLogDetailsDialog({
-  isOpen,
-  onOpenChange,
-  auditLogId,
-}: AuditLogDetailsDialogProps) {
+export function AuditLogDetailsDialog({ isOpen, onOpenChange, auditLogId }: AuditLogDetailsDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [parsedJsonChanges, setParsedJsonChanges] = useState<any | string | null>(null);
@@ -32,18 +21,18 @@ export function AuditLogDetailsDialog({
           if (data?.json_changes) {
             try {
               let parsed = data.json_changes;
-              if (typeof parsed === "string") {
+              if (typeof parsed === 'string') {
                 parsed = JSON.parse(parsed);
               }
 
               const recursiveParse = (obj: any): any => {
-                if (typeof obj === "string") {
+                if (typeof obj === 'string') {
                   try {
                     return JSON.parse(obj);
                   } catch {
                     return obj;
                   }
-                } else if (typeof obj === "object" && obj !== null) {
+                } else if (typeof obj === 'object' && obj !== null) {
                   for (const key in obj) {
                     if (Object.prototype.hasOwnProperty.call(obj, key)) {
                       obj[key] = recursiveParse(obj[key]);
@@ -57,16 +46,10 @@ export function AuditLogDetailsDialog({
 
               const cleanParsed = Object.fromEntries(
                 Object.entries(parsed).map(([key, value]) => {
-                  if (
-                    typeof value === "object" &&
-                    value !== null &&
-                    "old" in value &&
-                    "new" in value
-                  ) {
+                  if (typeof value === 'object' && value !== null && 'old' in value && 'new' in value) {
                     const cleanOld = tryParse(value.old);
                     const cleanNew = tryParse(value.new);
-                    const isArrayDiff =
-                      Array.isArray(cleanOld) && Array.isArray(cleanNew);
+                    const isArrayDiff = Array.isArray(cleanOld) && Array.isArray(cleanNew);
 
                     return [
                       key,
@@ -84,17 +67,17 @@ export function AuditLogDetailsDialog({
 
               setParsedJsonChanges(cleanParsed);
             } catch {
-              setParsedJsonChanges("Error parsing JSON data.");
+              setParsedJsonChanges('Error parsing JSON data.');
             }
           } else if (data) {
-            setParsedJsonChanges("No changes available in this audit log.");
+            setParsedJsonChanges('No changes available in this audit log.');
           } else {
-            setError("No audit log details available.");
+            setError('No audit log details available.');
             setParsedJsonChanges(null);
           }
         })
         .catch(() => {
-          setError("An error occurred while fetching the details.");
+          setError('An error occurred while fetching the details.');
           setParsedJsonChanges(null);
         })
         .finally(() => {

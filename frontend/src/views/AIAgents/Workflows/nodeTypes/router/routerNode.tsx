@@ -1,19 +1,15 @@
-import React, { useState } from "react";
-import { NodeProps } from "reactflow";
-import { RouterNodeData } from "../../types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { RouterDialog } from "../../nodeDialogs/RouterDialog";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
+import React, { useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { RouterNodeData } from '../../types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { RouterDialog } from '../../nodeDialogs/RouterDialog';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
 
-export const ROUTER_NODE_TYPE = "routerNode";
+export const ROUTER_NODE_TYPE = 'routerNode';
 
-const RouterNode: React.FC<NodeProps<RouterNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const RouterNode: React.FC<NodeProps<RouterNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(ROUTER_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -28,13 +24,13 @@ const RouterNode: React.FC<NodeProps<RouterNodeData>> = ({
   };
 
   const nodeContent: NodeContentRow[] = [
-    { label: "First Value", value: data.first_value },
+    { label: 'First Value', value: data.first_value },
     {
-      label: "Compare Condition",
+      label: 'Compare Condition',
       value: data.compare_condition,
       isSelection: true,
     },
-    { label: "Second Value", value: data.second_value },
+    { label: 'Second Value', value: data.second_value },
   ];
 
   return (

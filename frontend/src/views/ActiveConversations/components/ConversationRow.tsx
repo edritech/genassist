@@ -1,9 +1,9 @@
-import { Badge } from "@/components/badge";
-import { TriangleAlert, Clock, Calendar } from "lucide-react";
-import { cn } from "@/helpers/utils";
-import { formatDuration } from "@/helpers/duration";
-import { formatDateTime } from "../helpers/format";
-import type { NormalizedConversation } from "../helpers/activeConversations.types";
+import { Badge } from '@/components/badge';
+import { TriangleAlert, Clock, Calendar } from 'lucide-react';
+import { cn } from '@/helpers/utils';
+import { formatDuration } from '@/helpers/duration';
+import { formatDateTime } from '../helpers/format';
+import type { NormalizedConversation } from '../helpers/activeConversations.types';
 
 interface RowProps {
   item: NormalizedConversation;
@@ -14,22 +14,22 @@ interface RowProps {
 export function ConversationRow({ item, reason, onClick }: RowProps) {
   const hostility = Number(item.in_progress_hostility_score || 0);
   const eff = item.effectiveSentiment;
-  const sentimentLabel = eff === "positive" ? "Good" : eff === "negative" ? "Bad" : "Neutral";
-  
+  const sentimentLabel = eff === 'positive' ? 'Good' : eff === 'negative' ? 'Bad' : 'Neutral';
+
   // Get sentiment badge styles: Green for Good, Blue for Neutral, Red for Bad
   const getSentimentBadgeStyles = (sentiment: string) => {
-    if (sentiment === "positive") {
-      return "bg-green-100 text-green-800 border-transparent";
-    } else if (sentiment === "negative") {
-      return "bg-red-100 text-red-800 border-transparent";
+    if (sentiment === 'positive') {
+      return 'bg-green-100 text-green-800 border-transparent';
+    } else if (sentiment === 'negative') {
+      return 'bg-red-100 text-red-800 border-transparent';
     } else {
-      return "bg-blue-100 text-blue-800 border-transparent";
+      return 'bg-blue-100 text-blue-800 border-transparent';
     }
   };
-  
+
   const showHostility = hostility > 60;
-  const shortId = (item.id || "").slice(-4);
-  const title = item.topic && item.topic !== "Unknown" ? item.topic : "Booking Inquiry";
+  const shortId = (item.id || '').slice(-4);
+  const title = item.topic && item.topic !== 'Unknown' ? item.topic : 'Booking Inquiry';
 
   return (
     <div
@@ -38,7 +38,7 @@ export function ConversationRow({ item, reason, onClick }: RowProps) {
       className="bg-primary-foreground px-4 py-4 cursor-pointer border-b border-border last:border-b-0 hover:bg-muted/40 transition-colors overflow-hidden w-full max-w-full min-w-0"
       onClick={() => onClick?.(item)}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+        if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           onClick?.(item);
         }
@@ -51,36 +51,24 @@ export function ConversationRow({ item, reason, onClick }: RowProps) {
             <p className="text-sm font-medium text-foreground shrink-0">
               {title} #{shortId}
             </p>
-            <Badge 
-              variant="outline"
-              className={cn("px-2.5 py-0.5 shrink-0", getSentimentBadgeStyles(eff || ""))}
-            >
+            <Badge variant="outline" className={cn('px-2.5 py-0.5 shrink-0', getSentimentBadgeStyles(eff || ''))}>
               {sentimentLabel}
             </Badge>
             {reason && (
-              <Badge 
-                variant="outline"
-                className="px-2.5 py-0.5 shrink-0"
-              >
+              <Badge variant="outline" className="px-2.5 py-0.5 shrink-0">
                 {reason}
               </Badge>
             )}
-            {showHostility && (
-              <TriangleAlert className="w-5 h-5 text-destructive shrink-0" />
-            )}
+            {showHostility && <TriangleAlert className="w-5 h-5 text-destructive shrink-0" />}
           </div>
           <div className="flex items-center gap-4 shrink-0">
             <div className="flex items-center gap-1.5">
               <Calendar className="w-3 h-3 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground leading-none">
-                {formatDateTime(item.timestamp)}
-              </p>
+              <p className="text-xs text-muted-foreground leading-none">{formatDateTime(item.timestamp)}</p>
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="w-3 h-3 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground leading-none">
-                {formatDuration(Number(item.duration || 0))}
-              </p>
+              <p className="text-xs text-muted-foreground leading-none">{formatDuration(Number(item.duration || 0))}</p>
             </div>
           </div>
         </div>

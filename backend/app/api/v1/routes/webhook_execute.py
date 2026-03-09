@@ -1,13 +1,16 @@
 # app/api/v1/routes/webhooks_execute_router.py
 
-from fastapi import APIRouter, Request, Query, Header, status
-from uuid import UUID
-from app.services.webhook import WebhookService
-from app.core.tenant_scope import get_tenant_context
-from fastapi_injector import Injected
 from typing import Optional
+from uuid import UUID
+
+from fastapi import APIRouter, Header, Query, Request, status
+from fastapi_injector import Injected
+
+from app.core.tenant_scope import get_tenant_context
+from app.services.webhook import WebhookService
 
 router = APIRouter()
+
 
 @router.post(
     "/{webhook_id}",
@@ -36,8 +39,9 @@ async def webhook_handler_post(
         hub_verify_token=hub_verify_token,
         hub_challenge=hub_challenge,
         x_slack_signature=x_slack_signature,
-        x_slack_request_timestamp=x_slack_request_timestamp
+        x_slack_request_timestamp=x_slack_request_timestamp,
     )
+
 
 @router.get(
     "/{webhook_id}",
@@ -62,5 +66,5 @@ async def webhook_handler_get(
         tenant_id=tenant_id,
         hub_mode=hub_mode,
         hub_verify_token=hub_verify_token,
-        hub_challenge=hub_challenge
+        hub_challenge=hub_challenge,
     )

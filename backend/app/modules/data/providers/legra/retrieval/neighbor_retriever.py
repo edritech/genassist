@@ -5,7 +5,7 @@ from ..index import Indexer
 from ..retrieval import Retriever
 
 __all__ = [
-    'NeighborRetriever',
+    "NeighborRetriever",
 ]
 
 

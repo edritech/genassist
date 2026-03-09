@@ -1,45 +1,22 @@
-import { FC, useState, useEffect } from "react";
-import { Button } from "@/components/button";
-import { Plus } from "lucide-react";
-import { Input } from "@/components/input";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/select";
-import { Badge } from "@/components/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/dialog";
-import { Checkbox } from "@/components/checkbox";
-import { NodeSchema, SchemaField, SchemaType } from "../../types/schemas";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/dropdown-menu";
-import { useChatInputSchema } from "../../hooks/useChatInputSchema";
-import { Label } from "@/components/label";
+import { FC, useState, useEffect } from 'react';
+import { Button } from '@/components/button';
+import { Plus } from 'lucide-react';
+import { Input } from '@/components/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/select';
+import { Badge } from '@/components/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/dialog';
+import { Checkbox } from '@/components/checkbox';
+import { NodeSchema, SchemaField, SchemaType } from '../../types/schemas';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/dropdown-menu';
+import { useChatInputSchema } from '../../hooks/useChatInputSchema';
+import { Label } from '@/components/label';
 
 interface ParameterSectionProps {
   label?: string;
   dynamicParams: NodeSchema;
   setDynamicParams: React.Dispatch<React.SetStateAction<NodeSchema>>;
-  addItem: (
-    setter: React.Dispatch<React.SetStateAction<NodeSchema>>,
-    template: SchemaField
-  ) => void;
-  removeItem: (
-    setter: React.Dispatch<React.SetStateAction<NodeSchema>>,
-    name: string
-  ) => void;
+  addItem: (setter: React.Dispatch<React.SetStateAction<NodeSchema>>, template: SchemaField) => void;
+  removeItem: (setter: React.Dispatch<React.SetStateAction<NodeSchema>>, name: string) => void;
   suggestParams?: boolean;
   listSuggestedParams?: NodeSchema;
   allowStateful?: boolean; // Only allow stateful parameters in chatInputNode
@@ -52,7 +29,7 @@ interface ParameterDialogProps {
   param: SchemaField | null;
   onSave: (name: string, param: SchemaField) => void;
   onDelete?: (name: string) => void;
-  mode: "edit" | "create";
+  mode: 'edit' | 'create';
   totalParams: number;
   suggestedParams?: NodeSchema;
   allowStateful?: boolean; // Only allow stateful parameters in chatInputNode
@@ -63,10 +40,7 @@ interface ParameterBadgesProps {
   className?: string;
 }
 
-export const ParameterBadges: FC<ParameterBadgesProps> = ({
-  params,
-  className = "",
-}) => {
+export const ParameterBadges: FC<ParameterBadgesProps> = ({ params, className = '' }) => {
   const chatInputSchema = useChatInputSchema();
   const suggestedParams = chatInputSchema || {};
   return (
@@ -74,29 +48,19 @@ export const ParameterBadges: FC<ParameterBadgesProps> = ({
       {Object.entries(params ?? {})
         .filter(([name, param]) => !suggestedParams[name])
         .map(([name, param]) => (
-          <Badge
-            key={name}
-            variant="secondary"
-            className="cursor-pointer hover:bg-secondary/80"
-          >
+          <Badge key={name} variant="secondary" className="cursor-pointer hover:bg-secondary/80">
             {name}
           </Badge>
         ))}
       {Object.entries(params ?? {})
         .filter(([name, param]) => suggestedParams[name])
         .map(([name, param]) => (
-          <Badge
-            key={name}
-            variant="secondary"
-            className="cursor-pointer hover:bg-secondary/80 font-light"
-          >
+          <Badge key={name} variant="secondary" className="cursor-pointer hover:bg-secondary/80 font-light">
             {name}
           </Badge>
         ))}
       {Object.keys(params || {}).length === 0 && (
-        <span className="text-sm text-gray-400 italic">
-          No variables required
-        </span>
+        <span className="text-sm text-gray-400 italic">No variables required</span>
       )}
     </div>
   );
@@ -121,11 +85,11 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
     defaultValue?: string;
     stateful?: boolean;
   }>({
-    name: "",
-    type: "string",
-    description: "",
+    name: '',
+    type: 'string',
+    description: '',
     required: false,
-    defaultValue: "",
+    defaultValue: '',
     stateful: false,
   });
 
@@ -135,19 +99,19 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
         setFormData({
           name: paramName,
           type: param.type,
-          description: param.description || "",
+          description: param.description || '',
           required: param.required || false,
-          defaultValue: param.defaultValue || "",
+          defaultValue: param.defaultValue || '',
           // Only preserve stateful if allowStateful is true, otherwise reset to false
-          stateful: allowStateful ? (param.stateful || false) : false,
+          stateful: allowStateful ? param.stateful || false : false,
         });
       } else {
         setFormData({
-          name: "",
-          type: "string",
-          description: "",
+          name: '',
+          type: 'string',
+          description: '',
           required: false,
-          defaultValue: "",
+          defaultValue: '',
           stateful: false,
         });
       }
@@ -178,9 +142,7 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent style={{ zIndex: 1100 }}>
         <DialogHeader>
-          <DialogTitle>
-            {mode === "create" ? "Add Parameter" : "Edit Parameter"}
-          </DialogTitle>
+          <DialogTitle>{mode === 'create' ? 'Add Parameter' : 'Edit Parameter'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -188,9 +150,7 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
             <Input
               placeholder="param_1"
               value={formData.name}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               className="w-full"
             />
           </div>
@@ -198,21 +158,17 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
             <label className="text-sm font-medium">Type</label>
             <Select
               value={formData.type}
-              onValueChange={(v) =>
-                setFormData((prev) => ({ ...prev, type: v as SchemaType }))
-              }
+              onValueChange={(v) => setFormData((prev) => ({ ...prev, type: v as SchemaType }))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {["string", "number", "boolean", "object", "array", "any"].map(
-                  (t) => (
-                    <SelectItem key={t} value={t}>
-                      {t.charAt(0).toUpperCase() + t.slice(1)}
-                    </SelectItem>
-                  )
-                )}
+                {['string', 'number', 'boolean', 'object', 'array', 'any'].map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -233,10 +189,8 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium">Required</label>
             <Select
-              value={formData.required ? "true" : "false"}
-              onValueChange={(v) =>
-                setFormData((prev) => ({ ...prev, required: v === "true" }))
-              }
+              value={formData.required ? 'true' : 'false'}
+              onValueChange={(v) => setFormData((prev) => ({ ...prev, required: v === 'true' }))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -253,9 +207,7 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
                 <Checkbox
                   id="stateful"
                   checked={formData.stateful || false}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({ ...prev, stateful: checked === true }))
-                  }
+                  onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, stateful: checked === true }))}
                 />
                 <label htmlFor="stateful" className="text-sm font-medium cursor-pointer">
                   Stateful (persists across workflow executions)
@@ -270,7 +222,7 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
             <label className="text-sm font-medium">Default Value</label>
             <Input
               placeholder="Default value (optional)"
-              value={formData.defaultValue || ""}
+              value={formData.defaultValue || ''}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -281,7 +233,7 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
             />
           </div>
           <DialogFooter className="flex justify-between">
-            {mode === "edit" && onDelete && (
+            {mode === 'edit' && onDelete && (
               <Button
                 type="button"
                 variant="destructive"
@@ -292,7 +244,7 @@ const ParameterDialog: FC<ParameterDialogProps> = ({
               </Button>
             )}
             <Button type="submit" disabled={!formData.name}>
-              {mode === "create" ? "Add Parameter" : "Save Changes"}
+              {mode === 'create' ? 'Add Parameter' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </form>
@@ -312,23 +264,21 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
   allowStateful = false,
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedParamName, setSelectedParamName] = useState<string | null>(
-    null
-  );
-  const [dialogMode, setDialogMode] = useState<"edit" | "create">("create");
+  const [selectedParamName, setSelectedParamName] = useState<string | null>(null);
+  const [dialogMode, setDialogMode] = useState<'edit' | 'create'>('create');
   const chatInputSchema = useChatInputSchema();
   const suggestedParams = listSuggestedParams || (suggestParams ? chatInputSchema : {});
   const handleParamClick = (name: string) => {
     setSelectedParamName(name);
-    setDialogMode("edit");
+    setDialogMode('edit');
     setDialogOpen(true);
   };
 
   // Handles adding a suggested param or opening dialog for new
   const handleAddSelect = (selected: string) => {
-    if (selected === "__add_new__") {
+    if (selected === '__add_new__') {
       setSelectedParamName(null);
-      setDialogMode("create");
+      setDialogMode('create');
       setDialogOpen(true);
     } else if (suggestedParams?.[selected]) {
       setDynamicParams((prev) => ({
@@ -339,7 +289,7 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
   };
 
   const handleSave = (name: string, paramData: SchemaField) => {
-    if (dialogMode === "create") {
+    if (dialogMode === 'create') {
       setDynamicParams((prev) => ({
         ...prev,
         [name]: paramData,
@@ -392,15 +342,8 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
         {/* Add Parameter DropdownMenu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="p-0 border-none bg-none outline-none"
-              style={{ background: "none" }}
-            >
-              <Badge
-                variant="outline"
-                className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
-              >
+            <button type="button" className="p-0 border-none bg-none outline-none" style={{ background: 'none' }}>
+              <Badge variant="outline" className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1">
                 <Plus className="w-3 h-3" />
                 Add Parameter
               </Badge>
@@ -408,18 +351,11 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" style={{ zIndex: 1100 }}>
             {Object.entries(suggestedParams || {}).map(([name, s]) => (
-              <DropdownMenuItem
-                key={name}
-                onSelect={() => handleAddSelect(name)}
-                className="break-words"
-              >
+              <DropdownMenuItem key={name} onSelect={() => handleAddSelect(name)} className="break-words">
                 {name} ({s.type}) - {s.description}
               </DropdownMenuItem>
             ))}
-            <DropdownMenuItem
-              onSelect={() => handleAddSelect("__add_new__")}
-              className="font-semibold"
-            >
+            <DropdownMenuItem onSelect={() => handleAddSelect('__add_new__')} className="font-semibold">
               + Add new...
             </DropdownMenuItem>
           </DropdownMenuContent>

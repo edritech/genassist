@@ -21,7 +21,11 @@ const ServerDownPage: React.FC = () => {
             <p className="text-zinc-700 mt-4">Please check your server configuration and try again.</p>
             <div className="mt-6 flex justify-end">
               <button
-                onClick={async () => { setPending(true); await probeApiHealth(); setPending(false); }}
+                onClick={async () => {
+                  setPending(true);
+                  await probeApiHealth();
+                  setPending(false);
+                }}
                 disabled={pending}
                 className="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-red-500"
               >
@@ -36,4 +40,3 @@ const ServerDownPage: React.FC = () => {
 };
 
 export default ServerDownPage;
-

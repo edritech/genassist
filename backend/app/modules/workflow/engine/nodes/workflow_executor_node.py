@@ -4,10 +4,11 @@ This node allows selecting a workflow from the workflow list, passing parameters
 and executing it, returning the response.
 """
 
-from typing import Dict, Any
 import logging
 import uuid
+from typing import Any, Dict
 from uuid import UUID
+
 from app.modules.workflow.engine.base_node import BaseNode
 from app.services.workflow import WorkflowService
 
@@ -43,13 +44,14 @@ class WorkflowExecutorNode(BaseNode):
             # Convert workflow_id to UUID if it's a string
             try:
                 workflow_id = UUID(workflow_id_str) if isinstance(workflow_id_str, str) else workflow_id_str
-            except (ValueError, AttributeError, TypeError) as e:
+            except (ValueError, AttributeError, TypeError):
                 error_msg = f"Invalid workflowId format: {workflow_id_str}"
                 logger.error(error_msg)
                 return {"error": error_msg, "status": "error"}
 
             # Get workflow service to fetch workflow details
             from app.dependencies.injector import injector
+
             workflow_service = injector.get(WorkflowService)
 
             # Fetch the workflow by ID
@@ -78,15 +80,13 @@ class WorkflowExecutorNode(BaseNode):
             state = await workflow_engine.execute_from_node(
                 input_data=params,
                 thread_id=thread_id,
-                persist=False  # Don't persist nested workflow executions
+                persist=False,  # Don't persist nested workflow executions
             )
 
             # Format and return the response
             result = state.format_state_as_response()
 
-            logger.info(
-                f"Workflow executor node executed workflow {workflow_id} successfully"
-            )
+            logger.info(f"Workflow executor node executed workflow {workflow_id} successfully")
 
             return {
                 "status": "success",

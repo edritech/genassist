@@ -1,20 +1,21 @@
-from typing import List, Dict, Any, Optional
+import json
 import logging
 import uuid
+from typing import Any, Dict, List, Optional
+
+from langchain.agents import create_agent
 from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.messages.base import BaseMessage
 from langchain_core.tools import StructuredTool
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
-from langchain.agents import create_agent
-from app.modules.workflow.agents.base_tool import BaseTool
-from app.modules.workflow.agents.base_tool_agent import BaseToolAgent
+
 from app.modules.workflow.agents.agent_utils import (
     create_error_response,
     create_success_response,
     parse_json_response,
 )
-import json
-
+from app.modules.workflow.agents.base_tool import BaseTool
+from app.modules.workflow.agents.base_tool_agent import BaseToolAgent
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +54,9 @@ class ReActAgentLC(BaseToolAgent):
         # Create LangGraph React agent
         self.agent_executor = self._create_langgraph_agent()
 
-        logger.info(
-            f"ReActAgentLC initialized with {len(self.tools)} tools using LangGraph"
-        )
+        logger.info(f"ReActAgentLC initialized with {len(self.tools)} tools using LangGraph")
 
-    def _convert_tools_to_langchain(
-        self, tools: List[BaseTool]
-    ) -> List[StructuredTool]:
+    def _convert_tools_to_langchain(self, tools: List[BaseTool]) -> List[StructuredTool]:
         """Convert BaseTool instances to LangChain StructuredTool instances"""
         lc_tools = []
 
@@ -72,9 +69,7 @@ class ReActAgentLC(BaseToolAgent):
                         result = await original_tool.invoke(**kwargs)
                         return result
                     except Exception as e:
-                        logger.error(
-                            f"Error executing tool {original_tool.name}: {str(e)}"
-                        )
+                        logger.error(f"Error executing tool {original_tool.name}: {str(e)}")
                         return f"Error executing tool {original_tool.name}: {str(e)}"
 
                 return tool_wrapper
@@ -103,9 +98,7 @@ class ReActAgentLC(BaseToolAgent):
             for param_name, param_info in tool.parameters.items():
                 # Extract parameter info
                 param_type = param_info.get("type", "string")
-                param_description = param_info.get(
-                    "description", f"Parameter {param_name}"
-                )
+                param_description = param_info.get("description", f"Parameter {param_name}")
                 param_default = param_info.get("defaultValue", None)
                 required = param_info.get("required", False)
 
@@ -162,11 +155,7 @@ class ReActAgentLC(BaseToolAgent):
         if isinstance(content, list):
             text_parts = []
             for block in content:
-                if (
-                    isinstance(block, dict)
-                    and block.get("type") == "text"
-                    and "text" in block
-                ):
+                if isinstance(block, dict) and block.get("type") == "text" and "text" in block:
                     text_parts.append(block["text"])
                 elif isinstance(block, str):
                     text_parts.append(block)
@@ -194,9 +183,7 @@ class ReActAgentLC(BaseToolAgent):
 
         return messages
 
-    async def invoke(
-        self, query: str, chat_history: Optional[List] = None, **kwargs
-    ) -> Dict[str, Any]:
+    async def invoke(self, query: str, chat_history: Optional[List] = None, **kwargs) -> Dict[str, Any]:
         """Execute a query using the LangGraph ReAct agent"""
         chat_history = chat_history or []
         thread_id = kwargs.get("thread_id", str(uuid.uuid4()))
@@ -251,9 +238,7 @@ class ReActAgentLC(BaseToolAgent):
                     if isinstance(message, AIMessage):
                         if hasattr(message, "tool_calls") and message.tool_calls:
                             tool_calls_list = (
-                                message.tool_calls
-                                if isinstance(message.tool_calls, list)
-                                else [message.tool_calls]
+                                message.tool_calls if isinstance(message.tool_calls, list) else [message.tool_calls]
                             )
                             for tool_call in tool_calls_list:
                                 if isinstance(tool_call, dict):
@@ -266,10 +251,7 @@ class ReActAgentLC(BaseToolAgent):
                                 # Check if this tool has return_direct=True
                                 if tool_name in self.tool_map:
                                     tool = self.tool_map[tool_name]
-                                    if (
-                                        hasattr(tool, "return_direct")
-                                        and tool.return_direct
-                                    ):
+                                    if hasattr(tool, "return_direct") and tool.return_direct:
                                         return_direct_tool_name = tool_name
                                         tool_call_to_name_map[tool_call_id] = tool_name
 
@@ -278,12 +260,8 @@ class ReActAgentLC(BaseToolAgent):
                         tool_call_id = getattr(message, "tool_call_id", "")
                         if tool_call_id in tool_call_to_name_map:
                             # This is a result from a return_direct tool
-                            return_direct_tool_result = self._extract_message_content(
-                                message
-                            )
-                            return_direct_tool_name = tool_call_to_name_map[
-                                tool_call_id
-                            ]
+                            return_direct_tool_result = self._extract_message_content(message)
+                            return_direct_tool_name = tool_call_to_name_map[tool_call_id]
                             if self.verbose:
                                 logger.debug(
                                     f"Found return_direct tool result from {return_direct_tool_name}: {return_direct_tool_result}"
@@ -295,19 +273,13 @@ class ReActAgentLC(BaseToolAgent):
                         continue
 
                     # Extract content
-                    content = (
-                        self._extract_message_content(message)
-                        if hasattr(message, "content")
-                        else ""
-                    )
+                    content = self._extract_message_content(message) if hasattr(message, "content") else ""
 
                     # Check for tool calls
                     tool_calls_list = []
                     if hasattr(message, "tool_calls") and message.tool_calls:
                         tool_calls_list = (
-                            message.tool_calls
-                            if isinstance(message.tool_calls, list)
-                            else [message.tool_calls]
+                            message.tool_calls if isinstance(message.tool_calls, list) else [message.tool_calls]
                         )
 
                     has_tool_calls = len(tool_calls_list) > 0
@@ -356,13 +328,9 @@ class ReActAgentLC(BaseToolAgent):
                         parsed_json = parse_json_response(content)
                         if parsed_json:
                             # Extract from JSON if available
-                            thought = parsed_json.get("thought") or parsed_json.get(
-                                "message", content
-                            )
+                            thought = parsed_json.get("thought") or parsed_json.get("message", content)
                             # Check if JSON has steps to extract
-                            if "steps" in parsed_json and isinstance(
-                                parsed_json["steps"], list
-                            ):
+                            if "steps" in parsed_json and isinstance(parsed_json["steps"], list):
                                 for step in parsed_json["steps"]:
                                     if isinstance(step, dict):
                                         reasoning_steps.append(
@@ -397,13 +365,9 @@ class ReActAgentLC(BaseToolAgent):
                 if return_direct_tool_result is not None:
                     final_response = return_direct_tool_result
                     if self.verbose:
-                        logger.debug(
-                            f"Using return_direct tool result as final response: {final_response}"
-                        )
+                        logger.debug(f"Using return_direct tool result as final response: {final_response}")
                 # Fallback: check if the last message is a ToolMessage (might be return_direct)
-                elif result["messages"] and isinstance(
-                    result["messages"][-1], ToolMessage
-                ):
+                elif result["messages"] and isinstance(result["messages"][-1], ToolMessage):
                     last_message = result["messages"][-1]
                     tool_call_id = getattr(last_message, "tool_call_id", "")
                     # Look up the tool name from our mapping
@@ -412,9 +376,7 @@ class ReActAgentLC(BaseToolAgent):
                         if tool_name_from_msg in self.tool_map:
                             tool = self.tool_map[tool_name_from_msg]
                             if hasattr(tool, "return_direct") and tool.return_direct:
-                                final_response = self._extract_message_content(
-                                    last_message
-                                )
+                                final_response = self._extract_message_content(last_message)
                                 return_direct_tool_name = tool_name_from_msg
                                 if self.verbose:
                                     logger.debug(
@@ -424,14 +386,8 @@ class ReActAgentLC(BaseToolAgent):
                 elif result["messages"]:
                     for message in reversed(result["messages"]):
                         if isinstance(message, AIMessage):
-                            content = (
-                                self._extract_message_content(message)
-                                if hasattr(message, "content")
-                                else ""
-                            )
-                            has_tool_calls = bool(
-                                hasattr(message, "tool_calls") and message.tool_calls
-                            )
+                            content = self._extract_message_content(message) if hasattr(message, "content") else ""
+                            has_tool_calls = bool(hasattr(message, "tool_calls") and message.tool_calls)
 
                             if content and content.strip() and not has_tool_calls:
                                 parsed_json = parse_json_response(content)
@@ -470,9 +426,7 @@ class ReActAgentLC(BaseToolAgent):
 
         except Exception as e:
             logger.error(f"Error executing ReActAgentLC query: {str(e)}")
-            return create_error_response(
-                str(e), self._get_agent_name(), thread_id=thread_id
-            )
+            return create_error_response(str(e), self._get_agent_name(), thread_id=thread_id)
 
     async def stream(self, query: str, chat_history: Optional[List] = None, **kwargs):
         """Stream the agent's reasoning and action process"""
@@ -560,9 +514,7 @@ class ReActAgentLC(BaseToolAgent):
             logger.error(f"Error streaming ReActAgentLC query: {str(e)}")
             yield {
                 "type": "error",
-                "data": create_error_response(
-                    str(e), self._get_agent_name(), thread_id=thread_id
-                ),
+                "data": create_error_response(str(e), self._get_agent_name(), thread_id=thread_id),
                 "agent": self._get_agent_name(),
             }
 

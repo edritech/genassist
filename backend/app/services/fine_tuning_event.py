@@ -2,7 +2,11 @@ import logging
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
+
 from injector import inject
+from openai import AsyncOpenAI
+
+from app.core.config.settings import settings
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.core.utils.enums.open_ai_fine_tuning_enum import JobStatus
@@ -10,31 +14,20 @@ from app.db.models import FineTuningJobModel
 from app.db.models.fine_tuning import FineTuningEventModel
 from app.repositories.fine_tuning_event import FineTuningEventRepository
 from app.repositories.openai_fine_tuning import FineTuningRepository
-from openai import AsyncOpenAI
-from app.core.config.settings import settings
-
 
 logger = logging.getLogger(__name__)
 
 
 @inject
 class FineTuningEventService:
-    def __init__(
-            self,
-            event_repository: FineTuningEventRepository,
-            job_repository: FineTuningRepository
-            ):
+    def __init__(self, event_repository: FineTuningEventRepository, job_repository: FineTuningRepository):
         self.event_repository = event_repository
         self.job_repository = job_repository
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
-
     async def get_events_by_job_id(
-            self,
-            job_id: UUID,
-            limit: Optional[int] = None,
-            sync: bool = False
-            ) -> List[FineTuningEventModel]:
+        self, job_id: UUID, limit: Optional[int] = None, sync: bool = False
+    ) -> List[FineTuningEventModel]:
         """
         Get events for a specific job.
 
@@ -57,11 +50,7 @@ class FineTuningEventService:
                 await self.sync_events_for_job(job_id)
 
             # Get events from database
-            events = await self.event_repository.get_events_by_job_id(
-                    job_id=job_id,
-                    limit=limit,
-                    order_desc=True
-                    )
+            events = await self.event_repository.get_events_by_job_id(job_id=job_id, limit=limit, order_desc=True)
 
             logger.info(f"Retrieved {len(events)} events for job {job_id}")
             return events
@@ -71,7 +60,6 @@ class FineTuningEventService:
         except Exception as e:
             logger.error(f"Error getting events for job {job_id}: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_JOB_EVENT_BY_ID)
-
 
     async def sync_events_for_job(self, job_id: UUID) -> int:
         """
@@ -94,9 +82,8 @@ class FineTuningEventService:
 
             # Fetch events from OpenAI (get all, limited to 1000 by OpenAI)
             openai_events = await self.client.fine_tuning.jobs.list_events(
-                    fine_tuning_job_id=job.openai_job_id,
-                    limit=1000
-                    )
+                fine_tuning_job_id=job.openai_job_id, limit=1000
+            )
 
             logger.info(f"Fetched {len(openai_events.data)} events from OpenAI")
 
@@ -107,14 +94,15 @@ class FineTuningEventService:
                 if not exists:
                     # Create event model
                     event = FineTuningEventModel(
-                            job_id=job_id,
-                            openai_event_id=openai_event.id,
-                            level=openai_event.level,
-                            message=openai_event.message,
-                            event_created_at=datetime.fromtimestamp(openai_event.created_at),
-                            metrics=openai_event.data if hasattr(openai_event,
-                                                                 'data') and openai_event.data and openai_event.data != "null" else None
-                            )
+                        job_id=job_id,
+                        openai_event_id=openai_event.id,
+                        level=openai_event.level,
+                        message=openai_event.message,
+                        event_created_at=datetime.fromtimestamp(openai_event.created_at),
+                        metrics=openai_event.data
+                        if hasattr(openai_event, "data") and openai_event.data and openai_event.data != "null"
+                        else None,
+                    )
                     new_events.append(event)
 
             # Bulk create new events
@@ -132,7 +120,6 @@ class FineTuningEventService:
             logger.error(f"Error syncing events for job {job_id}: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_JOB_OPEN_AI_EVENT)
 
-
     async def sync_events_for_active_jobs(self) -> dict:
         """
         Sync events for all jobs that are currently in progress.
@@ -144,17 +131,9 @@ class FineTuningEventService:
             logger.info("Syncing events for all active jobs")
 
             # Get all active jobs (in progress)
-            active_statuses = [
-                JobStatus.VALIDATING_FILES,
-                JobStatus.QUEUED,
-                JobStatus.RUNNING
-                ]
+            active_statuses = [JobStatus.VALIDATING_FILES, JobStatus.QUEUED, JobStatus.RUNNING]
 
-            summary = {
-                "total_jobs_synced": 0,
-                "total_new_events": 0,
-                "errors": []
-                }
+            summary = {"total_jobs_synced": 0, "total_new_events": 0, "errors": []}
 
             for status in active_statuses:
                 jobs = await self.job_repository.list_jobs(status=status)
@@ -166,23 +145,19 @@ class FineTuningEventService:
                         summary["total_new_events"] += new_events_count
                     except Exception as e:
                         logger.error(f"Error syncing events for job {job.id}: {str(e)}")
-                        summary["errors"].append({
-                            "job_id": str(job.id),
-                            "error": str(e)
-                            })
+                        summary["errors"].append({"job_id": str(job.id), "error": str(e)})
 
             logger.info(
-                    f"Sync complete: {summary['total_jobs_synced']} jobs, "
-                    f"{summary['total_new_events']} new events, "
-                    f"{len(summary['errors'])} errors"
-                    )
+                f"Sync complete: {summary['total_jobs_synced']} jobs, "
+                f"{summary['total_new_events']} new events, "
+                f"{len(summary['errors'])} errors"
+            )
 
             return summary
 
         except Exception as e:
             logger.error(f"Error syncing events for active jobs: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_ACTIVE_JOB_EVENTS_SYNC)
-
 
     async def get_job_progress(self, job: FineTuningJobModel) -> dict:
         """
@@ -195,7 +170,6 @@ class FineTuningEventService:
             Progress information
         """
         try:
-
             # If job is not active, return basic info
             if job.status not in [JobStatus.VALIDATING_FILES, JobStatus.QUEUED, JobStatus.RUNNING]:
                 latest_step_event = await self.event_repository.get_latest_step_event_by_job_id(job.id)
@@ -204,9 +178,9 @@ class FineTuningEventService:
                     "status": job.status.value,
                     "is_running": False,
                     "progress_percentage": 100 if job.status == JobStatus.SUCCEEDED else 0,
-                    "latest_metrics" : latest_step_event.metrics if latest_step_event else {},
-                    "message": f"Job is {job.status.value}"
-                    }
+                    "latest_metrics": latest_step_event.metrics if latest_step_event else {},
+                    "message": f"Job is {job.status.value}",
+                }
 
             # Get latest event with metrics
             latest_event = await self.event_repository.get_latest_event_by_job_id(job_id)
@@ -216,14 +190,15 @@ class FineTuningEventService:
                 return {
                     "job_id": str(job.id),
                     "status": job.status.value,
-                    "is_running": False if job.status not in [JobStatus.VALIDATING_FILES, JobStatus.QUEUED,
-                                                             JobStatus.RUNNING] else True,
-                    "message": "Waiting for training to start..."
-                    }
+                    "is_running": False
+                    if job.status not in [JobStatus.VALIDATING_FILES, JobStatus.QUEUED, JobStatus.RUNNING]
+                    else True,
+                    "message": "Waiting for training to start...",
+                }
 
             metrics = latest_step_event.metrics
-            current_step = metrics.get('step')
-            total_steps = metrics.get('total_steps')
+            current_step = metrics.get("step")
+            total_steps = metrics.get("total_steps")
 
             # Calculate progress
             progress_percentage = None
@@ -242,25 +217,27 @@ class FineTuningEventService:
                 time_per_step = time_elapsed / current_step
                 steps_remaining = total_steps - current_step
                 estimated_seconds_remaining = int(time_per_step * steps_remaining)
-                estimated_finish_at = int(current_timestamp + estimated_seconds_remaining + (
-                    estimated_seconds_remaining if estimated_seconds_remaining != 0 else
-            300))
+                estimated_finish_at = int(
+                    current_timestamp
+                    + estimated_seconds_remaining
+                    + (estimated_seconds_remaining if estimated_seconds_remaining != 0 else 300)
+                )
 
             return {
                 "job_id": str(job.id),
                 "status": job.status.value,
-                "is_running": False if job.status not in [JobStatus.VALIDATING_FILES, JobStatus.QUEUED,
-                                                             JobStatus.RUNNING] else True,
+                "is_running": False
+                if job.status not in [JobStatus.VALIDATING_FILES, JobStatus.QUEUED, JobStatus.RUNNING]
+                else True,
                 "current_step": current_step,
                 "total_steps": total_steps,
-                "progress_percentage": progress_percentage if progress_percentage!=100 else progress_percentage -5,
-                "estimated_seconds_remaining": estimated_seconds_remaining if estimated_seconds_remaining != 0 else
-            300,
+                "progress_percentage": progress_percentage if progress_percentage != 100 else progress_percentage - 5,
+                "estimated_seconds_remaining": estimated_seconds_remaining if estimated_seconds_remaining != 0 else 300,
                 "estimated_finish_at": estimated_finish_at,
                 "created_at": int(job.created_at.timestamp()),
                 "latest_metrics": metrics,
-                "message": f"Step {current_step}/{total_steps}" if current_step else "In progress..."
-                }
+                "message": f"Step {current_step}/{total_steps}" if current_step else "In progress...",
+            }
 
         except AppException:
             raise

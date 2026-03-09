@@ -4,7 +4,7 @@ from typing import List
 import numpy.typing as npt
 
 __all__ = [
-    'Embedder',
+    "Embedder",
 ]
 
 
@@ -12,6 +12,7 @@ class Embedder(ABC):
     """
     Abstract interface for document/chunk embedding.
     """
+
     model_name: str = ""
 
     @abstractmethod

@@ -1,4 +1,4 @@
-import { FeatureFlag, ParsedFeatureFlag, FeatureToggleAttribute } from "@/interfaces/featureFlag.interface";
+import { FeatureFlag, ParsedFeatureFlag, FeatureToggleAttribute } from '@/interfaces/featureFlag.interface';
 
 /**
  * Parse feature flags with attribute and hierarchical structure
@@ -8,17 +8,17 @@ import { FeatureFlag, ParsedFeatureFlag, FeatureToggleAttribute } from "@/interf
  */
 export const parseFeatureFlags = (featureFlags: FeatureFlag[], prefix: string = ''): ParsedFeatureFlag[] => {
   // Filter flags that start with the prefix
-  const filteredFlags = featureFlags.filter(flag => 
-    !prefix || flag.key.startsWith(prefix)
-  ).filter(flag => flag.is_active);
+  const filteredFlags = featureFlags
+    .filter((flag) => !prefix || flag.key.startsWith(prefix))
+    .filter((flag) => flag.is_active);
 
   // Group flags by their base key
   const flagsMap: Record<string, ParsedFeatureFlag> = {};
 
-  filteredFlags.forEach(flag => {
+  filteredFlags.forEach((flag) => {
     // Extract the specific feature name from the hierarchical key
     let itemName = flag.key;
-    
+
     if (prefix && flag.key.startsWith(prefix)) {
       // If the key matches the prefix exactly, use the last part after the dot
       if (flag.key === prefix) {
@@ -27,7 +27,7 @@ export const parseFeatureFlags = (featureFlags: FeatureFlag[], prefix: string = 
         // Otherwise, extract the part after the prefix
         itemName = flag.key.substring(prefix.length + 1);
       }
-      
+
       // If there are additional dots, only take the first segment
       if (itemName.includes('.')) {
         itemName = itemName.split('.')[0];
@@ -35,9 +35,9 @@ export const parseFeatureFlags = (featureFlags: FeatureFlag[], prefix: string = 
     }
 
     // Initialize or reuse the flag group
-    const item = flagsMap[itemName] || { 
+    const item = flagsMap[itemName] || {
       itemName,
-      fullKey: flag.key 
+      fullKey: flag.key,
     };
 
     // Parse the value based on the attribute type
@@ -66,15 +66,15 @@ export const parseFeatureFlags = (featureFlags: FeatureFlag[], prefix: string = 
 
 /**
  * Check if a feature flag is enabled based on hierarchy
- * @param featureFlags The raw feature flags 
+ * @param featureFlags The raw feature flags
  * @param key The feature flag key to check
  * @returns boolean indicating if the feature is enabled
  */
 export const isFeatureEnabled = (featureFlags: FeatureFlag[], key: string): boolean => {
   const parts = key.split('.');
-  
+
   // Try exact match first
-  const exactFlag = featureFlags.find(f => f.key === key && f.is_active);
+  const exactFlag = featureFlags.find((f) => f.key === key && f.is_active);
   if (exactFlag) {
     // If it has an attribute, handle it accordingly
     if (exactFlag.attribute === FeatureToggleAttribute.VISIBLE) {
@@ -90,7 +90,7 @@ export const isFeatureEnabled = (featureFlags: FeatureFlag[], key: string): bool
   // Check for parent keys for hierarchical fallback
   for (let i = parts.length - 1; i > 0; i--) {
     const parentKey = parts.slice(0, i).join('.');
-    const parentFlag = featureFlags.find(f => f.key === parentKey && f.is_active);
+    const parentFlag = featureFlags.find((f) => f.key === parentKey && f.is_active);
 
     if (parentFlag) {
       if (parentFlag.attribute === FeatureToggleAttribute.VISIBLE) {
@@ -115,9 +115,9 @@ export const isFeatureEnabled = (featureFlags: FeatureFlag[], key: string): bool
  */
 export const getFeatureValue = (featureFlags: FeatureFlag[], key: string): string | null => {
   const parts = key.split('.');
-  
+
   // Try exact match first
-  const exactFlag = featureFlags.find(f => f.key === key && f.is_active);
+  const exactFlag = featureFlags.find((f) => f.key === key && f.is_active);
   if (exactFlag) {
     return exactFlag.val;
   }
@@ -125,7 +125,7 @@ export const getFeatureValue = (featureFlags: FeatureFlag[], key: string): strin
   // Check for parent keys for hierarchical fallback
   for (let i = parts.length - 1; i > 0; i--) {
     const parentKey = parts.slice(0, i).join('.');
-    const parentFlag = featureFlags.find(f => f.key === parentKey && f.is_active);
+    const parentFlag = featureFlags.find((f) => f.key === parentKey && f.is_active);
 
     if (parentFlag) {
       return parentFlag.val;
@@ -133,4 +133,4 @@ export const getFeatureValue = (featureFlags: FeatureFlag[], key: string): strin
   }
 
   return null;
-}; 
+};

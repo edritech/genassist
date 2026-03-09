@@ -17,14 +17,14 @@ interface FeatureFlagProps {
  * Component that conditionally renders content based on feature flags.
  * Uses the hierarchical approach similar to the Maersk Web implementation.
  */
-export function FeatureFlag({ 
-  flagKey, 
-  attribute = FeatureToggleAttribute.VISIBLE, 
-  children, 
-  fallback = null 
+export function FeatureFlag({
+  flagKey,
+  attribute = FeatureToggleAttribute.VISIBLE,
+  children,
+  fallback = null,
 }: FeatureFlagProps) {
   const { flags } = useFeatureFlag();
-  
+
   // Get the specific feature item
   const featureItem = useFeatureFlag().getFeatureItem(flagKey);
 
@@ -61,12 +61,7 @@ interface FeatureFlagMenuItemProps {
 /**
  * Component specific for menu items, similar to Maersk's FeatureToggleMainMenuItem
  */
-export function FeatureFlagMenuItem({ 
-  itemKey, 
-  children, 
-  fallback = null,
-  ...rest 
-}: FeatureFlagMenuItemProps) {
+export function FeatureFlagMenuItem({ itemKey, children, fallback = null, ...rest }: FeatureFlagMenuItemProps) {
   // Use the full key format with ui.menu prefix
   const flagKey = `ui.menu.${itemKey}`;
   const featureItem = useFeatureFlag().getFeatureItem(flagKey);
@@ -76,9 +71,7 @@ export function FeatureFlagMenuItem({
   }
 
   // Clone the element with additional props
-  return React.isValidElement(children) 
-    ? React.cloneElement(children as React.ReactElement, rest) 
-    : <>{children}</>;
+  return React.isValidElement(children) ? React.cloneElement(children as React.ReactElement, rest) : <>{children}</>;
 }
 
 /**
@@ -97,4 +90,4 @@ export function useFeatureVariant(flagKey: string, expectedVariant: string): boo
   const { getFeatureItem } = useFeatureFlag();
   const item = getFeatureItem(flagKey);
   return item?.variant === expectedVariant;
-} 
+}

@@ -15,7 +15,11 @@ export const ServerStatusProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const onOffline = () => setIsOffline(true);
     window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
-    return () => { unsub(); window.removeEventListener('online', onOnline); window.removeEventListener('offline', onOffline); };
+    return () => {
+      unsub();
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
   }, []);
 
   const value = useMemo(() => ({ status, isOffline }), [status, isOffline]);
@@ -28,4 +32,3 @@ export const useServerStatus = (): Ctx => {
   if (!ctx) throw new Error('useServerStatus must be used inside ServerStatusProvider');
   return ctx;
 };
-

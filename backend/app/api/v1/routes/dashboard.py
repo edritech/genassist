@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from fastapi_injector import Injected
@@ -8,11 +7,11 @@ from fastapi_injector import Injected
 from app.auth.dependencies import auth, permissions
 from app.core.permissions.constants import Permissions as P
 from app.schemas.dashboard import (
-    DashboardSummaryStats,
     ActiveConversationsResponse,
     AgentStatsResponse,
-    IntegrationsResponse,
     DashboardResponse,
+    DashboardSummaryStats,
+    IntegrationsResponse,
 )
 from app.services.dashboard import DashboardService
 
@@ -40,7 +39,9 @@ def parse_date_range(days: int = 30) -> tuple[datetime, datetime]:
 async def get_dashboard(
     days: int = Query(default=30, ge=1, le=365, description="Number of days to look back for statistics"),
     conversations_page: int = Query(default=1, ge=1, description="Page number for active conversations"),
-    conversations_page_size: int = Query(default=3, ge=1, le=100, description="Number of active conversations per page"),
+    conversations_page_size: int = Query(
+        default=3, ge=1, le=100, description="Number of active conversations per page"
+    ),
     agents_limit: int = Query(default=5, ge=1, le=100, description="Maximum number of agents to return"),
     dashboard_service: DashboardService = Injected(DashboardService),
 ) -> DashboardResponse:
@@ -55,7 +56,7 @@ async def get_dashboard(
         days=days,
         conversations_page=conversations_page,
         conversations_page_size=conversations_page_size,
-        agents_limit=agents_limit
+        agents_limit=agents_limit,
     )
 
 
@@ -108,10 +109,7 @@ async def get_active_conversations(
     """
     from_date, to_date = parse_date_range(days)
     return await dashboard_service.get_active_conversations(
-        page=page,
-        page_size=page_size,
-        from_date=from_date,
-        to_date=to_date
+        page=page, page_size=page_size, from_date=from_date, to_date=to_date
     )
 
 

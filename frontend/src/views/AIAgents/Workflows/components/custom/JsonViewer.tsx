@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ChevronDown, ChevronRight, Copy } from "lucide-react";
+import React, { useState } from 'react';
+import { ChevronDown, ChevronRight, Copy } from 'lucide-react';
 
 export interface NodeMetadata {
   [nodeId: string]: {
@@ -20,8 +20,7 @@ export interface JsonViewerProps {
  * Checks if a string looks like a UUID (node ID)
  */
 const isNodeId = (key: string): boolean => {
-  const uuidPattern =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidPattern.test(key);
 };
 
@@ -29,7 +28,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
   data,
   level = 0,
   onDragStart,
-  basePath = "",
+  basePath = '',
   nodeMetadata = {},
 }) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -38,11 +37,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleDragStart = (
-    e: React.DragEvent,
-    path: string,
-    value: unknown
-  ) => {
+  const handleDragStart = (e: React.DragEvent, path: string, value: unknown) => {
     if (onDragStart) {
       onDragStart(e, `{{${path}}}`, value);
     }
@@ -57,7 +52,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
     const isExpanded = expanded[key];
     const hasChildren =
       value &&
-      typeof value === "object" &&
+      typeof value === 'object' &&
       value !== null &&
       !Array.isArray(value) &&
       Object.keys(value as object).length > 0;
@@ -76,11 +71,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
       : `${key}\n\nClick to copy • Drag to input`;
 
     if (hasChildren || hasArrayChildren) {
-      const typeLabel = isArray
-        ? `Array[${(value as any[]).length}]`
-        : nodeType
-          ? nodeType
-          : "Object";
+      const typeLabel = isArray ? `Array[${(value as any[]).length}]` : nodeType ? nodeType : 'Object';
 
       return (
         <div key={key} className="ml-2">
@@ -89,11 +80,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
               onClick={() => toggleExpanded(key)}
               className="text-gray-500 hover:text-blue-600 transition-colors p-1 rounded hover:bg-blue-50 flex-shrink-0"
             >
-              {isExpanded ? (
-                <ChevronDown className="h-3 w-3" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
+              {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
             </button>
 
             {/* Draggable key badge */}
@@ -143,11 +130,9 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
     // Handle empty objects and arrays
     if (
       (isArray && (value as any[]).length === 0) ||
-      (typeof value === "object" &&
-        value !== null &&
-        Object.keys(value as object).length === 0)
+      (typeof value === 'object' && value !== null && Object.keys(value as object).length === 0)
     ) {
-      const typeLabel = isArray ? "Array[]" : "Object{}";
+      const typeLabel = isArray ? 'Array[]' : 'Object{}';
 
       return (
         <div key={key} className="ml-2">
@@ -173,24 +158,21 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
     // Leaf value rendering
     const displayValue =
       value === null
-        ? "null"
+        ? 'null'
         : value === undefined
-          ? "undefined"
-          : typeof value === "string"
+          ? 'undefined'
+          : typeof value === 'string'
             ? `"${value}"`
-            : typeof value === "number"
+            : typeof value === 'number'
               ? value.toString()
-              : typeof value === "boolean"
+              : typeof value === 'boolean'
                 ? value.toString()
                 : Array.isArray(value)
                   ? `[]`
                   : JSON.stringify(value);
 
     // Full value for tooltip (untruncated)
-    const fullValueTooltip =
-      typeof value === "string" && value.length > 30
-        ? value
-        : displayValue;
+    const fullValueTooltip = typeof value === 'string' && value.length > 30 ? value : displayValue;
 
     return (
       <div
@@ -211,10 +193,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
           </div>
 
           {/* Value with tooltip for long text */}
-          <span
-            className="text-gray-600 text-xs font-mono whitespace-nowrap cursor-default"
-            title={fullValueTooltip}
-          >
+          <span className="text-gray-600 text-xs font-mono whitespace-nowrap cursor-default" title={fullValueTooltip}>
             {displayValue}
           </span>
         </div>

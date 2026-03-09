@@ -1,8 +1,9 @@
-from sqlalchemy.orm import relationship
-from app.db.base import Base, Mapped, mapped_column
-from sqlalchemy import String
 from typing import Optional
+
+from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import JSONB
+
+from app.db.base import Base, Mapped, mapped_column
 
 
 class ToolModel(Base):

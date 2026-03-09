@@ -1,87 +1,76 @@
-import React, { useEffect, useState } from "react";
-import { ReadMailsNodeData, SearchCriteria } from "../types/nodes";
-import { DataSource } from "@/interfaces/dataSource.interface";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { Checkbox } from "@/components/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { Save } from "lucide-react";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { DraggableInput } from "../components/custom/DraggableInput";
-import { DraggableTextArea } from "../components/custom/DraggableTextArea";
-import { BaseNodeDialogProps } from "./base";
-import { DataSourceDialog } from "@/views/DataSources/components/DataSourceDialog";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
+import React, { useEffect, useState } from 'react';
+import { ReadMailsNodeData, SearchCriteria } from '../types/nodes';
+import { DataSource } from '@/interfaces/dataSource.interface';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Checkbox } from '@/components/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { Save } from 'lucide-react';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { DraggableInput } from '../components/custom/DraggableInput';
+import { DraggableTextArea } from '../components/custom/DraggableTextArea';
+import { BaseNodeDialogProps } from './base';
+import { DataSourceDialog } from '@/views/DataSources/components/DataSourceDialog';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
 
-interface ReadMailsDialogProps
-  extends BaseNodeDialogProps<ReadMailsNodeData, ReadMailsNodeData> {
+interface ReadMailsDialogProps extends BaseNodeDialogProps<ReadMailsNodeData, ReadMailsNodeData> {
   connectors: DataSource[];
 }
 
 const timePeriodOptions = [
-  { value: "none", label: "None" },
-  { value: "1h", label: "1 hour" },
-  { value: "1d", label: "1 day" },
-  { value: "2d", label: "2 days" },
-  { value: "1w", label: "1 week" },
-  { value: "2w", label: "2 weeks" },
-  { value: "1m", label: "1 month" },
-  { value: "3m", label: "3 months" },
-  { value: "6m", label: "6 months" },
-  { value: "1y", label: "1 year" },
+  { value: 'none', label: 'None' },
+  { value: '1h', label: '1 hour' },
+  { value: '1d', label: '1 day' },
+  { value: '2d', label: '2 days' },
+  { value: '1w', label: '1 week' },
+  { value: '2w', label: '2 weeks' },
+  { value: '1m', label: '1 month' },
+  { value: '3m', label: '3 months' },
+  { value: '6m', label: '6 months' },
+  { value: '1y', label: '1 year' },
 ];
 
 const commonLabels = [
-  "INBOX",
-  "SENT",
-  "DRAFT",
-  "SPAM",
-  "TRASH",
-  "IMPORTANT",
-  "STARRED",
-  "CATEGORY_PERSONAL",
-  "CATEGORY_SOCIAL",
-  "CATEGORY_PROMOTIONS",
-  "CATEGORY_UPDATES",
-  "CATEGORY_FORUMS",
+  'INBOX',
+  'SENT',
+  'DRAFT',
+  'SPAM',
+  'TRASH',
+  'IMPORTANT',
+  'STARRED',
+  'CATEGORY_PERSONAL',
+  'CATEGORY_SOCIAL',
+  'CATEGORY_PROMOTIONS',
+  'CATEGORY_UPDATES',
+  'CATEGORY_FORUMS',
 ];
 
 const emptySearchCriteria: SearchCriteria = {
-  from: "",
-  to: "",
-  subject: "",
+  from: '',
+  to: '',
+  subject: '',
   has_attachment: false,
   is_unread: false,
-  label: "",
-  newer_than: "",
-  older_than: "",
-  custom_query: "",
+  label: '',
+  newer_than: '',
+  older_than: '',
+  custom_query: '',
   max_results: 10,
 };
 
 export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate, connectors } = props;
 
-  const [name, setName] = useState(data.name || "");
-  const [dataSourceId, setDataSourceId] = useState(
-    data.dataSourceId?.toString() || ""
-  );
-  const [searchCriteria, setSearchCriteria] = useState<SearchCriteria>(
-    data.searchCriteria || emptySearchCriteria
-  );
+  const [name, setName] = useState(data.name || '');
+  const [dataSourceId, setDataSourceId] = useState(data.dataSourceId?.toString() || '');
+  const [searchCriteria, setSearchCriteria] = useState<SearchCriteria>(data.searchCriteria || emptySearchCriteria);
   const [isCreateDataSourceOpen, setIsCreateDataSourceOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setDataSourceId(data.dataSourceId?.toString() || "");
+      setName(data.name || '');
+      setDataSourceId(data.dataSourceId?.toString() || '');
       setSearchCriteria(data.searchCriteria || emptySearchCriteria);
     }
   }, [isOpen, data]);
@@ -96,10 +85,7 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
     onClose();
   };
 
-  const updateSearchCriteriaField = (
-    key: keyof SearchCriteria,
-    value: string | boolean | number
-  ) => {
+  const updateSearchCriteriaField = (key: keyof SearchCriteria, value: string | boolean | number) => {
     setSearchCriteria((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -140,13 +126,13 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
         <div className="space-y-2">
           <Label>Gmail Data Source</Label>
           <Select
-            value={dataSourceId?.toString() || "none"}
+            value={dataSourceId?.toString() || 'none'}
             onValueChange={(v) => {
-              if (v === "__create__") {
+              if (v === '__create__') {
                 setIsCreateDataSourceOpen(true);
                 return;
               }
-              setDataSourceId(v === "none" ? "" : v);
+              setDataSourceId(v === 'none' ? '' : v);
             }}
           >
             <SelectTrigger>
@@ -175,9 +161,7 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
             <DraggableInput
               id="from"
               value={searchCriteria.from}
-              onChange={(e) =>
-                updateSearchCriteriaField("from", e.target.value)
-              }
+              onChange={(e) => updateSearchCriteriaField('from', e.target.value)}
               placeholder="sender@example.com"
               className="w-full break-all"
             />
@@ -188,7 +172,7 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
             <DraggableInput
               id="to"
               value={searchCriteria.to}
-              onChange={(e) => updateSearchCriteriaField("to", e.target.value)}
+              onChange={(e) => updateSearchCriteriaField('to', e.target.value)}
               placeholder="recipient@example.com"
               className="w-full break-all"
             />
@@ -200,9 +184,7 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
           <DraggableInput
             id="subject"
             value={searchCriteria.subject}
-            onChange={(e) =>
-              updateSearchCriteriaField("subject", e.target.value)
-            }
+            onChange={(e) => updateSearchCriteriaField('subject', e.target.value)}
             placeholder="Enter subject text to search for"
             className="w-full"
           />
@@ -211,10 +193,8 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
         <div className="space-y-2">
           <Label>Gmail Label</Label>
           <Select
-            value={searchCriteria.label || "none"}
-            onValueChange={(v) =>
-              updateSearchCriteriaField("label", v === "none" ? "" : v)
-            }
+            value={searchCriteria.label || 'none'}
+            onValueChange={(v) => updateSearchCriteriaField('label', v === 'none' ? '' : v)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select a label" />
@@ -234,10 +214,8 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
           <div className="space-y-2">
             <Label>Newer Than</Label>
             <Select
-              value={searchCriteria.newer_than || "none"}
-              onValueChange={(v) =>
-                updateSearchCriteriaField("newer_than", v === "none" ? "" : v)
-              }
+              value={searchCriteria.newer_than || 'none'}
+              onValueChange={(v) => updateSearchCriteriaField('newer_than', v === 'none' ? '' : v)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select time" />
@@ -255,10 +233,8 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
           <div className="space-y-2">
             <Label>Older Than</Label>
             <Select
-              value={searchCriteria.older_than || "none"}
-              onValueChange={(v) =>
-                updateSearchCriteriaField("older_than", v === "none" ? "" : v)
-              }
+              value={searchCriteria.older_than || 'none'}
+              onValueChange={(v) => updateSearchCriteriaField('older_than', v === 'none' ? '' : v)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select time" />
@@ -280,9 +256,7 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
             id="max_results"
             type="number"
             value={searchCriteria.max_results}
-            onChange={(e) =>
-              updateSearchCriteriaField("max_results", parseInt(e.target.value))
-            }
+            onChange={(e) => updateSearchCriteriaField('max_results', parseInt(e.target.value))}
             min="1"
             max="500"
             placeholder="10"
@@ -295,9 +269,7 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
             <Checkbox
               id="has_attachment"
               checked={searchCriteria.has_attachment}
-              onCheckedChange={(c) =>
-                updateSearchCriteriaField("has_attachment", c)
-              }
+              onCheckedChange={(c) => updateSearchCriteriaField('has_attachment', c)}
             />
             <Label htmlFor="has_attachment" className="cursor-pointer">
               Has Attachment
@@ -308,7 +280,7 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
             <Checkbox
               id="is_unread"
               checked={searchCriteria.is_unread}
-              onCheckedChange={(c) => updateSearchCriteriaField("is_unread", c)}
+              onCheckedChange={(c) => updateSearchCriteriaField('is_unread', c)}
             />
             <Label htmlFor="is_unread" className="cursor-pointer">
               Unread Only
@@ -321,9 +293,7 @@ export const ReadMailsDialog: React.FC<ReadMailsDialogProps> = (props) => {
           <DraggableTextArea
             id="custom_query"
             value={searchCriteria.custom_query}
-            onChange={(e) =>
-              updateSearchCriteriaField("custom_query", e.target.value)
-            }
+            onChange={(e) => updateSearchCriteriaField('custom_query', e.target.value)}
             placeholder="e.g., has:nouserlabels -in:Sent"
             className="h-20 font-mono text-xs w-full resize-none"
           />

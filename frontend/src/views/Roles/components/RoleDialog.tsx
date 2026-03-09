@@ -1,28 +1,17 @@
-import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/dialog";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { Switch } from "@/components/switch";
-import { Role } from "@/interfaces/role.interface";
-import { createRole, updateRole } from "@/services/roles";
-import { Permission } from "@/interfaces/permission.interface";
-import {
-  getAllPermissions,
-  saveRolePermissions,
-  getPermissionsByRoleId,
-} from "@/services/permission";
-import { Checkbox } from "@/components/checkbox";
-import { Skeleton } from "@/components/skeleton";
-import { Button } from "@/components/button";
-import { Loader2 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Switch } from '@/components/switch';
+import { Role } from '@/interfaces/role.interface';
+import { createRole, updateRole } from '@/services/roles';
+import { Permission } from '@/interfaces/permission.interface';
+import { getAllPermissions, saveRolePermissions, getPermissionsByRoleId } from '@/services/permission';
+import { Checkbox } from '@/components/checkbox';
+import { Skeleton } from '@/components/skeleton';
+import { Button } from '@/components/button';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface RoleDialogProps {
   isOpen: boolean;
@@ -30,7 +19,7 @@ interface RoleDialogProps {
   onRoleSaved: () => void;
   onRoleUpdated?: (role: Role) => void;
   roleToEdit?: Role | null;
-  mode?: "create" | "edit";
+  mode?: 'create' | 'edit';
 }
 
 export function RoleDialog({
@@ -39,20 +28,18 @@ export function RoleDialog({
   onRoleSaved,
   onRoleUpdated,
   roleToEdit = null,
-  mode = "create",
+  mode = 'create',
 }: RoleDialogProps) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [roleId, setRoleId] = useState<string | undefined>("");
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">(mode);
+  const [roleId, setRoleId] = useState<string | undefined>('');
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>(mode);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
   const [rolePermissions, setRolePermissions] = useState<Permission[]>([]);
-  const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>(
-    []
-  );
+  const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
   const [permissionsLoading, setPermissionsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [areAllPermissionsSelected, setAreAllPermissionsSelected] = useState(false);
 
   const handleToggleAllPermissions = () => {
@@ -76,9 +63,9 @@ export function RoleDialog({
       setAllPermissions([]);
       setRolePermissions([]);
       setSelectedPermissionIds([]);
-      setSearchQuery("");
+      setSearchQuery('');
 
-      if (roleToEdit && dialogMode === "edit") {
+      if (roleToEdit && dialogMode === 'edit') {
         populateFormWithRoleData(roleToEdit);
       }
       fetchPermissions();
@@ -94,15 +81,13 @@ export function RoleDialog({
       if (roleToEdit && roleToEdit.id) {
         const rolePermissionIds = await getPermissionsByRoleId(roleToEdit.id);
 
-        const rolePermissionObjects = permissions.filter((permission) =>
-          rolePermissionIds.includes(permission.id)
-        );
+        const rolePermissionObjects = permissions.filter((permission) => rolePermissionIds.includes(permission.id));
 
         setRolePermissions(rolePermissionObjects);
         setSelectedPermissionIds(rolePermissionIds);
       }
     } catch (error) {
-      toast.error("Failed to fetch permissions.");
+      toast.error('Failed to fetch permissions.');
     } finally {
       setPermissionsLoading(false);
     }
@@ -110,7 +95,7 @@ export function RoleDialog({
 
   const populateFormWithRoleData = (role: Role) => {
     setRoleId(role.id);
-    setName(role.name || "");
+    setName(role.name || '');
     setIsActive(role.is_active === 1);
   };
 
@@ -118,7 +103,7 @@ export function RoleDialog({
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Name is required.");
+      toast.error('Name is required.');
       return;
     }
 
@@ -130,20 +115,20 @@ export function RoleDialog({
       };
 
       let savedRoleId = roleId;
-      if (dialogMode === "create") {
+      if (dialogMode === 'create') {
         const createdRole = await createRole(roleData);
         savedRoleId = createdRole.id;
-        toast.success("Role created successfully.");
+        toast.success('Role created successfully.');
         await saveRolePermissions(savedRoleId, selectedPermissionIds);
         onRoleSaved();
       } else {
         if (!roleId) {
-          toast.error("Role ID is required.");
+          toast.error('Role ID is required.');
           return;
         }
         await updateRole(roleId, roleData);
         await saveRolePermissions(savedRoleId, selectedPermissionIds);
-        toast.success("Role updated successfully.");
+        toast.success('Role updated successfully.');
         if (onRoleUpdated && roleToEdit) {
           const updatedRole: Role = {
             ...roleToEdit,
@@ -157,38 +142,33 @@ export function RoleDialog({
       resetForm();
     } catch (err) {
       const data = err.response.data;
-      let errorMessage = "";
+      let errorMessage = '';
 
       if (err.status === 400) {
-        errorMessage = "A role with this name already exists.";
+        errorMessage = 'A role with this name already exists.';
       } else if (data.error) {
         errorMessage = data.error;
       } else if (data.detail) {
-        errorMessage = data.detail["0"].msg;
+        errorMessage = data.detail['0'].msg;
       }
 
-      toast.error(
-        `Failed to ${dialogMode} role${
-          errorMessage ? `: ${errorMessage}` : "."
-        }`
-      );
+      toast.error(`Failed to ${dialogMode} role${errorMessage ? `: ${errorMessage}` : '.'}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const resetForm = () => {
-    if (dialogMode === "create") {
+    if (dialogMode === 'create') {
       setRoleId(undefined);
-      setName("");
+      setName('');
       setIsActive(true);
       setSelectedPermissionIds([]);
     }
   };
-  const title = dialogMode === "create" ? "Create New Role" : "Edit Role";
-  const submitButtonText =
-    dialogMode === "create" ? "Create Role" : "Update Role";
-  const loadingText = dialogMode === "create" ? "Creating..." : "Updating...";
+  const title = dialogMode === 'create' ? 'Create New Role' : 'Edit Role';
+  const submitButtonText = dialogMode === 'create' ? 'Create Role' : 'Update Role';
+  const loadingText = dialogMode === 'create' ? 'Creating...' : 'Updating...';
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -244,39 +224,22 @@ export function RoleDialog({
                       </div>
                     ))
                   : [...allPermissions]
-                      .filter((perm) =>
-                        perm.name
-                          .toLowerCase()
-                          .includes(searchQuery.toLowerCase())
-                      )
+                      .filter((perm) => perm.name.toLowerCase().includes(searchQuery.toLowerCase()))
                       .map((permission) => (
-                        <div
-                          key={permission.id}
-                          className="flex items-center gap-2"
-                        >
+                        <div key={permission.id} className="flex items-center gap-2">
                           <Checkbox
                             id={`permission-${permission.id}`}
-                            checked={selectedPermissionIds.includes(
-                              permission.id
-                            )}
+                            checked={selectedPermissionIds.includes(permission.id)}
                             onCheckedChange={(checked) => {
                               const isChecked = checked === true;
                               if (isChecked) {
-                                setSelectedPermissionIds((prev) => [
-                                  ...prev,
-                                  permission.id,
-                                ]);
+                                setSelectedPermissionIds((prev) => [...prev, permission.id]);
                               } else {
-                                setSelectedPermissionIds((prev) =>
-                                  prev.filter((id) => id !== permission.id)
-                                );
+                                setSelectedPermissionIds((prev) => prev.filter((id) => id !== permission.id));
                               }
                             }}
                           />
-                          <label
-                            className="break-all cursor-pointer"
-                            htmlFor={`permission-${permission.id}`}
-                          >
+                          <label className="break-all cursor-pointer" htmlFor={`permission-${permission.id}`}>
                             {permission.name}
                           </label>
                         </div>
@@ -286,11 +249,7 @@ export function RoleDialog({
 
             <div className="flex items-center gap-2">
               <Label htmlFor="is-active">Active</Label>
-              <Switch
-                id="is-active"
-                checked={isActive}
-                onCheckedChange={setIsActive}
-              />
+              <Switch id="is-active" checked={isActive} onCheckedChange={setIsActive} />
             </div>
           </div>
 

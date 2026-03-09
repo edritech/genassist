@@ -1,6 +1,6 @@
-from typing import Dict, Any
-import logging
 import base64
+import logging
+from typing import Any, Dict
 
 from app.core.utils.bi_utils import make_async_web_call
 
@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class JiraConnector:
-
     def __init__(self, subdomain: str, email: str, api_token: str):
         self.subdomain = subdomain
         self.email = email
@@ -48,6 +47,4 @@ class JiraConnector:
             }
         }
 
-        return await make_async_web_call(
-            method="POST", url=complete_url, headers=headers, payload=payload
-        )
+        return await make_async_web_call(method="POST", url=complete_url, headers=headers, payload=payload)

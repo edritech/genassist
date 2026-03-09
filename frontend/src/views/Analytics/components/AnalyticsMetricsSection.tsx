@@ -1,9 +1,9 @@
-import { MetricCard } from "@/components/analytics/MetricCard";
-import { PerformanceChart } from "@/components/analytics/PerformanceChart";
-import { Timer, SmileIcon, Award, CheckCircle } from "lucide-react";
-import { generateTimeData } from "../helpers/timeDataGenerator";
-import { generateMetricData } from "../helpers/metricDataGenerator";
-import { MetricsAPIResponse } from "@/interfaces/analytics.interface";
+import { MetricCard } from '@/components/analytics/MetricCard';
+import { PerformanceChart } from '@/components/analytics/PerformanceChart';
+import { Timer, SmileIcon, Award, CheckCircle } from 'lucide-react';
+import { generateTimeData } from '../helpers/timeDataGenerator';
+import { generateMetricData } from '../helpers/metricDataGenerator';
+import { MetricsAPIResponse } from '@/interfaces/analytics.interface';
 
 interface AnalyticsMetricsSectionProps {
   timeFrame: string;
@@ -14,62 +14,66 @@ interface AnalyticsMetricsSectionProps {
 
 export const AnalyticsMetricsSection = ({ timeFrame, metrics, loading, error }: AnalyticsMetricsSectionProps) => {
   const defaultMetrics = {
-    "Customer Satisfaction": "0%",
-    "Resolution Rate": "0%",
-    "Positive Sentiment": "0%",
-    "Neutral Sentiment": "0%",
-    "Negative Sentiment": "0%",
-    "Efficiency": "0%",
-    "Response Time": "0%",
-    "Quality of Service": "0%",
-    "total_analyzed_audios": 0,
+    'Customer Satisfaction': '0%',
+    'Resolution Rate': '0%',
+    'Positive Sentiment': '0%',
+    'Neutral Sentiment': '0%',
+    'Negative Sentiment': '0%',
+    Efficiency: '0%',
+    'Response Time': '0%',
+    'Quality of Service': '0%',
+    total_analyzed_audios: 0,
   };
 
   const formattedData = metrics || defaultMetrics;
 
   const metricCards = [
     {
-      title: "Response Time",
-      value: formattedData["Response Time"],
-      trend: "-12%",
+      title: 'Response Time',
+      value: formattedData['Response Time'],
+      trend: '-12%',
       icon: Timer,
-      data: generateMetricData(timeFrame, parseFloat(formattedData["Response Time"]), 1).map(item => ({
-        name: "Response Time", value: item.value
+      data: generateMetricData(timeFrame, parseFloat(formattedData['Response Time']), 1).map((item) => ({
+        name: 'Response Time',
+        value: item.value,
       })),
-      color: "#3b82f6",
+      color: '#3b82f6',
       format: (value: number) => `${value.toFixed(1)}%`,
     },
     {
-      title: "Customer Satisfaction",
-      value: formattedData["Customer Satisfaction"],
-      trend: "+5%",
+      title: 'Customer Satisfaction',
+      value: formattedData['Customer Satisfaction'],
+      trend: '+5%',
       icon: SmileIcon,
-      data: generateMetricData(timeFrame, parseFloat(formattedData["Customer Satisfaction"]), 10).map(item => ({
-        name: "Customer Satisfaction", value: item.value
+      data: generateMetricData(timeFrame, parseFloat(formattedData['Customer Satisfaction']), 10).map((item) => ({
+        name: 'Customer Satisfaction',
+        value: item.value,
       })),
-      color: "#10b981",
+      color: '#10b981',
       format: (value: number) => `${value.toFixed(1)}%`,
     },
     {
-      title: "Quality of Service",
-      value: formattedData["Quality of Service"],
-      trend: "+0.3%",
+      title: 'Quality of Service',
+      value: formattedData['Quality of Service'],
+      trend: '+0.3%',
       icon: Award,
-      data: generateMetricData(timeFrame, parseFloat(formattedData["Quality of Service"]), 0.5).map(item => ({
-        name: "Quality of Service", value: item.value
+      data: generateMetricData(timeFrame, parseFloat(formattedData['Quality of Service']), 0.5).map((item) => ({
+        name: 'Quality of Service',
+        value: item.value,
       })),
-      color: "#8b5cf6",
+      color: '#8b5cf6',
       format: (value: number) => `${value.toFixed(1)}%`,
     },
     {
-      title: "Resolution Rate",
-      value: formattedData["Resolution Rate"],
-      trend: "+8%",
+      title: 'Resolution Rate',
+      value: formattedData['Resolution Rate'],
+      trend: '+8%',
       icon: CheckCircle,
-      data: generateMetricData(timeFrame, parseFloat(formattedData["Resolution Rate"]), 8).map(item => ({
-        name: "Resolution Rate", value: item.value
+      data: generateMetricData(timeFrame, parseFloat(formattedData['Resolution Rate']), 8).map((item) => ({
+        name: 'Resolution Rate',
+        value: item.value,
       })),
-      color: "#f59e0b",
+      color: '#f59e0b',
       format: (value: number) => `${value.toFixed(1)}%`,
     },
   ];

@@ -1,10 +1,11 @@
 import functools
 import logging
 import re
-from typing import Optional, Tuple, List, Dict
 from dataclasses import dataclass
-from app.core.exceptions.exception_classes import AppException
+from typing import Dict, List, Optional, Tuple
+
 from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class OpenAIModel:
     """OpenAI model metadata"""
+
     value: str  # Model ID used in API calls
     label: str  # Display name for UI
     encoding: str  # Tiktoken encoding name
@@ -103,6 +105,7 @@ NON_RETRYABLE_ERROR_PATTERNS = [
     (r"incorrect.*api.*key", "LLM_INVALID_API_KEY"),
 ]
 
+
 def is_non_retryable_llm_error(error_message: str) -> Optional[Tuple[str, str]]:
     """
     Check if an error message matches known non-retryable LLM error patterns.
@@ -158,11 +161,7 @@ def check_and_raise_if_non_retryable(error: Exception) -> None:
 
         logger.error(f"Non-retryable LLM error detected: {error_key_name} - {error_str}")
 
-        raise AppException(
-            error_key=error_key,
-            status_code=400,
-            error_detail=error_str
-        )
+        raise AppException(error_key=error_key, status_code=400, error_detail=error_str)
 
 
 def retry_async(max_attempts=3, fallback=None, exception_message="Retry failed"):
@@ -180,13 +179,15 @@ def retry_async(max_attempts=3, fallback=None, exception_message="Retry failed")
             if fallback is not None:
                 return fallback
             raise last_error or Exception(exception_message)
+
         return wrapper
+
     return decorator
+
 
 def clean_markdown(text: str) -> str:
     """Strip markdown formatting characters from a string."""
-    text = re.sub(r'\*+', '', text)         # Remove ** bold / * italic
-    text = re.sub(r'#+\s*', '', text)       # Remove ### headers
-    text = re.sub(r'\n{2,}', '\n', text)    # Collapse multiple newlines into one
+    text = re.sub(r"\*+", "", text)  # Remove ** bold / * italic
+    text = re.sub(r"#+\s*", "", text)  # Remove ### headers
+    text = re.sub(r"\n{2,}", "\n", text)  # Collapse multiple newlines into one
     return text.strip()
-

@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
-import { useParams } from "react-router-dom";
-import { Copy } from "lucide-react";
-import { getAgentConfig, getAgentIntegrationKey } from "@/services/api";
-import { getApiUrl } from "@/config/api";
-import { getTenantId } from "@/services/auth";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
-import { cn } from "@/helpers/utils";
-import type { FeatureFlags } from "genassist-chat-react";
+import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { useParams } from 'react-router-dom';
+import { Copy } from 'lucide-react';
+import { getAgentConfig, getAgentIntegrationKey } from '@/services/api';
+import { getApiUrl } from '@/config/api';
+import { getTenantId } from '@/services/auth';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/tabs';
+import { cn } from '@/helpers/utils';
+import type { FeatureFlags } from 'genassist-chat-react';
 
 interface IntegrationCodePanelProps {
   agentId?: string;
@@ -26,30 +26,18 @@ interface CodeSectionProps {
 }
 
 const SAMPLE_METADATA = {
-  id: "cust_123",
-  name: "Jane Doe",
-  email: "jane.doe@example.com",
+  id: 'cust_123',
+  name: 'Jane Doe',
+  email: 'jane.doe@example.com',
 };
 
-const CodeSection = ({
-  title,
-  code,
-  copyId,
-  copiedSection,
-  onCopy,
-  minHeightClass,
-}: CodeSectionProps) => {
+const CodeSection = ({ title, code, copyId, copiedSection, onCopy, minHeightClass }: CodeSectionProps) => {
   const isCopied = copiedSection === copyId;
 
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-      <div
-        className={cn(
-          "relative rounded-xl border border-[#E5E7EB] bg-[#F7F7F8] p-4",
-          minHeightClass
-        )}
-      >
+      <div className={cn('relative rounded-xl border border-[#E5E7EB] bg-[#F7F7F8] p-4', minHeightClass)}>
         <button
           type="button"
           onClick={() => onCopy(code, copyId)}
@@ -57,7 +45,7 @@ const CodeSection = ({
           aria-label={`Copy ${title}`}
         >
           <Copy className="h-4 w-4" />
-          {isCopied ? "Copied" : "Copy"}
+          {isCopied ? 'Copied' : 'Copy'}
         </button>
         <pre className="whitespace-pre-wrap break-words pr-12 text-xs leading-relaxed text-gray-700 font-mono">
           {code}
@@ -76,15 +64,15 @@ export const IntegrationCodePanel = ({
   const { agentId: agentIdParam } = useParams<{ agentId: string }>();
   const agentId = agentIdProp ?? agentIdParam;
   const [configName, setConfigName] = useState<string | null>(null);
-  const [baseUrl, setBaseUrl] = useState<string>("");
-  const [apiKey, setApiKey] = useState<string>("");
+  const [baseUrl, setBaseUrl] = useState<string>('');
+  const [apiKey, setApiKey] = useState<string>('');
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!agentId) return;
-    setBaseUrl("");
-    setApiKey("");
+    setBaseUrl('');
+    setApiKey('');
     setConfigName(null);
     setTenantId(getTenantId());
 
@@ -100,7 +88,7 @@ export const IntegrationCodePanel = ({
           const fetchedApiKey = await getAgentIntegrationKey(agentId);
           setApiKey(fetchedApiKey);
         } catch (keyError) {
-          setApiKey("your-api-key-here");
+          setApiKey('your-api-key-here');
         }
       } catch (error) {
         // ignore
@@ -123,7 +111,7 @@ export const IntegrationCodePanel = ({
     return (
       <div
         className={cn(
-          "w-full rounded-2xl border border-[#E5E7EB] bg-white p-4 text-sm text-muted-foreground shadow-sm",
+          'w-full rounded-2xl border border-[#E5E7EB] bg-white p-4 text-sm text-muted-foreground shadow-sm',
           className
         )}
         style={style}
@@ -134,16 +122,14 @@ export const IntegrationCodePanel = ({
   }
 
   const curlWorkflowExecute = `curl -X 'POST' \\
-  '${baseUrl}genagent/agents/${
-    agentId || "019b8614-72d2-74bd-8b48-8388ba371d40"
-  }/query/${apiKey}' \\
+  '${baseUrl}genagent/agents/${agentId || '019b8614-72d2-74bd-8b48-8388ba371d40'}/query/${apiKey}' \\
   -H 'accept: application/json' \\
   -H 'Content-Type: application/json' \\
   -H "X-API-Key: ${apiKey}"${
     tenantId
       ? ` \\
   -H "x-tenant-id: ${tenantId}"`
-      : ""
+      : ''
   } \\
   -d '{
   "query": "string",
@@ -157,11 +143,11 @@ export const IntegrationCodePanel = ({
     -H "Accept: application/json" \\
     -H "Content-Type: application/json" \\
     -H "X-API-Key: ${apiKey}"${
-    tenantId
-      ? ` \\
+      tenantId
+        ? ` \\
     -H "x-tenant-id: ${tenantId}"`
-      : ""
-  } \\
+        : ''
+    } \\
     -d '{
     "messages": [],
     "recorded_at": "2025-12-22T11:28:22.293Z",
@@ -174,11 +160,11 @@ export const IntegrationCodePanel = ({
     -H "Accept: application/json" \\
     -H "Content-Type: application/json" \\
     -H "X-API-Key: ${apiKey}"${
-    tenantId
-      ? ` \\
+      tenantId
+        ? ` \\
     -H "x-tenant-id: ${tenantId}"`
-      : ""
-  } \\
+        : ''
+    } \\
     -d '{
     "messages": [
       {
@@ -198,7 +184,7 @@ export const IntegrationCodePanel = ({
   const reactInstall = `npm install genassist-chat-react
 # or
 yarn add genassist-chat-react`;
-  
+
   // Build the React usage code with conditional feature flags
   const buildReactUsage = () => {
     const props: string[] = [
@@ -283,10 +269,7 @@ struct ContentView: View {
 
   return (
     <div
-      className={cn(
-        "w-full rounded-2xl border border-[#E5E7EB] bg-white shadow-sm",
-        className
-      )}
+      className={cn('w-full rounded-2xl border border-[#E5E7EB] bg-white shadow-sm', className)}
       style={style}
       title={panelLabel}
     >

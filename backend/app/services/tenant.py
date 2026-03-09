@@ -1,12 +1,14 @@
 import logging
-from typing import Optional, List
+from typing import List, Optional
 from uuid import UUID
+
 from injector import inject
+
+from app.core.config.settings import settings
+from app.core.permissions import sync_permissions_for_tenant
 from app.db.models.tenant import TenantModel
 from app.db.multi_tenant_session import multi_tenant_manager
-from app.core.config.settings import settings
 from app.repositories.tenant import TenantRepository
-from app.core.permissions import sync_permissions_for_tenant
 
 logger = logging.getLogger(__name__)
 
@@ -82,9 +84,7 @@ class TenantService:
 
             seed_success = await multi_tenant_manager.seed_tenant_database(slug)
             if not seed_success:
-                logger.warning(
-                    f"Failed to seed tenant database {slug}, but tenant was created"
-                )
+                logger.warning(f"Failed to seed tenant database {slug}, but tenant was created")
             else:
                 logger.info(f"Successfully seeded tenant database: {slug}")
 

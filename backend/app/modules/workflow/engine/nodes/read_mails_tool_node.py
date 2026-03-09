@@ -2,11 +2,11 @@
 Read mails tool node implementation using the BaseNode class.
 """
 
-from typing import Dict, Any
 import logging
+from typing import Any, Dict
 
-from app.modules.workflow.engine.base_node import BaseNode
 from app.modules.integration.gmail_connector import GmailConnector
+from app.modules.workflow.engine.base_node import BaseNode
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +34,8 @@ class ReadMailsToolNode(BaseNode):
             # If search criteria is provided, use it to filter emails
             emails = await gmail_connector.search_emails(search_criteria)
 
-            return {
-                "status": 200,
-                "data": emails
-            }
+            return {"status": 200, "data": emails}
 
         except Exception as e:
             logger.error(f"Error processing ReadMailsToolProcessor: {e}")
-            return {
-                "status": 500,
-                "error": str(e)
-            }
+            return {"status": 500, "error": str(e)}

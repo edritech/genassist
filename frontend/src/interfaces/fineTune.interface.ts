@@ -11,13 +11,7 @@ export interface CreateFineTuneJobRequest {
   hyperparameters: FineTuneHyperparameters;
 }
 
-export type FineTuneJobStatus =
-  | "validating_files"
-  | "queued"
-  | "running"
-  | "succeeded"
-  | "failed"
-  | "cancelled";
+export type FineTuneJobStatus = 'validating_files' | 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
 
 export interface FineTuneJob {
   id: string;

@@ -2,13 +2,12 @@
 Custom tenant-aware scope for dependency injection
 """
 
-from injector import ScopeDecorator
 import logging
 import threading
 from contextvars import ContextVar
 from typing import Any, Dict, Type, TypeVar
 
-from injector import Provider, Scope, InstanceProvider
+from injector import InstanceProvider, Provider, Scope, ScopeDecorator
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +32,7 @@ class TenantScope(Scope):
             tenant_id = _tenant_id_ctx.get()
         except LookupError:
             # No tenant context, use default provider
-            logger.debug(
-                f"TenantScope: No tenant context for {key.__name__}, using default provider"
-            )
+            logger.debug(f"TenantScope: No tenant context for {key.__name__}, using default provider")
             return provider
 
         with self._lock:
@@ -48,9 +45,7 @@ class TenantScope(Scope):
                 # Create instance for this tenant
                 instance = provider.get(self.injector)
                 tenant_cache[key] = InstanceProvider(instance)
-                logger.debug(
-                    f"TenantScope: Created instance for tenant {tenant_id} and key {key.__name__}"
-                )
+                logger.debug(f"TenantScope: Created instance for tenant {tenant_id} and key {key.__name__}")
 
             return tenant_cache[key]
 
@@ -82,4 +77,3 @@ def clear_tenant_context() -> None:
         _tenant_id_ctx.set("master")
     except LookupError:
         pass
-

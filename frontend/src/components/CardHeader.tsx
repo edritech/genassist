@@ -1,4 +1,4 @@
-import { InfoIcon } from "lucide-react";
+import { InfoIcon } from 'lucide-react';
 
 interface CardHeaderProps {
   title: string;
@@ -29,4 +29,4 @@ export function CardHeader({ title, tooltipText, linkText, linkHref }: CardHeade
       )}
     </div>
   );
-} 
+}

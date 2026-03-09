@@ -1,5 +1,5 @@
-export type HTTPMethod = "GET" | "POST";
-export type WebhookType = "slack" | "whatsapp" | "generic";
+export type HTTPMethod = 'GET' | 'POST';
+export type WebhookType = 'slack' | 'whatsapp' | 'generic';
 
 export interface Webhook {
   id: string;
@@ -17,8 +17,6 @@ export interface Webhook {
   created_at: string; // ISO string
   updated_at: string; // ISO string
 }
-
-
 
 export interface WebhookCreatePayload {
   name: string;

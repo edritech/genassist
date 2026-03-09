@@ -1,20 +1,23 @@
+from datetime import datetime
 from typing import List
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi_injector import Injected
 
 from app.auth.dependencies import auth, permissions
+from app.core.permissions.constants import Permissions as P
 from app.schemas.audit_log import AuditLogRead, AuditLogSearchParams, AuditLogSearchResult
 from app.services.audit_logs import AuditLogService
-from datetime import datetime
-from app.core.permissions.constants import Permissions as P
 
 router = APIRouter()
 
-@router.get("/search", response_model=List[AuditLogSearchResult], dependencies=[
-    Depends(auth),
-    Depends(permissions(P.AuditLog.READ))
-])
+
+@router.get(
+    "/search",
+    response_model=List[AuditLogSearchResult],
+    dependencies=[Depends(auth), Depends(permissions(P.AuditLog.READ))],
+)
 async def search(
     date_from: datetime = Query(None),
     date_to: datetime = Query(None),
@@ -22,7 +25,7 @@ async def search(
     table_name: str = Query(None),
     entity_id: UUID = Query(None),
     user: UUID = Query(None),
-    limit:  int | None = Query(None, ge=1, le=500),
+    limit: int | None = Query(None, ge=1, le=500),
     offset: int | None = Query(None, ge=0),
     service: AuditLogService = Injected(AuditLogService),
 ):
@@ -47,10 +50,10 @@ async def search(
     )
     return await service.search_audit_logs(search_params)
 
-@router.get("/{log_id}", response_model=AuditLogRead, dependencies=[
-    Depends(auth),
-    Depends(permissions(P.AuditLog.READ))
-])
+
+@router.get(
+    "/{log_id}", response_model=AuditLogRead, dependencies=[Depends(auth), Depends(permissions(P.AuditLog.READ))]
+)
 async def get_by_id(
     log_id: int,
     service: AuditLogService = Injected(AuditLogService),

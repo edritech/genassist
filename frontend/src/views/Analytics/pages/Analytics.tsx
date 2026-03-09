@@ -1,19 +1,13 @@
-import { useState } from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/sidebar";
-import { AppSidebar } from "@/layout/app-sidebar";
-import { useIsMobile } from "@/hooks/useMobile";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { AnalyticsMetricsSection } from "../components/AnalyticsMetricsSection";
-import { useAnalyticsData } from "../hooks/useAnalyticsData";
+import { useState } from 'react';
+import { SidebarProvider, SidebarTrigger } from '@/components/sidebar';
+import { AppSidebar } from '@/layout/app-sidebar';
+import { useIsMobile } from '@/hooks/useMobile';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { AnalyticsMetricsSection } from '../components/AnalyticsMetricsSection';
+import { useAnalyticsData } from '../hooks/useAnalyticsData';
 
 const AnalyticsPage = () => {
-  const [timeFrame, setTimeFrame] = useState("7days");
+  const [timeFrame, setTimeFrame] = useState('7days');
   const { metrics, loading, error } = useAnalyticsData();
   const isMobile = useIsMobile();
 
@@ -28,12 +22,11 @@ const AnalyticsPage = () => {
               <header className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 animate-fade-down">Analytics</h1>
-                  <p className="text-sm sm:text-base text-muted-foreground animate-fade-up">Track and analyze your performance metrics</p>
+                  <p className="text-sm sm:text-base text-muted-foreground animate-fade-up">
+                    Track and analyze your performance metrics
+                  </p>
                 </div>
-                <Select 
-                  defaultValue="7days" 
-                  onValueChange={setTimeFrame}
-                >
+                <Select defaultValue="7days" onValueChange={setTimeFrame}>
                   <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Select time period" />
                   </SelectTrigger>
@@ -47,12 +40,7 @@ const AnalyticsPage = () => {
                 </Select>
               </header>
 
-              <AnalyticsMetricsSection
-                timeFrame={timeFrame}
-                metrics={metrics}
-                loading={loading}
-                error={error}
-              />
+              <AnalyticsMetricsSection timeFrame={timeFrame} metrics={metrics} loading={loading} error={error} />
             </div>
           </div>
         </main>
@@ -61,4 +49,4 @@ const AnalyticsPage = () => {
   );
 };
 
-export default AnalyticsPage; 
+export default AnalyticsPage;

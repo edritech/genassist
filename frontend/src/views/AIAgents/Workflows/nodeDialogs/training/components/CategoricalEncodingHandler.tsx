@@ -1,20 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { Label } from "@/components/label";
-import { Switch } from "@/components/switch";
-import { Input } from "@/components/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import React, { useState, useEffect } from 'react';
+import { Label } from '@/components/label';
+import { Switch } from '@/components/switch';
+import { Input } from '@/components/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   CategoricalEncodingConfig,
   CategoricalEncodingItem,
   CategoricalEncodingStrategy,
-} from "../preprocessingConfig";
-import { CSVAnalysisResult } from "@/services/mlModels";
+} from '../preprocessingConfig';
+import { CSVAnalysisResult } from '@/services/mlModels';
 
 interface CategoricalEncodingHandlerProps {
   config: CategoricalEncodingConfig | undefined;
@@ -22,12 +16,12 @@ interface CategoricalEncodingHandlerProps {
   analysisResult: CSVAnalysisResult | null;
 }
 
-export const CategoricalEncodingHandler: React.FC<
-  CategoricalEncodingHandlerProps
-> = ({ config, onChange, analysisResult }) => {
-  const [columns, setColumns] = useState<CategoricalEncodingItem[]>(
-    config?.columns || []
-  );
+export const CategoricalEncodingHandler: React.FC<CategoricalEncodingHandlerProps> = ({
+  config,
+  onChange,
+  analysisResult,
+}) => {
+  const [columns, setColumns] = useState<CategoricalEncodingItem[]>(config?.columns || []);
 
   // Get categorical columns from analysis result
   const getCategoricalColumns = (): CategoricalEncodingItem[] => {
@@ -36,11 +30,11 @@ export const CategoricalEncodingHandler: React.FC<
     const categoricalColumns = analysisResult.columns_info
       .filter((col) => {
         // Only include columns that are categorical type
-        return col.type === "categorical";
+        return col.type === 'categorical';
       })
       .map((col) => ({
         columnName: col.name,
-        strategy: "no_action" as CategoricalEncodingStrategy, // Default strategy
+        strategy: 'no_action' as CategoricalEncodingStrategy, // Default strategy
         dropFirst: false, // Default for one-hot
       }));
 
@@ -70,9 +64,7 @@ export const CategoricalEncodingHandler: React.FC<
       } else if (configColumns.length > 0) {
         // Sync with analysis result - add new categorical columns that aren't in config
         // Use config.columns as source of truth to preserve user's settings
-        const existingColumnsMap = new Map(
-          configColumns.map((col) => [col.columnName, col])
-        );
+        const existingColumnsMap = new Map(configColumns.map((col) => [col.columnName, col]));
 
         // Build columns from config (source of truth)
         const syncedColumns: CategoricalEncodingItem[] = [...configColumns];
@@ -97,10 +89,7 @@ export const CategoricalEncodingHandler: React.FC<
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [analysisResult]);
 
-  const handleStrategyChange = (
-    columnName: string,
-    strategy: CategoricalEncodingStrategy
-  ) => {
+  const handleStrategyChange = (columnName: string, strategy: CategoricalEncodingStrategy) => {
     const newColumns = columns.map((col) =>
       col.columnName === columnName
         ? {
@@ -138,12 +127,10 @@ export const CategoricalEncodingHandler: React.FC<
     <div className="space-y-4">
       <div className="space-y-0.5">
         <Label>Categorical Encoding</Label>
-        <p className="text-xs text-gray-500">
-          Encode categorical columns for machine learning
-        </p>
+        <p className="text-xs text-gray-500">Encode categorical columns for machine learning</p>
       </div>
 
-      {(
+      {
         <div className="space-y-2">
           {!analysisResult ? (
             <p className="text-sm text-gray-500 italic py-2">
@@ -151,17 +138,14 @@ export const CategoricalEncodingHandler: React.FC<
             </p>
           ) : categoricalColumns.length === 0 ? (
             <p className="text-sm text-gray-500 italic py-2">
-              No categorical columns found or all categorical columns are
-              filtered out.
+              No categorical columns found or all categorical columns are filtered out.
             </p>
           ) : (
             <div className="space-y-3">
               <Label className="text-sm">Categorical Columns</Label>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {columns.map((column) => {
-                  const columnInfo = analysisResult.columns_info.find(
-                    (col) => col.name === column.columnName
-                  );
+                  const columnInfo = analysisResult.columns_info.find((col) => col.name === column.columnName);
                   return (
                     <div
                       key={column.columnName}
@@ -169,16 +153,11 @@ export const CategoricalEncodingHandler: React.FC<
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <Label className="font-medium text-sm">
-                            {column.columnName}
-                          </Label>
+                          <Label className="font-medium text-sm">{column.columnName}</Label>
                           {columnInfo && (
                             <span className="text-xs text-gray-500">
                               ({columnInfo.unique_count} unique
-                              {columnInfo.category_count
-                                ? `, ${columnInfo.category_count} categories`
-                                : ""}
-                              )
+                              {columnInfo.category_count ? `, ${columnInfo.category_count} categories` : ''})
                             </span>
                           )}
                         </div>
@@ -187,10 +166,7 @@ export const CategoricalEncodingHandler: React.FC<
                         <Select
                           value={column.strategy}
                           onValueChange={(value) =>
-                            handleStrategyChange(
-                              column.columnName,
-                              value as CategoricalEncodingStrategy
-                            )
+                            handleStrategyChange(column.columnName, value as CategoricalEncodingStrategy)
                           }
                         >
                           <SelectTrigger className="w-[160px]">
@@ -203,14 +179,12 @@ export const CategoricalEncodingHandler: React.FC<
                             <SelectItem value="ordinal">Ordinal</SelectItem>
                           </SelectContent>
                         </Select>
-                        {column.strategy === "one_hot" && (
+                        {column.strategy === 'one_hot' && (
                           <div className="flex items-center gap-2">
                             <Label className="text-xs">Drop First:</Label>
                             <Switch
                               checked={column.dropFirst ?? false}
-                              onCheckedChange={(checked) =>
-                                handleDropFirstChange(column.columnName, checked)
-                              }
+                              onCheckedChange={(checked) => handleDropFirstChange(column.columnName, checked)}
                             />
                           </div>
                         )}
@@ -221,15 +195,13 @@ export const CategoricalEncodingHandler: React.FC<
               </div>
               <p className="text-xs text-gray-500">
                 {columns.length} categorical column
-                {columns.length !== 1 ? "s" : ""} available. One-Hot creates
-                binary columns, Label assigns numeric codes, Ordinal uses custom
-                mapping.
+                {columns.length !== 1 ? 's' : ''} available. One-Hot creates binary columns, Label assigns numeric
+                codes, Ordinal uses custom mapping.
               </p>
             </div>
           )}
         </div>
-      )}
+      }
     </div>
   );
 };
-

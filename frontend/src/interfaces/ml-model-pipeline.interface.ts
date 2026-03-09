@@ -1,4 +1,4 @@
-import { Workflow } from "./workflow.interface";
+import { Workflow } from './workflow.interface';
 
 export interface TrainingPipelineConfig {
   id: string;
@@ -55,4 +55,3 @@ export interface TrainingPipelineConfigUpdatePayload {
   is_default?: boolean;
   cron_schedule?: string | null;
 }
-

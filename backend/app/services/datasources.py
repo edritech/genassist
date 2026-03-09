@@ -32,12 +32,8 @@ class DataSourceService:
         self.repository = repository
 
     async def create(self, datasource: DataSourceCreate):
-        datasource.connection_data = await self.extract_private_key(
-            datasource.connection_data
-        )
-        datasource.connection_data = await self.encrypt_connection_data_fields(
-            datasource.connection_data
-        )
+        datasource.connection_data = await self.extract_private_key(datasource.connection_data)
+        datasource.connection_data = await self.encrypt_connection_data_fields(datasource.connection_data)
 
         if datasource.connection_status:
             datasource.connection_status = datasource.connection_status.model_dump(mode="json")
@@ -52,9 +48,7 @@ class DataSourceService:
     ) -> Optional[DataSourceModel]:
         db_datasource = await self.repository.get_by_id(datasource_id)
         if decrypt_sensitive:
-            db_datasource.connection_data = await self.decrypt_connection_data_fields(
-                db_datasource.connection_data
-            )
+            db_datasource.connection_data = await self.decrypt_connection_data_fields(db_datasource.connection_data)
 
         return db_datasource
 
@@ -66,9 +60,7 @@ class DataSourceService:
         update_data = datasource_update.model_dump(exclude_unset=True, mode="json")
 
         if "connection_data" in update_data:
-            update_data["connection_data"] = await self.extract_private_key(
-                update_data["connection_data"]
-            )
+            update_data["connection_data"] = await self.extract_private_key(update_data["connection_data"])
 
         # get  current datasource from DB
         db_datasource = await self.repository.get_by_id(datasource_id)
@@ -81,19 +73,14 @@ class DataSourceService:
 
         for field_name in self.encrypted_fields:
             if field_name in update_conn_data:
-                if (
-                    update_conn_data[field_name] == ""
-                    or update_conn_data[field_name] == None
-                ):
+                if update_conn_data[field_name] == "" or update_conn_data[field_name] is None:
                     del update_conn_data[field_name]
                 elif (
                     field_name not in existing_conn_data
                     or update_conn_data[field_name] != existing_conn_data[field_name]
                 ):
                     # encrypt field in connection_data if is different or doesn't exist in DB
-                    update_conn_data[field_name] = encrypt_key(
-                        update_conn_data[field_name]
-                    )
+                    update_conn_data[field_name] = encrypt_key(update_conn_data[field_name])
 
         if "connection_data" in update_data:
             # Check if any connection field actually changed (after encryption processing)
@@ -137,17 +124,13 @@ class DataSourceService:
         db_datasources = await self.repository.get_active()
         return db_datasources
 
-    async def get_by_type(
-        self, source_type: str, decrypt_sensitive: Optional[bool] = False
-    ):
+    async def get_by_type(self, source_type: str, decrypt_sensitive: Optional[bool] = False):
         db_datasources = await self.repository.get_by_type(source_type)
         if decrypt_sensitive:
             for datasource in db_datasources:
                 if datasource.connection_data:
-                    datasource.connection_data = (
-                        await self.decrypt_connection_data_fields(
-                            datasource.connection_data, datasource.id
-                        )
+                    datasource.connection_data = await self.decrypt_connection_data_fields(
+                        datasource.connection_data, datasource.id
                     )
         return db_datasources
 
@@ -157,9 +140,7 @@ class DataSourceService:
         for field_name in self.encrypted_fields:
             if field_name in connection_data and connection_data[field_name]:
                 try:
-                    connection_data[field_name] = encrypt_key(
-                        connection_data[field_name]
-                    )
+                    connection_data[field_name] = encrypt_key(connection_data[field_name])
                 except Exception as e:
                     logger.error(
                         f"Error decrypting datasource field '{field_name}' for datasource ID '{datasource_id}': {e}"
@@ -172,9 +153,7 @@ class DataSourceService:
         for field_name in self.encrypted_fields:
             if field_name in connection_data and connection_data[field_name]:
                 try:
-                    connection_data[field_name] = decrypt_key(
-                        connection_data[field_name]
-                    )
+                    connection_data[field_name] = decrypt_key(connection_data[field_name])
                 except Exception as e:
                     logger.error(
                         f"Error decrypting datasource field '{field_name}' for datasource ID '{datasource_id}': {e}"
@@ -211,28 +190,35 @@ class DataSourceService:
         try:
             if source_type_lower == "s3":
                 from app.core.utils.s3_utils import S3Client
+
                 return S3Client.test_connection(cd)
             elif source_type_lower == "database":
                 from app.modules.integration.database.database_manager import (
                     DatabaseManager,
                 )
+
                 return await DatabaseManager.test_connection(cd)
             elif source_type_lower == "snowflake":
                 from app.modules.integration.snowflake.snowflake_manager import (
                     SnowflakeManager,
                 )
+
                 return await SnowflakeManager.test_connection(cd)
             elif source_type_lower == "zendesk":
                 from app.services.connection_tester import test_zendesk
+
                 return await test_zendesk(cd)
             elif source_type_lower == "smb_share_folder":
                 from app.services.smb_share_service import SMBShareFSService
+
                 return await SMBShareFSService.test_connection(cd)
             elif source_type_lower == "azure_blob":
                 from app.services.AzureStorageService import AzureStorageService
+
                 return AzureStorageService.test_connection(cd)
             elif source_type_lower == "url":
                 from app.services.connection_tester import test_url
+
                 return await test_url(cd)
             else:
                 return {
@@ -259,6 +245,7 @@ class DataSourceService:
             if file_path.startswith("http://") or file_path.startswith("https://"):
                 from app.dependencies.injector import injector
                 from app.services.file_manager import FileManagerService
+
                 file_manager_service = injector.get(FileManagerService)
 
                 # store the file to a temporary folder
@@ -273,18 +260,14 @@ class DataSourceService:
                     content = f.read()
 
                 encrypted_content = encrypt_key(content)
-                private_key = base64.b64encode(
-                    encrypted_content.encode("utf-8")
-                ).decode("utf-8")
+                private_key = base64.b64encode(encrypted_content.encode("utf-8")).decode("utf-8")
                 connection_data["private_key"] = private_key
 
                 if delete_file:
                     os.remove(file_path)
                     logger.info(f"Private key extracted and file deleted: {file_path}")
             else:
-                logger.warning(
-                    f"Private key file path provided but file not found: {file_path}"
-                )
+                logger.warning(f"Private key file path provided but file not found: {file_path}")
 
         except Exception as e:
             logger.error(f"Error processing private key file {file_path}: {str(e)}")

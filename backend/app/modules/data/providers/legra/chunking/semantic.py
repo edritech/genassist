@@ -8,10 +8,10 @@ from sentence_transformers import SentenceTransformer
 
 from .base import Chunker
 
-nltk.download('punkt_tab', quiet=True)
+nltk.download("punkt_tab", quiet=True)
 
 __all__ = [
-    'SemanticChunker',
+    "SemanticChunker",
 ]
 
 
@@ -112,7 +112,7 @@ class SemanticChunker(Chunker):
 
         # If already within max_sents, return as single chunk
         if self.max_sents is not None and len(sents) <= self.max_sents:
-            return [' '.join(sents)]
+            return [" ".join(sents)]
 
         # Compute embeddings
         embs = self.model.encode(sents, convert_to_numpy=True)
@@ -131,6 +131,6 @@ class SemanticChunker(Chunker):
 
         chunks = []
         for start, end in pairwise(splits):
-            segment = sents[start + 1: end + 1]
-            chunks.append(' '.join(segment))
+            segment = sents[start + 1 : end + 1]
+            chunks.append(" ".join(segment))
         return chunks

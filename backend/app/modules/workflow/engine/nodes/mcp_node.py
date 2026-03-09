@@ -1,9 +1,9 @@
-import logging
-from typing import Dict, Any, List, Literal
 import json
+import logging
+from typing import Any, Dict, List, Literal
 
-from app.modules.workflow.engine.base_node import BaseNode
 from app.modules.workflow.agents.base_tool import BaseTool
+from app.modules.workflow.engine.base_node import BaseNode
 from app.modules.workflow.mcp.mcp_client import MCPClientV2
 
 logger = logging.getLogger(__name__)
@@ -88,9 +88,7 @@ class MCPNode(BaseNode):
         connection_config = node_data.get("connectionConfig", {})
 
         if not connection_type_raw or connection_type_raw not in ("stdio", "sse", "http"):
-            raise ValueError(
-                "MCP node: connectionType is required. Must be one of: 'stdio', 'sse', 'http'"
-            )
+            raise ValueError("MCP node: connectionType is required. Must be one of: 'stdio', 'sse', 'http'")
 
         connection_type: Literal["stdio", "sse", "http"] = connection_type_raw  # type: ignore[assignment]
 
@@ -116,15 +114,11 @@ class MCPNode(BaseNode):
         connection_config = node_data.get("connectionConfig", {})
 
         if not connection_type:
-            logger.warning(
-                f"MCP node {self.node_id} has no connectionType configured"
-            )
+            logger.warning(f"MCP node {self.node_id} has no connectionType configured")
             return []
 
         if not connection_config:
-            logger.warning(
-                f"MCP node {self.node_id} has no connectionConfig configured"
-            )
+            logger.warning(f"MCP node {self.node_id} has no connectionConfig configured")
             return []
 
         if not whitelisted_tools:
@@ -134,9 +128,7 @@ class MCPNode(BaseNode):
         tools = []
         for tool_name in whitelisted_tools:
             # Find the tool definition in available_tools
-            tool_def = next(
-                (t for t in available_tools if t.get("name") == tool_name), None
-            )
+            tool_def = next((t for t in available_tools if t.get("name") == tool_name), None)
 
             if not tool_def:
                 logger.warning(
@@ -168,17 +160,13 @@ class MCPNode(BaseNode):
                         current_node_data = self.get_node_data()
                         current_whitelist = current_node_data.get("whitelistedTools", [])
                         if captured_tool_name not in current_whitelist:
-                            error_msg = (
-                                f"Tool '{captured_tool_name}' is not whitelisted"
-                            )
+                            error_msg = f"Tool '{captured_tool_name}' is not whitelisted"
                             logger.error(error_msg)
                             return json.dumps({"error": error_msg})
 
                         # Get MCP client
                         mcp_client = self._get_mcp_client(current_node_data)
-                        result = await mcp_client.execute_tool(
-                            captured_tool_name, parameters
-                        )
+                        result = await mcp_client.execute_tool(captured_tool_name, parameters)
 
                         # Convert result to string (BaseTool.invoke returns str)
                         if isinstance(result, (dict, list)):
@@ -186,9 +174,7 @@ class MCPNode(BaseNode):
                         else:
                             return str(result)
                     except Exception as e:
-                        error_msg = (
-                            f"Error executing MCP tool '{captured_tool_name}': {str(e)}"
-                        )
+                        error_msg = f"Error executing MCP tool '{captured_tool_name}': {str(e)}"
                         logger.error(error_msg, exc_info=True)
                         return json.dumps({"error": error_msg})
 

@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { MCPServer } from "@/interfaces/mcp-server.interface";
-import { MCPServerCard } from "../components/MCPServerCard";
-import { MCPServerDialog } from "../components/MCPServerDialog";
+import { useState } from 'react';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { MCPServer } from '@/interfaces/mcp-server.interface';
+import { MCPServerCard } from '../components/MCPServerCard';
+import { MCPServerDialog } from '../components/MCPServerDialog';
 
 export default function MCPServersPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [serverToEdit, setServerToEdit] = useState<MCPServer | null>(null);
   const [updatedServer, setUpdatedServer] = useState<MCPServer | null>(null);
 
@@ -22,13 +22,13 @@ export default function MCPServersPage() {
   };
 
   const handleCreateServer = () => {
-    setDialogMode("create");
+    setDialogMode('create');
     setServerToEdit(null);
     setIsDialogOpen(true);
   };
 
   const handleEditServer = (server: MCPServer) => {
-    setDialogMode("edit");
+    setDialogMode('edit');
     setServerToEdit(server);
     setIsDialogOpen(true);
   };
@@ -63,4 +63,3 @@ export default function MCPServersPage() {
     </PageLayout>
   );
 }
-

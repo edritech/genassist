@@ -1,39 +1,37 @@
+import json
+import logging
 import uuid
 from datetime import datetime
-from fastapi import Request, HTTPException
+from typing import Optional
+from uuid import UUID
+
+from fastapi import HTTPException, Request
+from injector import inject
 from starlette.status import (
-    HTTP_401_UNAUTHORIZED,
     HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
     HTTP_404_NOT_FOUND,
 )
-from uuid import UUID
+
 from app.core.tenant_scope import get_tenant_context
+from app.core.utils.encryption_utils import decrypt_key, encrypt_key
 from app.core.utils.indentifiers import get_customer_id
 from app.db.models.webhook import WebhookModel
 from app.modules.integration.slack import SlackConnector, verify_slack_request
+from app.modules.integration.whatsapp import WhatsAppConnector
 from app.repositories.webhook_repository import WebhookRepository
 from app.schemas.conversation_transcript import (
     InProgConvTranscrUpdate,
     TranscriptSegmentInput,
 )
-from app.schemas.webhook import WebhookCreate, WebhookUpdate, WebhookBase
-from injector import inject
-from app.core.utils.encryption_utils import decrypt_key, encrypt_key
-from typing import Optional
-import logging
-import json
-
-from app.modules.integration.whatsapp import WhatsAppConnector
-
 from app.schemas.dynamic_form_schemas import (
     get_encrypted_fields_for_type,
 )
-
+from app.schemas.webhook import WebhookBase, WebhookCreate, WebhookUpdate
 from app.use_cases.chat_as_client_use_case import (
     get_or_create_conversation,
     process_conversation_update_with_agent,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +43,7 @@ class WebhookService:
     def __init__(self, repo: WebhookRepository):
         self.repo = repo
 
-    async def create_webhook(
-        self, data: WebhookCreate, webhook_url: str, webhook_id: Optional[UUID] = None
-    ):
+    async def create_webhook(self, data: WebhookCreate, webhook_url: str, webhook_id: Optional[UUID] = None):
         """Create a new webhook."""
         if data.secret:
             data.secret = encrypt_key(data.secret)
@@ -69,9 +65,7 @@ class WebhookService:
 
         return await self.repo.create(webhook_data, webhook_id)
 
-    async def get_webhook_by_id(
-        self, webhook_id: UUID, decrypt_sensitive: Optional[bool] = False
-    ):
+    async def get_webhook_by_id(self, webhook_id: UUID, decrypt_sensitive: Optional[bool] = False):
         data = await self.repo.get_by_id(webhook_id)
         if data and decrypt_sensitive:
             if data.secret:
@@ -114,9 +108,7 @@ class WebhookService:
         webhook = await self.get_webhook_by_id_full(webhook_id)
 
         if not webhook:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND, detail="Webhook not found"
-            )
+            raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Webhook not found")
 
         # Route to type-specific handler
         webhook_type = webhook.webhook_type or "generic"
@@ -141,9 +133,7 @@ class WebhookService:
                 hub_challenge,
             )
         else:
-            return await self._handle_generic_webhook(
-                webhook, request, payload, tenant_id
-            )
+            return await self._handle_generic_webhook(webhook, request, payload, tenant_id)
 
     async def _handle_generic_webhook(
         self,
@@ -158,15 +148,11 @@ class WebhookService:
 
         # Validate HTTP method
         if webhook.method != request.method:
-            raise HTTPException(
-                status_code=HTTP_400_BAD_REQUEST, detail="Invalid HTTP method"
-            )
+            raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Invalid HTTP method")
 
         # Validate secret, if defined
         if webhook.secret:
-            decrypted_secret = (
-                decrypt_key(str(webhook.secret)) if str(webhook.secret) else None
-            )
+            decrypted_secret = decrypt_key(str(webhook.secret)) if str(webhook.secret) else None
             auth_header = request.headers.get("authorization")
             expected = f"Bearer {decrypted_secret}"
             if not auth_header or auth_header != expected:
@@ -186,9 +172,7 @@ class WebhookService:
                     )
 
         if not agent:
-            raise HTTPException(
-                status_code=400, detail="Agent ID not configured for webhook"
-            )
+            raise HTTPException(status_code=400, detail="Agent ID not configured for webhook")
 
         # Parse JSON body
         json_body = {}
@@ -246,11 +230,7 @@ class WebhookService:
             tenant_id=tenant_id,
             current_user_id=agent.operator.user_id,
         )
-        message = (
-            response.messages[-1].text
-            if response.messages
-            else "Hm, smth went wrong on processing your request"
-        )
+        message = response.messages[-1].text if response.messages else "Hm, smth went wrong on processing your request"
 
         return {"ok": True, "message": message}
 
@@ -286,9 +266,7 @@ class WebhookService:
                 detail="Slack signing secret not configured in app settings",
             )
 
-        app_settings_values = (
-            app_settings.values if isinstance(app_settings.values, dict) else {}
-        )
+        app_settings_values = app_settings.values if isinstance(app_settings.values, dict) else {}
         if (
             not app_settings_values
             or not app_settings_values.get("slack_signing_secret")
@@ -301,9 +279,7 @@ class WebhookService:
         slack_signing_secret = str(app_settings_values.get("slack_signing_secret", ""))
         slack_bot_token = str(app_settings_values.get("slack_bot_token", ""))
 
-        if not verify_slack_request(
-            payload, x_slack_signature, x_slack_request_timestamp, slack_signing_secret
-        ):
+        if not verify_slack_request(payload, x_slack_signature, x_slack_request_timestamp, slack_signing_secret):
             raise HTTPException(status_code=403, detail="Invalid request signature")
 
         # Extract event data
@@ -342,11 +318,7 @@ class WebhookService:
             tenant_id=tenant_id,
             current_user_id=agent.operator.user_id,
         )
-        message = (
-            response.messages[-1].text
-            if response.messages
-            else "Hm, smth went wrong on processing your request"
-        )
+        message = response.messages[-1].text if response.messages else "Hm, smth went wrong on processing your request"
 
         slack_connector = SlackConnector(token=slack_bot_token, channel=channel_id)
         await slack_connector.sanitize_channel()
@@ -378,9 +350,7 @@ class WebhookService:
                     detail="WhatsApp token not configured in app settings",
                 )
 
-            app_settings_values = (
-                app_settings.values if isinstance(app_settings.values, dict) else {}
-            )
+            app_settings_values = app_settings.values if isinstance(app_settings.values, dict) else {}
             if not app_settings_values:
                 raise HTTPException(
                     status_code=500,
@@ -426,9 +396,7 @@ class WebhookService:
                 detail="WhatsApp token not configured in app settings",
             )
 
-        app_settings_values = (
-            app_settings.values if isinstance(app_settings.values, dict) else {}
-        )
+        app_settings_values = app_settings.values if isinstance(app_settings.values, dict) else {}
         if not app_settings_values:
             raise HTTPException(
                 status_code=500,
@@ -436,9 +404,7 @@ class WebhookService:
             )
 
         if not agent:
-            raise HTTPException(
-                status_code=400, detail="Agent ID not configured for webhook"
-            )
+            raise HTTPException(status_code=400, detail="Agent ID not configured for webhook")
 
         customer_id = uuid.UUID(get_customer_id(user_phone))
 
@@ -466,15 +432,10 @@ class WebhookService:
             tenant_id=tenant_id,
             current_user_id=agent.operator.user_id,
         )
-        message = (
-            response.messages[-1].text
-            if response.messages
-            else "Hm, smth went wrong on processing your request"
-        )
+        message = response.messages[-1].text if response.messages else "Hm, smth went wrong on processing your request"
 
         whatsapp_token = str(app_settings_values.get("whatsapp_token", ""))
         if whatsapp_token:
-
             encrypted_fields = get_encrypted_fields_for_type("WhatsApp")
             if "whatsapp_token" in encrypted_fields:
                 whatsapp_token = decrypt_key(whatsapp_token)
@@ -488,11 +449,7 @@ class WebhookService:
             logger.error("WhatsApp token or phone_number_id not configured")
             return {"ok": True}
 
-        whatsapp_connector = WhatsAppConnector(
-            token=whatsapp_token, phone_number_id=phone_number_id
-        )
-        await whatsapp_connector.send_text_message(
-            recipient_number=user_phone, text=message
-        )
+        whatsapp_connector = WhatsAppConnector(token=whatsapp_token, phone_number_id=phone_number_id)
+        await whatsapp_connector.send_text_message(recipient_number=user_phone, text=message)
 
         return {"ok": True}

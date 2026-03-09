@@ -1,22 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { NodeProps } from "reactflow";
-import { ReadMailsNodeData } from "@/views/AIAgents/Workflows/types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import { getAllDataSources } from "@/services/dataSources";
-import { DataSource } from "@/interfaces/dataSource.interface";
-import { useQuery } from "@tanstack/react-query";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { ReadMailsDialog } from "../../nodeDialogs/readMailsDialog";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
+import React, { useState, useEffect } from 'react';
+import { NodeProps } from 'reactflow';
+import { ReadMailsNodeData } from '@/views/AIAgents/Workflows/types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import { getAllDataSources } from '@/services/dataSources';
+import { DataSource } from '@/interfaces/dataSource.interface';
+import { useQuery } from '@tanstack/react-query';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { ReadMailsDialog } from '../../nodeDialogs/readMailsDialog';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
 
-export const READ_MAILS_NODE_TYPE = "readMailsNode";
+export const READ_MAILS_NODE_TYPE = 'readMailsNode';
 
-const ReadMailsNode: React.FC<NodeProps<ReadMailsNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const ReadMailsNode: React.FC<NodeProps<ReadMailsNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(READ_MAILS_NODE_TYPE);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -24,15 +20,12 @@ const ReadMailsNode: React.FC<NodeProps<ReadMailsNodeData>> = ({
 
   // Query for Gmail data sources
   const { data: connectors = [] } = useQuery({
-    queryKey: ["dataSources"],
+    queryKey: ['dataSources'],
     queryFn: getAllDataSources,
-    select: (data: DataSource[]) =>
-      data.filter((p) => p.is_active === 1 && p.source_type === "gmail"),
+    select: (data: DataSource[]) => data.filter((p) => p.is_active === 1 && p.source_type === 'gmail'),
   });
 
-  const selectedConnector = connectors.find(
-    (c) => c.id.toString() === data.dataSourceId
-  );
+  const selectedConnector = connectors.find((c) => c.id.toString() === data.dataSourceId);
 
   // Auto-select first available connector if none selected
   useEffect(() => {
@@ -58,20 +51,18 @@ const ReadMailsNode: React.FC<NodeProps<ReadMailsNodeData>> = ({
     }
   };
 
-  const limit = data.searchCriteria.max_results
-    ? data.searchCriteria.max_results
-    : 0;
+  const limit = data.searchCriteria.max_results ? data.searchCriteria.max_results : 0;
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Account",
+      label: 'Account',
       value: selectedConnector?.name,
-      placeholder: "None selected",
+      placeholder: 'None selected',
     },
-    { label: "Sender", value: data.searchCriteria?.from },
+    { label: 'Sender', value: data.searchCriteria?.from },
     {
-      label: "Limit",
-      value: limit === 0 ? "" : limit === 1 ? "1 email" : `${limit} emails`,
+      label: 'Limit',
+      value: limit === 0 ? '' : limit === 1 ? '1 email' : `${limit} emails`,
     },
   ];
 

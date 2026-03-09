@@ -3,20 +3,20 @@ Permission synchronization service.
 
 Syncs discovered permissions to the database at application startup.
 """
+
 import logging
 from typing import Set
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.db.models.permission import PermissionModel
 
 logger = logging.getLogger(__name__)
 
 
 async def sync_permissions_to_db(
-    session: AsyncSession,
-    permissions: Set[str],
-    update_existing: bool = False,
-    verbose: bool = True
+    session: AsyncSession, permissions: Set[str], update_existing: bool = False, verbose: bool = True
 ) -> dict:
     """
     Sync permissions to the database.
@@ -36,13 +36,7 @@ async def sync_permissions_to_db(
     Returns:
         Dict with sync statistics
     """
-    stats = {
-        "total_in_code": len(permissions),
-        "total_in_db": 0,
-        "added": 0,
-        "updated": 0,
-        "orphaned": 0
-    }
+    stats = {"total_in_code": len(permissions), "total_in_db": 0, "added": 0, "updated": 0, "orphaned": 0}
 
     # Get existing permissions from database
     result = await session.execute(select(PermissionModel))
@@ -60,11 +54,7 @@ async def sync_permissions_to_db(
             # Generate description from permission name
             description = _generate_permission_description(perm_name)
 
-            permission = PermissionModel(
-                name=perm_name,
-                description=description,
-                is_active=True
-            )
+            permission = PermissionModel(name=perm_name, description=description, is_active=True)
             session.add(permission)
             stats["added"] += 1
             logger.debug(f"  + {perm_name}: {description}")
@@ -96,9 +86,7 @@ async def sync_permissions_to_db(
     stats["orphaned"] = len(orphaned_permissions)
 
     if orphaned_permissions and verbose:
-        logger.warning(
-            f"Found {len(orphaned_permissions)} permissions in database but not in code:"
-        )
+        logger.warning(f"Found {len(orphaned_permissions)} permissions in database but not in code:")
         for orphan in sorted(orphaned_permissions):
             logger.warning(f"  ⚠ {orphan}")
         logger.warning(
@@ -135,12 +123,12 @@ def _generate_permission_description(permission_name: str) -> str:
     Returns:
         Human-readable description
     """
-    if ':' in permission_name:
+    if ":" in permission_name:
         # Standard format: action:resource
-        action, resource = permission_name.split(':', 1)
-        resource_readable = resource.replace('_', ' ').replace('-', ' ')
+        action, resource = permission_name.split(":", 1)
+        resource_readable = resource.replace("_", " ").replace("-", " ")
         return f"Allows {action} {resource_readable} data"
     else:
         # Custom format (e.g., "takeover_in_progress_conversation")
-        readable = permission_name.replace('_', ' ').replace('-', ' ')
+        readable = permission_name.replace("_", " ").replace("-", " ")
         return f"Allows {readable}"

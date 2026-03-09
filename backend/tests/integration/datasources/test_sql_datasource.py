@@ -1,10 +1,11 @@
-import pytest
-from urllib.parse import quote
-from app.core.config.settings import settings
-from app.schemas.agent_knowledge import KBRead
-from app.db.seed.seed_data_config import seed_test_data
-
 import logging
+from urllib.parse import quote
+
+import pytest
+
+from app.core.config.settings import settings
+from app.db.seed.seed_data_config import seed_test_data
+from app.schemas.agent_knowledge import KBRead
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +17,11 @@ def new_datasource_data():
     data = {
         "name": "Test SQL Data Source provider",
         "source_type": "Database",
-       "connection_data": {
-                        "database_type": "postgresql",   
-                        "connection_string": f"postgresql://{user}:{password}@{settings.DB_HOST}/{settings.DB_NAME}",
-                        "allowed_tables": ['conversations','operators']},
+        "connection_data": {
+            "database_type": "postgresql",
+            "connection_string": f"postgresql://{user}:{password}@{settings.DB_HOST}/{settings.DB_NAME}",
+            "allowed_tables": ["conversations", "operators"],
+        },
         "is_active": 1,
     }
     return data
@@ -41,6 +43,7 @@ def new_kb_data():
     }
     return data
 
+
 async def create_ds(client, data):
     response = client.post("/api/datasources/", json=data)
     assert response.status_code == 200
@@ -53,9 +56,9 @@ async def create_kb(client, data):
     kb_data = response.json()
     data["id"] = kb_data["id"]  # Store ID for later tests
 
+
 @pytest.mark.asyncio(scope="session")
 async def test_search_data_source_with_scope(authorized_client, new_datasource_data, new_kb_data):
-    
     logger.info(f"Creating datasource: {new_datasource_data}")
     await create_ds(authorized_client, new_datasource_data)
     logger.info(f"Datasource created with ID: {new_datasource_data['id']}")
@@ -76,22 +79,15 @@ async def test_search_data_source_with_scope(authorized_client, new_datasource_d
 
     # Use the request scope to properly set up the context
 
+    [KBRead(**new_kb_data)]
 
-    kbs = [KBRead(**new_kb_data)]
-    
-    param1 = {
-        'query': "How many operators are there in the system?"
-    }
-    param2 = {
-        'query': 'How many conversations have lasted less than 5 minutes?'
-    }
-    param3 = {
-        'query': 'how many conversations have been taken over by operator?'
-    }
+    param1 = {"query": "How many operators are there in the system?"}
+    param2 = {"query": "How many conversations have lasted less than 5 minutes?"}
+    param3 = {"query": "how many conversations have been taken over by operator?"}
     results = []
     for param in [param1, param2, param3]:
         logger.info(f"Query: {param['query']}")
-        searchParams = {'query': param['query'], 'items': [kb_data]}
+        searchParams = {"query": param["query"], "items": [kb_data]}
         search_response = authorized_client.post("/api/genagent/knowledge/search", json=searchParams)
         assert search_response.status_code == 200
         result = search_response.json()

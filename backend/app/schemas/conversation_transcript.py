@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
-from uuid import UUID, uuid4
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.utils.enums.message_feedback_enum import Feedback
 
@@ -22,6 +23,7 @@ class TranscriptSegmentAttachment(BaseModel):
     name: Optional[str] = None
     size: Optional[int] = None
 
+
 class TranscriptSegmentInput(BaseModel):
     id: Optional[UUID] = None
     create_time: Optional[datetime] = None
@@ -32,8 +34,8 @@ class TranscriptSegmentInput(BaseModel):
     type: Optional[str] = "message"
     attachments: Optional[List[TranscriptSegmentAttachment]] = None
     model_config = ConfigDict(
-            from_attributes=True,
-            )
+        from_attributes=True,
+    )
 
 
 class TranscriptSegmentFeedback(BaseModel):
@@ -41,8 +43,8 @@ class TranscriptSegmentFeedback(BaseModel):
     feedback_message: str = Field(None)
 
     model_config = ConfigDict(
-            from_attributes=True,
-            )
+        from_attributes=True,
+    )
 
 
 class ConversationTranscriptBase(BaseModel):
@@ -59,21 +61,26 @@ class ConversationTranscriptBase(BaseModel):
 class ConversationTranscriptCreate(ConversationTranscriptBase):
     operator_id: Optional[UUID] = None
 
+
 class InProgConvTranscrUpdate(BaseModel):
     """
     Model for updating an existing in-progress conversation
     by adding more transcript chunks.
     """
+
     messages: List[TranscriptSegmentInput]
     metadata: Optional[dict] = None
     llm_analyst_id: Optional[UUID] = None
 
-# add generic type to allow for both ConversationTranscriptCreate and InProgConvTranscrUpdate   
+
+# add generic type to allow for both ConversationTranscriptCreate and InProgConvTranscrUpdate
 class ConversationStartWithRecaptchaToken(ConversationTranscriptCreate):
     recaptcha_token: Optional[str] = None
 
+
 class ConversationUpdateWithRecaptchaToken(InProgConvTranscrUpdate):
     recaptcha_token: Optional[str] = None
+
 
 class InProgressConversationTranscriptFinalize(BaseModel):
     llm_analyst_id: Optional[UUID] = None

@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy.typing as npt
 
 __all__ = [
-    'Indexer',
+    "Indexer",
 ]
 
 

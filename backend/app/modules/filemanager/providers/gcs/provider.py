@@ -5,7 +5,7 @@ TODO: Implement full GCS storage operations using google-cloud-storage.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 from ..base import BaseStorageProvider
 
@@ -42,10 +42,7 @@ class GoogleCloudStorageProvider(BaseStorageProvider):
         return False
 
     async def upload_file(
-        self,
-        file_content: bytes,
-        file_path: str,
-        file_metadata: Optional[Dict[str, Any]] = None
+        self, file_content: bytes, file_path: str, file_metadata: Optional[Dict[str, Any]] = None
     ) -> bool:
         """Upload a file to Google Cloud Storage."""
         # TODO: Implement GCS file upload
@@ -66,11 +63,7 @@ class GoogleCloudStorageProvider(BaseStorageProvider):
         # TODO: Implement GCS file existence check
         raise NotImplementedError("GoogleCloudStorageProvider.file_exists is not yet implemented")
 
-    async def list_files(
-        self,
-        prefix: Optional[str] = None,
-        limit: Optional[int] = None
-    ) -> List[str]:
+    async def list_files(self, prefix: Optional[str] = None, limit: Optional[int] = None) -> List[str]:
         """List files in Google Cloud Storage bucket."""
         # TODO: Implement GCS file listing
         raise NotImplementedError("GoogleCloudStorageProvider.list_files is not yet implemented")

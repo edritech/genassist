@@ -1,38 +1,41 @@
 import json
+from pathlib import Path
+
 import requests
 import typer
-from pathlib import Path
 
 app = typer.Typer()
 
 DEFAULT_BASE_URL = "http://localhost:8000"
 
+
 @app.command("call-api")
 def call_api(
-    endpoint: str = typer.Argument(
-        ...,
-        help="Path part of the endpoint, e.g. 'api/audio/metrics'"
-    ),
+    endpoint: str = typer.Argument(..., help="Path part of the endpoint, e.g. 'api/audio/metrics'"),
     url: str = typer.Option(
         DEFAULT_BASE_URL,
-        "-u", "--url",
+        "-u",
+        "--url",
         help="Base URL of the FastAPI server.",
         show_default=True,
     ),
     token: str | None = typer.Option(
         None,
-        "-t", "--token",
+        "-t",
+        "--token",
         envvar="API_TOKEN",
         help="Bearer token for the Authorization header.",
     ),
     header: list[str] = typer.Option(
         [],
-        "-H", "--header",
+        "-H",
+        "--header",
         help="Extra HTTP header(s) in KEY:VALUE format. Repeat for multiple headers.",
     ),
     data: str | None = typer.Option(
         None,
-        "-d", "--data",
+        "-d",
+        "--data",
         help="Inline JSON string to send as the request body.",
     ),
     data_file: Path | None = typer.Option(
@@ -42,9 +45,10 @@ def call_api(
     ),
     method: str | None = typer.Option(
         None,
-        "-X", "--method",
+        "-X",
+        "--method",
         help="HTTP verb to use (GET, POST, PUT, PATCH, DELETE …). "
-             "If omitted, POST is used when a body is supplied, otherwise GET.",
+        "If omitted, POST is used when a body is supplied, otherwise GET.",
     ),
 ):
     """

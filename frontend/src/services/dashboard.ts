@@ -1,11 +1,11 @@
-import { apiRequest } from "@/config/api";
+import { apiRequest } from '@/config/api';
 import type {
   DashboardResponse,
   DashboardSummaryStats,
   ActiveConversationsResponse,
   AgentStatsResponse,
   IntegrationsResponse,
-} from "@/interfaces/dashboard.interface";
+} from '@/interfaces/dashboard.interface';
 
 /**
  * Fetch complete dashboard data
@@ -17,11 +17,11 @@ export const fetchDashboard = async (
 ): Promise<DashboardResponse | null> => {
   try {
     return await apiRequest<DashboardResponse>(
-      "get",
+      'get',
       `/dashboard?days=${days}&conversations_page=${conversationsPage}&conversations_page_size=${conversationsPageSize}`
     );
   } catch (error) {
-    console.error("Error fetching dashboard:", error);
+    console.error('Error fetching dashboard:', error);
     return null;
   }
 };
@@ -29,16 +29,11 @@ export const fetchDashboard = async (
 /**
  * Fetch dashboard summary statistics
  */
-export const fetchDashboardSummary = async (
-  days: number = 30
-): Promise<DashboardSummaryStats | null> => {
+export const fetchDashboardSummary = async (days: number = 30): Promise<DashboardSummaryStats | null> => {
   try {
-    return await apiRequest<DashboardSummaryStats>(
-      "get",
-      `/dashboard/summary?days=${days}`
-    );
+    return await apiRequest<DashboardSummaryStats>('get', `/dashboard/summary?days=${days}`);
   } catch (error) {
-    console.error("Error fetching dashboard summary:", error);
+    console.error('Error fetching dashboard summary:', error);
     return null;
   }
 };
@@ -53,11 +48,11 @@ export const fetchDashboardConversations = async (
 ): Promise<ActiveConversationsResponse | null> => {
   try {
     return await apiRequest<ActiveConversationsResponse>(
-      "get",
+      'get',
       `/dashboard/conversations?days=${days}&page=${page}&page_size=${pageSize}`
     );
   } catch (error) {
-    console.error("Error fetching dashboard conversations:", error);
+    console.error('Error fetching dashboard conversations:', error);
     return null;
   }
 };
@@ -65,16 +60,11 @@ export const fetchDashboardConversations = async (
 /**
  * Fetch agent statistics for dashboard
  */
-export const fetchDashboardAgents = async (
-  days: number = 30
-): Promise<AgentStatsResponse | null> => {
+export const fetchDashboardAgents = async (days: number = 30): Promise<AgentStatsResponse | null> => {
   try {
-    return await apiRequest<AgentStatsResponse>(
-      "get",
-      `/dashboard/agents?days=${days}`
-    );
+    return await apiRequest<AgentStatsResponse>('get', `/dashboard/agents?days=${days}`);
   } catch (error) {
-    console.error("Error fetching dashboard agents:", error);
+    console.error('Error fetching dashboard agents:', error);
     return null;
   }
 };
@@ -84,12 +74,9 @@ export const fetchDashboardAgents = async (
  */
 export const fetchDashboardIntegrations = async (): Promise<IntegrationsResponse | null> => {
   try {
-    return await apiRequest<IntegrationsResponse>(
-      "get",
-      `/dashboard/integrations`
-    );
+    return await apiRequest<IntegrationsResponse>('get', `/dashboard/integrations`);
   } catch (error) {
-    console.error("Error fetching dashboard integrations:", error);
+    console.error('Error fetching dashboard integrations:', error);
     return null;
   }
 };
@@ -99,15 +86,15 @@ export const fetchDashboardIntegrations = async (): Promise<IntegrationsResponse
  */
 export const getFilterDays = (timeFilter: string): number => {
   switch (timeFilter) {
-    case "today":
+    case 'today':
       return 1;
-    case "7days":
+    case '7days':
       return 7;
-    case "30days":
+    case '30days':
       return 30;
-    case "6months":
+    case '6months':
       return 180;
-    case "12months":
+    case '12months':
       return 365;
     default:
       return 30;

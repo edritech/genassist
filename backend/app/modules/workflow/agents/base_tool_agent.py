@@ -1,22 +1,23 @@
-from langchain_core.language_models import BaseChatModel
-from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
 import logging
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional
 
-from app.modules.workflow.agents.base_tool import BaseTool
-from app.modules.workflow.agents.memory import ConversationMemory
+from langchain_core.language_models import BaseChatModel
+
 from app.modules.workflow.agents.agent_utils import (
-    validate_tool_parameters,
+    add_tool_to_agent,
     create_error_response,
     create_success_response,
+    get_available_tools_info,
+    get_tool_parameter_info,
+    get_tool_schemas,
     handle_parameter_validation_error,
     handle_tool_execution_error,
-    get_available_tools_info,
-    get_tool_schemas,
-    get_tool_parameter_info,
-    add_tool_to_agent,
     remove_tool_from_agent,
+    validate_tool_parameters,
 )
+from app.modules.workflow.agents.base_tool import BaseTool
+from app.modules.workflow.agents.memory import ConversationMemory
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class BaseToolAgent(ABC):
         tools: Optional[List[BaseTool]] = None,
         memory: Optional[ConversationMemory] = None,
         verbose: bool = False,
-        max_iterations: int = 5
+        max_iterations: int = 5,
     ):
         """Initialize base tool agent with common parameters
 
@@ -74,9 +75,7 @@ class BaseToolAgent(ABC):
         try:
             if tool_name not in self.tool_map:
                 return create_error_response(
-                    f"Tool '{tool_name}' not found",
-                    agent_name,
-                    available_tools=list(self.tool_map.keys())
+                    f"Tool '{tool_name}' not found", agent_name, available_tools=list(self.tool_map.keys())
                 )
 
             tool = self.tool_map[tool_name]
@@ -84,25 +83,16 @@ class BaseToolAgent(ABC):
             try:
                 validated_args = validate_tool_parameters(tool, kwargs)
             except ValueError as e:
-                return handle_parameter_validation_error(
-                    e, tool_name, tool, agent_name, provided_args=kwargs
-                )
+                return handle_parameter_validation_error(e, tool_name, tool, agent_name, provided_args=kwargs)
 
             result = await tool.invoke(**validated_args)
 
             # Check if tool has return_direct=True
-            response_data = {
-                "tool_name": tool_name,
-                "validated_args": validated_args
-            }
-            if hasattr(tool, 'return_direct') and tool.return_direct:
+            response_data = {"tool_name": tool_name, "validated_args": validated_args}
+            if hasattr(tool, "return_direct") and tool.return_direct:
                 response_data["return_direct"] = True
 
-            return create_success_response(
-                str(result),
-                agent_name,
-                **response_data
-            )
+            return create_success_response(str(result), agent_name, **response_data)
 
         except Exception as e:
             logger.error(f"Error executing tool {tool_name}: {str(e)}")
@@ -138,17 +128,17 @@ class BaseToolAgent(ABC):
 
     def _extract_response_content(self, response) -> str:
         # Modern approach: Use content_blocks for standardized access (LangChain 1.0+)
-        if hasattr(response, 'content_blocks'):
+        if hasattr(response, "content_blocks"):
             text_parts = []
             for block in response.content_blocks:
                 # Extract from TextContentBlock
-                if block.get('type') == 'text' and 'text' in block:
-                    text_parts.append(block['text'])
+                if block.get("type") == "text" and "text" in block:
+                    text_parts.append(block["text"])
 
             if text_parts:
-                return '\n'.join(text_parts)
+                return "\n".join(text_parts)
         # fallback old version
-        return response.content if hasattr(response, 'content') else str(response)
+        return response.content if hasattr(response, "content") else str(response)
 
     def _log_if_verbose(self, message: str):
         """Log message if verbose mode is enabled"""

@@ -1,6 +1,7 @@
-from typing import Annotated, Any, TypeVar, Generic
-from pydantic import BeforeValidator,  TypeAdapter
-from pydantic_core import PydanticUseDefault, CoreSchema
+from typing import Annotated, Any, Generic, TypeVar
+
+from pydantic import BeforeValidator, TypeAdapter
+from pydantic_core import CoreSchema, PydanticUseDefault
 
 # 1. Define a TypeVar
 T = TypeVar("T")
@@ -13,6 +14,7 @@ def use_default_if_none_validator(v: Any) -> Any:
         raise PydanticUseDefault()
     return v
 
+
 # 3. Create a generic TypeAdapter to handle the validation
 
 
@@ -22,10 +24,7 @@ class UseDefaultIfNone(Generic[T]):
     """
 
     def __init__(self, type_hint: Any):
-        self.type_adapter = TypeAdapter(
-            Annotated[type_hint, BeforeValidator(
-                use_default_if_none_validator)]
-        )
+        self.type_adapter = TypeAdapter(Annotated[type_hint, BeforeValidator(use_default_if_none_validator)])
 
     def __get_pydantic_core_schema__(self, *args) -> CoreSchema:
         return self.type_adapter.core_schema

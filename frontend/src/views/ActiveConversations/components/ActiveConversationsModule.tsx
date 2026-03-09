@@ -1,23 +1,19 @@
-import { useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Card } from "@/components/card";
-import { ActiveConversation } from "@/interfaces/liveConversation.interface";
+import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Card } from '@/components/card';
+import { ActiveConversation } from '@/interfaces/liveConversation.interface';
 import {
   getSentimentFromHostility,
   HOSTILITY_POSITIVE_MAX,
   HOSTILITY_NEUTRAL_MAX,
-} from "@/views/Transcripts/helpers/formatting";
-import type { TranscriptEntry } from "@/interfaces/transcript.interface";
-import ActiveConversationsHeader from "./ActiveConversationsHeader";
-import ActiveConversationsSummary from "./ActiveConversationsSummary";
-import ActiveConversationsList from "./ActiveConversationsList";
-import type {
-  NormalizedConversation,
-  SentimentFilter,
-} from "../helpers/activeConversations.types";
+} from '@/views/Transcripts/helpers/formatting';
+import type { TranscriptEntry } from '@/interfaces/transcript.interface';
+import ActiveConversationsHeader from './ActiveConversationsHeader';
+import ActiveConversationsSummary from './ActiveConversationsSummary';
+import ActiveConversationsList from './ActiveConversationsList';
+import type { NormalizedConversation, SentimentFilter } from '../helpers/activeConversations.types';
 
-const isHighHostility = (score: number): boolean =>
-  getSentimentFromHostility(score) === "negative";
+const isHighHostility = (score: number): boolean => getSentimentFromHostility(score) === 'negative';
 
 const parseTimestampMs = (value: string | undefined): number => {
   if (!value) return 0;
@@ -46,9 +42,8 @@ type Props = {
   displayLimit?: number;
 };
 
-
 export function ActiveConversationsModule({
-  title = "Active Conversations",
+  title = 'Active Conversations',
   items,
   isLoading,
   error,
@@ -63,40 +58,37 @@ export function ActiveConversationsModule({
 }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const rawSentiment = (searchParams.get("sentiment") || "all").toLowerCase();
-  const sentimentParam = (rawSentiment === "positive"
-    ? "good"
-    : rawSentiment === "negative"
-    ? "bad"
-    : rawSentiment) as SentimentFilter;
-  const categoryParam = (searchParams.get("category") || "all");
-  const includeFeedbackParam = (searchParams.get("include_feedback") || "false").toLowerCase() === "true";
-
+  const rawSentiment = (searchParams.get('sentiment') || 'all').toLowerCase();
+  const sentimentParam = (
+    rawSentiment === 'positive' ? 'good' : rawSentiment === 'negative' ? 'bad' : rawSentiment
+  ) as SentimentFilter;
+  const categoryParam = searchParams.get('category') || 'all';
+  const includeFeedbackParam = (searchParams.get('include_feedback') || 'false').toLowerCase() === 'true';
 
   const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(searchParams);
-    if (key === "sentiment") {
-      if (value === "" || value === "all") {
-        next.delete("sentiment");
-        next.delete("hostility_positive_max");
-        next.delete("hostility_neutral_max");
+    if (key === 'sentiment') {
+      if (value === '' || value === 'all') {
+        next.delete('sentiment');
+        next.delete('hostility_positive_max');
+        next.delete('hostility_neutral_max');
       } else {
-        const apiSentiment = value === "good" ? "positive" : value === "bad" ? "negative" : value;
-        next.set("sentiment", apiSentiment);
-        next.set("hostility_positive_max", String(HOSTILITY_POSITIVE_MAX));
-        next.set("hostility_neutral_max", String(HOSTILITY_NEUTRAL_MAX));
+        const apiSentiment = value === 'good' ? 'positive' : value === 'bad' ? 'negative' : value;
+        next.set('sentiment', apiSentiment);
+        next.set('hostility_positive_max', String(HOSTILITY_POSITIVE_MAX));
+        next.set('hostility_neutral_max', String(HOSTILITY_NEUTRAL_MAX));
       }
-    } else if (key === "include_feedback") {
-      if (value === "true" || value === "false") {
-        next.set("include_feedback", value);
+    } else if (key === 'include_feedback') {
+      if (value === 'true' || value === 'false') {
+        next.set('include_feedback', value);
       } else {
-        next.delete("include_feedback");
+        next.delete('include_feedback');
       }
     } else {
-      if (value === "" || value === "all") next.delete(key);
+      if (value === '' || value === 'all') next.delete(key);
       else next.set(key, value);
     }
-    if (key !== "page") next.set("page", "1");
+    if (key !== 'page') next.set('page', '1');
     setSearchParams(next, { replace: true });
   };
 
@@ -107,12 +99,12 @@ export function ActiveConversationsModule({
       return {
         ...item,
         idx: index + 1,
-        effectiveSentiment: eff as "positive" | "neutral" | "negative",
+        effectiveSentiment: eff as 'positive' | 'neutral' | 'negative',
       };
     });
   }, [items]);
 
-  const globalTotal = typeof totalCount === "number" ? totalCount : normalized.length;
+  const globalTotal = typeof totalCount === 'number' ? totalCount : normalized.length;
 
   // Use backend counts if provided, otherwise calculate from loaded items
   const globalCounts = useMemo(() => {
@@ -120,18 +112,20 @@ export function ActiveConversationsModule({
       return sentimentCounts;
     }
     // Fallback: calculate from loaded items (less accurate for paginated data)
-    let good = 0, neutral = 0, bad = 0;
+    let good = 0,
+      neutral = 0,
+      bad = 0;
     for (const i of normalized) {
-      if (i.effectiveSentiment === "positive") good++;
-      else if (i.effectiveSentiment === "neutral") neutral++;
+      if (i.effectiveSentiment === 'positive') good++;
+      else if (i.effectiveSentiment === 'neutral') neutral++;
       else bad++;
     }
     return { bad, neutral, good };
   }, [sentimentCounts, normalized]);
 
   const filtered = useMemo(() => {
-    if (sentimentParam === "all") return normalized;
-    const wanted = sentimentParam === "good" ? "positive" : sentimentParam === "bad" ? "negative" : "neutral";
+    if (sentimentParam === 'all') return normalized;
+    const wanted = sentimentParam === 'good' ? 'positive' : sentimentParam === 'bad' ? 'negative' : 'neutral';
     return normalized.filter((i) => i.effectiveSentiment === wanted);
   }, [normalized, sentimentParam]);
 
@@ -139,16 +133,16 @@ export function ActiveConversationsModule({
 
   // Get sentiment priority: Bad (negative) = 0, Neutral = 1, Good (positive) = 2
   const getSentimentPriority = (sentiment: string): number => {
-    if (sentiment === "negative") return 0; // Bad first
-    if (sentiment === "neutral") return 1;   // Neutral second
+    if (sentiment === 'negative') return 0; // Bad first
+    if (sentiment === 'neutral') return 1; // Neutral second
     return 2; // Good (positive) last
   };
 
   // Sort by worst sentiment first (Bad → Neutral → Good), then by newest timestamp
   const ordered = useMemo(() => {
     return [...filtered].sort((a, b) => {
-      const aSentiment = a.effectiveSentiment || "";
-      const bSentiment = b.effectiveSentiment || "";
+      const aSentiment = a.effectiveSentiment || '';
+      const bSentiment = b.effectiveSentiment || '';
       const aPriority = getSentimentPriority(aSentiment);
       const bPriority = getSentimentPriority(bSentiment);
 
@@ -162,7 +156,7 @@ export function ActiveConversationsModule({
       if (timeDiff !== 0) return timeDiff;
 
       // Fallback: use ID for consistent ordering
-      return (b.id || "").localeCompare(a.id || "");
+      return (b.id || '').localeCompare(a.id || '');
     });
   }, [filtered]);
 
@@ -204,7 +198,7 @@ export function ActiveConversationsModule({
                 disabled={isLoadingMore}
                 className="px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoadingMore ? "Loading..." : "Load More"}
+                {isLoadingMore ? 'Loading...' : 'Load More'}
               </button>
             </div>
           )}
@@ -223,8 +217,8 @@ function hasNoMessages(item: NormalizedConversation): boolean {
 
   // Explicit empty transcript
   if (Array.isArray(transcript)) return transcript.length === 0;
-  if (typeof transcript === "string") {
-    if (transcript.trim() === "") {
+  if (typeof transcript === 'string') {
+    if (transcript.trim() === '') {
       // No transcript content: treat as no messages only when there's no activity (0 duration, 0 words)
       return duration === 0 && wordCount === 0;
     }
@@ -243,21 +237,22 @@ function hasNoMessages(item: NormalizedConversation): boolean {
 }
 
 function getLatestMessagePreview(transcript: string | TranscriptEntry[] | unknown): string {
-  if (!transcript) return "";
+  if (!transcript) return '';
   if (Array.isArray(transcript)) {
-    if (transcript.length === 0) return "";
+    if (transcript.length === 0) return '';
     const last = transcript[transcript.length - 1] as Partial<TranscriptEntry>;
-    const speaker = (last && (last as Partial<TranscriptEntry>).speaker) ? String((last as Partial<TranscriptEntry>).speaker) : "";
-    const text = (last && (last as Partial<TranscriptEntry>).text) ? String((last as Partial<TranscriptEntry>).text) : "";
+    const speaker =
+      last && (last as Partial<TranscriptEntry>).speaker ? String((last as Partial<TranscriptEntry>).speaker) : '';
+    const text = last && (last as Partial<TranscriptEntry>).text ? String((last as Partial<TranscriptEntry>).text) : '';
     return speaker ? `${capitalize(speaker)}: ${text}` : text;
   }
-  if (typeof transcript === "string") {
+  if (typeof transcript === 'string') {
     try {
       const parsed = JSON.parse(transcript);
       if (Array.isArray(parsed) && parsed.length > 0) {
         const last: TranscriptEntry = parsed[parsed.length - 1] as TranscriptEntry;
-        const speaker = (last.speaker || "").toString();
-        const text = (last.text || "").toString();
+        const speaker = (last.speaker || '').toString();
+        const text = (last.text || '').toString();
         return speaker ? `${capitalize(speaker)}: ${text}` : text;
       }
     } catch {
@@ -265,7 +260,7 @@ function getLatestMessagePreview(transcript: string | TranscriptEntry[] | unknow
     }
     return transcript;
   }
-  return "";
+  return '';
 }
 
 function capitalize(s: string): string {

@@ -1,4 +1,4 @@
-import { cn } from "@/helpers/utils";
+import { cn } from '@/helpers/utils';
 
 interface SummaryProps {
   total: number;
@@ -8,9 +8,9 @@ interface SummaryProps {
 
 export function ActiveConversationsSummary({ total, counts, loading }: SummaryProps) {
   const sentiments = [
-    { label: "Bad", count: counts.bad, color: "bg-red-500" },
-    { label: "Neutral", count: counts.neutral, color: "bg-blue-500" },
-    { label: "Good", count: counts.good, color: "bg-green-500" },
+    { label: 'Bad', count: counts.bad, color: 'bg-red-500' },
+    { label: 'Neutral', count: counts.neutral, color: 'bg-blue-500' },
+    { label: 'Good', count: counts.good, color: 'bg-green-500' },
   ];
 
   return (
@@ -26,10 +26,8 @@ export function ActiveConversationsSummary({ total, counts, loading }: SummaryPr
         </div>
       ) : (
         <>
-          <div className="text-5xl font-bold text-foreground leading-[48px]">
-            {total}
-          </div>
-          
+          <div className="text-5xl font-bold text-foreground leading-[48px]">{total}</div>
+
           <div className="flex gap-1 w-full">
             {sentiments.map((sentiment, index) => (
               <div
@@ -37,7 +35,7 @@ export function ActiveConversationsSummary({ total, counts, loading }: SummaryPr
                 className="flex-1 bg-white rounded-lg shadow-sm px-2 py-4 flex flex-col gap-2 items-center justify-center"
               >
                 <div className="flex items-center justify-center shrink-0">
-                  <div className={cn("w-4 h-[4px] rounded-xl", sentiment.color)} />
+                  <div className={cn('w-4 h-[4px] rounded-xl', sentiment.color)} />
                 </div>
                 <p className="text-sm text-muted-foreground shrink-0">{sentiment.count}</p>
                 <p className="text-sm text-accent-foreground shrink-0">{sentiment.label}</p>

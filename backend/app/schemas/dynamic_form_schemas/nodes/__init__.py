@@ -1,32 +1,33 @@
 from typing import Dict, List
+
 from ..base import FieldSchema
+from .agent_schema import AGENT_NODE_DIALOG_SCHEMA
+from .aggregator_schema import AGGREGATOR_NODE_DIALOG_SCHEMA
+from .api_tool_schema import API_TOOL_NODE_DIALOG_SCHEMA
+from .calendar_event_tool_schema import CALENDAR_EVENT_TOOL_NODE_DIALOG_SCHEMA
 from .chat_input_schema import CHAT_INPUT_NODE_DIALOG_SCHEMA
 from .chat_output_schema import CHAT_OUTPUT_NODE_DIALOG_SCHEMA
-from .router_schema import ROUTER_NODE_DIALOG_SCHEMA
-from .agent_schema import AGENT_NODE_DIALOG_SCHEMA
-from .api_tool_schema import API_TOOL_NODE_DIALOG_SCHEMA
-from .open_api_schema import OPEN_API_NODE_DIALOG_SCHEMA
-from .template_schema import TEMPLATE_NODE_DIALOG_SCHEMA
-from .llm_model_schema import LLM_MODEL_NODE_DIALOG_SCHEMA
-from .knowledge_base_schema import KNOWLEDGE_BASE_NODE_DIALOG_SCHEMA
 from .data_mapper_schema import DATA_MAPPER_NODE_DIALOG_SCHEMA
-from .tool_builder_schema import TOOL_BUILDER_NODE_DIALOG_SCHEMA
-from .slack_output_schema import SLACK_OUTPUT_NODE_DIALOG_SCHEMA
-from .calendar_event_tool_schema import CALENDAR_EVENT_TOOL_NODE_DIALOG_SCHEMA
-from .read_mails_schema import READ_MAILS_NODE_DIALOG_SCHEMA
 from .gmail_schema import GMAIL_NODE_DIALOG_SCHEMA
+from .human_in_the_loop_schema import HUMAN_IN_THE_LOOP_NODE_DIALOG_SCHEMA
+from .jira_schema import JIRA_NODE_DIALOG_SCHEMA
+from .knowledge_base_schema import KNOWLEDGE_BASE_NODE_DIALOG_SCHEMA
+from .llm_model_schema import LLM_MODEL_NODE_DIALOG_SCHEMA
+from .ml_model_inference_schema import ML_MODEL_INFERENCE_NODE_DIALOG_SCHEMA
+from .open_api_schema import OPEN_API_NODE_DIALOG_SCHEMA
+from .preprocessing_schema import PREPROCESSING_NODE_DIALOG_SCHEMA
+from .python_code_schema import PYTHON_CODE_NODE_DIALOG_SCHEMA
+from .read_mails_schema import READ_MAILS_NODE_DIALOG_SCHEMA
+from .router_schema import ROUTER_NODE_DIALOG_SCHEMA
+from .slack_output_schema import SLACK_OUTPUT_NODE_DIALOG_SCHEMA
+from .sql_schema import SQL_NODE_DIALOG_SCHEMA
+from .template_schema import TEMPLATE_NODE_DIALOG_SCHEMA
+from .thread_rag_schema import THREAD_RAG_NODE_DIALOG_SCHEMA
+from .tool_builder_schema import TOOL_BUILDER_NODE_DIALOG_SCHEMA
+from .train_data_source_schema import TRAIN_DATA_SOURCE_NODE_DIALOG_SCHEMA
+from .train_model_schema import TRAIN_MODEL_NODE_DIALOG_SCHEMA
 from .whatsapp_schema import WHATSAPP_NODE_DIALOG_SCHEMA
 from .zendesk_ticket_schema import ZENDESK_TICKET_NODE_DIALOG_SCHEMA
-from .python_code_schema import PYTHON_CODE_NODE_DIALOG_SCHEMA
-from .sql_schema import SQL_NODE_DIALOG_SCHEMA
-from .aggregator_schema import AGGREGATOR_NODE_DIALOG_SCHEMA
-from .jira_schema import JIRA_NODE_DIALOG_SCHEMA
-from .ml_model_inference_schema import ML_MODEL_INFERENCE_NODE_DIALOG_SCHEMA
-from .train_data_source_schema import TRAIN_DATA_SOURCE_NODE_DIALOG_SCHEMA
-from .thread_rag_schema import THREAD_RAG_NODE_DIALOG_SCHEMA
-from .preprocessing_schema import PREPROCESSING_NODE_DIALOG_SCHEMA
-from .train_model_schema import TRAIN_MODEL_NODE_DIALOG_SCHEMA
-from .human_in_the_loop_schema import HUMAN_IN_THE_LOOP_NODE_DIALOG_SCHEMA
 
 NODE_DIALOG_SCHEMAS: Dict[str, List[FieldSchema]] = {
     "chatInputNode": CHAT_INPUT_NODE_DIALOG_SCHEMA,
@@ -60,130 +61,95 @@ NODE_DIALOG_SCHEMAS: Dict[str, List[FieldSchema]] = {
 
 
 NODE_HANDLERS_SCHEMAS: Dict[str, List[FieldSchema]] = {
-  "templateNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "dataMapperNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "llmModelNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "agentNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "input_tools", "type": "target", "position": "bottom", "compatibility": "tools" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "toolBuilderNode": [
-    { "id": "output_tool", "type": "source", "position": "top", "compatibility": "tools" },
-    { "id": "starter_processor", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "apiToolNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "knowledgeBaseNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "sqlNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "mlModelInferenceNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "pythonCodeNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "threadRAGNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "whatsappToolNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" }
-  ],
-
-  "slackMessageNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "zendeskTicketNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "text" }
-  ],
-
-  "gmailNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" }
-  ],
-
-  "readMailsNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "calendarEventNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "jiraNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "chatInputNode": [
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "chatOutputNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" }
-  ],
-
-  "routerNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output_true", "type": "source", "position": "right", "compatibility": "any" },
-    { "id": "output_false", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "aggregatorNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "trainDataSourceNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "preprocessingNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "trainModelNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ],
-
-  "humanInTheLoopNode": [
-    { "id": "input", "type": "target", "position": "left", "compatibility": "any" },
-    { "id": "output", "type": "source", "position": "right", "compatibility": "any" }
-  ]
+    "templateNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "dataMapperNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "llmModelNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "agentNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "input_tools", "type": "target", "position": "bottom", "compatibility": "tools"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "toolBuilderNode": [
+        {"id": "output_tool", "type": "source", "position": "top", "compatibility": "tools"},
+        {"id": "starter_processor", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "apiToolNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "knowledgeBaseNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "sqlNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "mlModelInferenceNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "pythonCodeNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "threadRAGNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "whatsappToolNode": [{"id": "input", "type": "target", "position": "left", "compatibility": "any"}],
+    "slackMessageNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "zendeskTicketNode": [{"id": "input", "type": "target", "position": "left", "compatibility": "text"}],
+    "gmailNode": [{"id": "input", "type": "target", "position": "left", "compatibility": "any"}],
+    "readMailsNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "calendarEventNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "jiraNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "chatInputNode": [{"id": "output", "type": "source", "position": "right", "compatibility": "any"}],
+    "chatOutputNode": [{"id": "input", "type": "target", "position": "left", "compatibility": "any"}],
+    "routerNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output_true", "type": "source", "position": "right", "compatibility": "any"},
+        {"id": "output_false", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "aggregatorNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "trainDataSourceNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "preprocessingNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "trainModelNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
+    "humanInTheLoopNode": [
+        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
+    ],
 }

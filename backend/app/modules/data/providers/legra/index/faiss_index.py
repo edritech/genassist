@@ -7,7 +7,7 @@ import numpy.typing as npt
 from .base import Indexer
 
 __all__ = [
-    'FaissFlatIndexer',
+    "FaissFlatIndexer",
 ]
 
 

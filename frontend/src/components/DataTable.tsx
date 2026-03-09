@@ -1,14 +1,8 @@
-import { ReactNode } from "react";
-import { cn } from "@/helpers/utils";
-import { Card } from "@/components/card";
-import { Loader2 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/table";
+import { ReactNode } from 'react';
+import { cn } from '@/helpers/utils';
+import { Card } from '@/components/card';
+import { Loader2 } from 'lucide-react';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/table';
 
 interface DataTableProps<T> {
   data: T[];
@@ -28,8 +22,8 @@ export function DataTable<T>({
   searchQuery,
   headers,
   renderRow,
-  emptyMessage = "No data found",
-  searchEmptyMessage = "No data found matching your search",
+  emptyMessage = 'No data found',
+  searchEmptyMessage = 'No data found matching your search',
 }: DataTableProps<T>) {
   if (loading) {
     return (
@@ -50,9 +44,7 @@ export function DataTable<T>({
   if (data.length === 0) {
     return (
       <Card className="p-8">
-        <div className="text-center text-muted-foreground">
-          {searchQuery ? searchEmptyMessage : emptyMessage}
-        </div>
+        <div className="text-center text-muted-foreground">{searchQuery ? searchEmptyMessage : emptyMessage}</div>
       </Card>
     );
   }
@@ -64,20 +56,15 @@ export function DataTable<T>({
           <TableRow>
             {headers.map((header, index) => (
               <TableHead
-                className={cn(
-                  "break-all",
-                  typeof header === "string" ? undefined : header.className
-                )}
+                className={cn('break-all', typeof header === 'string' ? undefined : header.className)}
                 key={index}
               >
-                {typeof header === "string" ? header : header.label}
+                {typeof header === 'string' ? header : header.label}
               </TableHead>
             ))}
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {data.map((item, index) => renderRow(item, index))}
-        </TableBody>
+        <TableBody>{data.map((item, index) => renderRow(item, index))}</TableBody>
       </Table>
     </Card>
   );

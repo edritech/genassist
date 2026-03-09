@@ -1,7 +1,7 @@
 import logging
+from datetime import datetime
 from typing import Any, Dict, Optional
 from uuid import UUID
-from datetime import datetime
 
 from app.modules.integration.zendesk import ZendeskConnector
 
@@ -58,10 +58,8 @@ class ZendeskClient:
             custom_field_updates=custom_field_updates,
         )
 
-def analyze_ticket_for_db(
-    ticket: Dict[str, Any],
-    conversation_id: UUID
-) -> Dict[str, Any]:
+
+def analyze_ticket_for_db(ticket: Dict[str, Any], conversation_id: UUID) -> Dict[str, Any]:
     """
     Map the raw Zendesk ticket JSON (with 'ticket["comments"]') into a
     dict suitable for ConversationAnalysisCreate. Any missing numeric

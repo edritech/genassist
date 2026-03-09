@@ -4,7 +4,7 @@ export interface TranscriptEntry {
   start_time: number;
   end_time: number;
   create_time: string | number;
-  type?: "message" | "takeover" | string;
+  type?: 'message' | 'takeover' | string;
   message_id?: string;
   feedback?: string | ConversationFeedbackEntry[] | null;
 }
@@ -52,7 +52,7 @@ export interface BackendTranscript {
   customer_ratio: number;
   agent_ratio: number;
   duration: number;
-  status: "finalized" | "in_progress" | "takeover" | string;
+  status: 'finalized' | 'in_progress' | 'takeover' | string;
   conversation_type?: string;
   requires_supervisor?: boolean;
   in_progress_hostility_score: number;
@@ -95,7 +95,7 @@ export interface TranscriptMetadata {
 }
 
 export interface ConversationFeedbackEntry {
-  feedback: "good" | "bad";
+  feedback: 'good' | 'bad';
   feedback_timestamp: string;
   feedback_user_id: string;
   feedback_message: string;

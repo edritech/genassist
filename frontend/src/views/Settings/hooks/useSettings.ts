@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react";
-import toast from "react-hot-toast";
+import { useState, useCallback } from 'react';
+import toast from 'react-hot-toast';
 
 export const useSettings = () => {
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({
-    "Email Notifications": true,
-    "Desktop Notifications": false,
-    "Daily Summary": true,
-    "Two-Factor Authentication": false,
+    'Email Notifications': true,
+    'Desktop Notifications': false,
+    'Daily Summary': true,
+    'Two-Factor Authentication': false,
   });
 
   const handleToggle = useCallback((label: string) => {
@@ -20,7 +20,7 @@ export const useSettings = () => {
     // Simulate API call
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        toast.success("Settings saved successfully.");
+        toast.success('Settings saved successfully.');
         resolve();
       }, 1000);
     });

@@ -1,4 +1,4 @@
-import { TOPIC_COLORS } from "../constants";
+import { TOPIC_COLORS } from '../constants';
 
 export function getTopicColorMap(topics: string[]): Record<string, string> {
   const updatedMap: Record<string, string> = {};

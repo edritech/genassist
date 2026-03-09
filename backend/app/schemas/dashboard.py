@@ -2,11 +2,13 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict
 
 
 class DashboardSummaryStats(BaseModel):
     """Summary statistics for the dashboard header."""
+
     active_agents: int
     workflow_runs: int
     avg_response_time_ms: int
@@ -16,6 +18,7 @@ class DashboardSummaryStats(BaseModel):
 
 class ActiveConversationItem(BaseModel):
     """Single active conversation item for the dashboard."""
+
     id: UUID
     topic: Optional[str] = None
     feedback: Optional[str] = None  # Good, Bad, Neutral
@@ -31,6 +34,7 @@ class ActiveConversationItem(BaseModel):
 
 class ActiveConversationsResponse(BaseModel):
     """Active conversations section response with pagination."""
+
     total: int
     good_count: int
     neutral_count: int
@@ -45,6 +49,7 @@ class ActiveConversationsResponse(BaseModel):
 
 class AgentStatsItem(BaseModel):
     """Single agent with its statistics."""
+
     id: UUID
     name: str
     conversations_today: int = 0
@@ -58,6 +63,7 @@ class AgentStatsItem(BaseModel):
 
 class AgentStatsResponse(BaseModel):
     """Your Agents section response."""
+
     agents: list[AgentStatsItem]
 
     model_config = ConfigDict(from_attributes=True)
@@ -65,6 +71,7 @@ class AgentStatsResponse(BaseModel):
 
 class IntegrationItem(BaseModel):
     """Single integration item."""
+
     id: UUID
     name: str
     type: str
@@ -76,6 +83,7 @@ class IntegrationItem(BaseModel):
 
 class IntegrationsResponse(BaseModel):
     """Integrations section response."""
+
     integrations: list[IntegrationItem]
 
     model_config = ConfigDict(from_attributes=True)
@@ -83,6 +91,7 @@ class IntegrationsResponse(BaseModel):
 
 class DashboardResponse(BaseModel):
     """Full dashboard response combining all sections."""
+
     summary: DashboardSummaryStats
     active_conversations: ActiveConversationsResponse
     agents: AgentStatsResponse

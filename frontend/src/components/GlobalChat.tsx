@@ -1,7 +1,7 @@
-import { GenAgentChat } from "genassist-chat-react";
-import { useEffect, useState } from "react";
-import { getApiUrl } from "@/config/api";
-import { isWsEnabled, isPollEnabled } from "@/config/api";
+import { GenAgentChat } from 'genassist-chat-react';
+import { useEffect, useState } from 'react';
+import { getApiUrl } from '@/config/api';
+import { isWsEnabled, isPollEnabled } from '@/config/api';
 
 export const GlobalChat = () => {
   const [baseUrl, setBaseUrl] = useState<string | null>(null);
@@ -12,11 +12,10 @@ export const GlobalChat = () => {
     (async () => {
       try {
         const apiUrl = await getApiUrl();
-        const baseUrl = new URL("..", apiUrl).toString();
+        const baseUrl = new URL('..', apiUrl).toString();
         setBaseUrl(baseUrl);
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message : "Failed to initialize chat";
+        const message = err instanceof Error ? err.message : 'Failed to initialize chat';
         setError(message);
       }
     })();
@@ -34,16 +33,16 @@ export const GlobalChat = () => {
       headerTitle="Genassist Chat"
       placeholder="Ask anything..."
       theme={{
-        primaryColor: "#173DED",
-        backgroundColor: "#ffffff",
-        textColor: "#000000",
-        fontFamily: "Roboto, Arial, sans-serif",
-        fontSize: "14px",
+        primaryColor: '#173DED',
+        backgroundColor: '#ffffff',
+        textColor: '#000000',
+        fontFamily: 'Roboto, Arial, sans-serif',
+        fontSize: '14px',
       }}
       useWs={isWsEnabled}
       mode="floating"
       floatingConfig={{
-        position: "bottom-right",
+        position: 'bottom-right',
       }}
       useFile={true}
       usePoll={isPollEnabled}

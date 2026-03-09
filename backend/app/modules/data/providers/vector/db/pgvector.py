@@ -2,15 +2,17 @@
 pgvector vector database implementation
 """
 
-import logging
 import json
-from typing import List, Dict, Any, Optional
+import logging
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
-from app.db.multi_tenant_session import multi_tenant_manager
-from app.core.tenant_scope import get_tenant_context
 
-from .base import BaseVectorDB, VectorDBConfig, SearchResult
+from app.core.tenant_scope import get_tenant_context
+from app.db.multi_tenant_session import multi_tenant_manager
+
+from .base import BaseVectorDB, SearchResult, VectorDBConfig
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +23,10 @@ class PgVectorDB(BaseVectorDB):
     def __init__(self, config: VectorDBConfig):
         super().__init__(config)
         self.engine: Optional[AsyncEngine] = None
-        self.base_collection_name: str = config.collection_name.replace('-', '_').replace('.', '_')
+        self.base_collection_name: str = config.collection_name.replace("-", "_").replace(".", "_")
         self.table_name: Optional[str] = None  # Will be set when dimension is known
         self.dimension: Optional[int] = None
-    
+
     def _get_table_name(self, dimension: int) -> str:
         """Generate table name based on collection name and dimension"""
         # Include dimension in table name to ensure each model gets its own table
@@ -56,19 +58,16 @@ class PgVectorDB(BaseVectorDB):
         try:
             if not self.engine:
                 return False
-            
+
             async with self.engine.begin() as conn:
                 check_sql = text("""
                     SELECT EXISTS (
-                        SELECT FROM pg_class 
+                        SELECT FROM pg_class
                         WHERE relname = :table_name
                         AND relkind = 'r'
                     )
                 """)
-                result = await conn.execute(
-                    check_sql,
-                    {"table_name": table_name}
-                )
+                result = await conn.execute(check_sql, {"table_name": table_name})
                 return result.scalar() or False
         except Exception as e:
             logger.debug(f"Could not check if table exists: {e}")
@@ -77,7 +76,7 @@ class PgVectorDB(BaseVectorDB):
     async def create_collection(self, dimension: int) -> bool:
         """
         Create a new collection (table) with dimension-specific table name.
-        
+
         The table name includes the dimension, so each model automatically gets
         its own table. If the table doesn't exist, it will be created.
         This approach is scalable and prevents dimension conflicts.
@@ -90,10 +89,10 @@ class PgVectorDB(BaseVectorDB):
             # Set dimension and generate dimension-specific table name
             self.dimension = dimension
             self.table_name = self._get_table_name(dimension)
-            
+
             # Check if table already exists
             table_exists = await self._table_exists(self.table_name)
-            
+
             if table_exists:
                 logger.info(f"Table {self.table_name} already exists, reusing it")
                 return True
@@ -184,11 +183,7 @@ class PgVectorDB(BaseVectorDB):
             return False
 
     async def add_vectors(
-        self,
-        ids: List[str],
-        vectors: List[List[float]],
-        metadatas: List[Dict[str, Any]],
-        contents: List[str]
+        self, ids: List[str], vectors: List[List[float]], metadatas: List[Dict[str, Any]], contents: List[str]
     ) -> bool:
         """Add vectors to the collection"""
         try:
@@ -255,8 +250,8 @@ class PgVectorDB(BaseVectorDB):
                             "id": doc_id,
                             "embedding_array": vector_str,
                             "content": content,
-                            "metadata_json": metadata_json
-                        }
+                            "metadata_json": metadata_json,
+                        },
                     )
 
             logger.info(f"Added {len(ids)} vectors to pgvector table")
@@ -295,10 +290,7 @@ class PgVectorDB(BaseVectorDB):
             return False
 
     async def search(
-        self,
-        query_vector: List[float],
-        limit: int = 5,
-        filter_dict: Optional[Dict[str, Any]] = None
+        self, query_vector: List[float], limit: int = 5, filter_dict: Optional[Dict[str, Any]] = None
     ) -> List[SearchResult]:
         """Search for similar vectors"""
         try:
@@ -370,7 +362,7 @@ class PgVectorDB(BaseVectorDB):
                     content=row.content,
                     metadata=json.loads(row.metadata) if isinstance(row.metadata, str) else row.metadata,
                     score=None,  # Will be calculated from distance
-                    distance=float(row.distance)
+                    distance=float(row.distance),
                 )
                 search_results.append(search_result)
 
@@ -414,7 +406,7 @@ class PgVectorDB(BaseVectorDB):
                     content=row.content,
                     metadata=json.loads(row.metadata) if isinstance(row.metadata, str) else row.metadata,
                     score=1.0,  # No distance for direct retrieval
-                    distance=0.0
+                    distance=0.0,
                 )
                 search_results.append(search_result)
 

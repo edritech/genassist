@@ -1,6 +1,7 @@
-from typing import Dict, Any, Optional, List, Tuple
-from datetime import timedelta
 import logging
+from datetime import timedelta
+from typing import Any, Dict, List, Optional, Tuple
+
 import httpx
 from fastapi import HTTPException
 
@@ -46,12 +47,8 @@ class ZendeskConnector:
                 response.raise_for_status()
                 return response.json()
             except httpx.HTTPStatusError as e:
-                logger.error(
-                    f"Zendesk API error [{e.response.status_code}]: {e.response.text}"
-                )
-                raise HTTPException(
-                    status_code=e.response.status_code, detail="Zendesk API error"
-                ) from e
+                logger.error(f"Zendesk API error [{e.response.status_code}]: {e.response.text}")
+                raise HTTPException(status_code=e.response.status_code, detail="Zendesk API error") from e
             except httpx.RequestError as e:
                 logger.error(f"Network error during Zendesk API call: {e}")
                 raise HTTPException(status_code=500, detail="Zendesk API network error") from e
@@ -91,9 +88,7 @@ class ZendeskConnector:
                 payload["ticket"]["requester"]["email"] = requester_email
             elif not requester_name:
                 # Extract name from email if not provided
-                payload["ticket"]["requester"]["name"] = (
-                    requester_email.split("@")[0] if requester_email else "Unknown"
-                )
+                payload["ticket"]["requester"]["name"] = requester_email.split("@")[0] if requester_email else "Unknown"
 
         if tags:
             payload["ticket"]["tags"] = tags
@@ -148,9 +143,7 @@ class ZendeskConnector:
         except HTTPException:
             return False
 
-    async def fetch_ticket_details(
-        self, ticket_id: int, include_comments: bool = True
-    ) -> Dict[str, Any]:
+    async def fetch_ticket_details(self, ticket_id: int, include_comments: bool = True) -> Dict[str, Any]:
         """Fetch ticket details from Zendesk. Optionally include comments."""
         url = f"{self.base_url}/tickets/{ticket_id}.json"
         if include_comments:
@@ -163,9 +156,7 @@ class ZendeskConnector:
         """Post a private comment to a Zendesk ticket."""
         return await self.update_ticket(ticket_id, comment=body)
 
-    async def create_followup_ticket(
-        self, original_ticket_id: int, payload: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def create_followup_ticket(self, original_ticket_id: int, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Create a followup ticket related to an original ticket."""
         url = f"{self.base_url}/tickets.json"
         # Ensure via_followup_source_id is set
@@ -179,9 +170,7 @@ class ZendeskConnector:
         result = await self._make_request("GET", url)
         return result.get("comments", [])
 
-    async def search_tickets(
-        self, query: str, max_results: Optional[int] = None
-    ) -> List[Dict[str, Any]]:
+    async def search_tickets(self, query: str, max_results: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Search for tickets using Zendesk search API.
         Returns a list of tickets matching the query.
@@ -208,19 +197,13 @@ class ZendeskConnector:
 
         return all_results
 
-    async def get_unrated_closed_tickets(
-        self, days_back: int = 7
-    ) -> List[Dict[str, Any]]:
+    async def get_unrated_closed_tickets(self, days_back: int = 7) -> List[Dict[str, Any]]:
         """
         Fetch all closed, unrated Zendesk tickets (-tags:analyzed) with comments.
         """
         tickets_to_rate = []
-        updated_later_then = (
-            f" updated>={(utc_now().date() - timedelta(days=days_back)).isoformat()}"
-        )
-        query_definition = (
-            f"type:ticket status:solved status:closed -tags:analyzed {updated_later_then}"
-        )
+        updated_later_then = f" updated>={(utc_now().date() - timedelta(days=days_back)).isoformat()}"
+        query_definition = f"type:ticket status:solved status:closed -tags:analyzed {updated_later_then}"
 
         results = await self.search_tickets(query_definition)
 
@@ -303,9 +286,7 @@ class ZendeskConnector:
                     # Remove params from next_page URL as it's already included
                     params = {}
 
-                logger.info(
-                    f"Fetched {len(articles)} articles from Zendesk (total: {len(all_articles)})"
-                )
+                logger.info(f"Fetched {len(articles)} articles from Zendesk (total: {len(all_articles)})")
             except (httpx.HTTPStatusError, httpx.RequestError) as e:
                 logger.error(f"Error fetching articles: {e}")
                 break

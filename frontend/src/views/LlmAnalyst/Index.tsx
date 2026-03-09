@@ -1,3 +1,3 @@
-import LlmAnalyst from "./pages/LlmAnalyst";
+import LlmAnalyst from './pages/LlmAnalyst';
 
-export default LlmAnalyst; 
+export default LlmAnalyst;

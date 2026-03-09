@@ -1,7 +1,7 @@
 from typing import Dict, List
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, Query, Request, UploadFile, File, HTTPException
+from fastapi import APIRouter, Body, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from fastapi_injector import Injected
 
@@ -10,7 +10,6 @@ from app.schemas.agent import AgentCreate, AgentListItem, AgentRead, AgentUpdate
 from app.schemas.common import PaginatedResponse
 from app.schemas.filter import BaseFilterModel
 from app.services.agent_config import AgentConfigService
-
 
 router = APIRouter()
 
@@ -54,11 +53,7 @@ async def get_all_configs(
         AgentRead.model_validate(agent_model).model_copy(
             update={
                 "user_id": agent_model.operator.user.id,
-                "test_input": (
-                    agent_model.workflow.testInput
-                    if agent_model.workflow.testInput
-                    else None
-                ),
+                "test_input": (agent_model.workflow.testInput if agent_model.workflow.testInput else None),
             }
         )
         for agent_model in models
@@ -73,14 +68,10 @@ async def get_all_configs(
         Depends(auth),
     ],
 )
-async def get_config_by_id(
-    agent_id: UUID, config_service: AgentConfigService = Injected(AgentConfigService)
-):
+async def get_config_by_id(agent_id: UUID, config_service: AgentConfigService = Injected(AgentConfigService)):
     """Get a specific agent configuration by ID"""
     agent_model = await config_service.get_by_id_full(agent_id)
-    agent_read = AgentRead.model_validate(agent_model).model_copy(
-        update={"user_id": agent_model.operator.user.id}
-    )
+    agent_read = AgentRead.model_validate(agent_model).model_copy(update={"user_id": agent_model.operator.user.id})
     return agent_read
 
 
@@ -132,9 +123,7 @@ async def update_config(
         Depends(auth),
     ],
 )
-async def delete_config(
-    agent_id: UUID, config_service: AgentConfigService = Injected(AgentConfigService)
-):
+async def delete_config(agent_id: UUID, config_service: AgentConfigService = Injected(AgentConfigService)):
     """Delete an agent configuration"""
     await config_service.delete(agent_id)
     return {"status": "success", "message": f"Configuration with ID {agent_id} deleted"}
@@ -161,18 +150,14 @@ async def upload_welcome_image(
 
     # Validate file size (e.g., max 5MB)
     if len(image_data) > 5 * 1024 * 1024:
-        raise HTTPException(
-            status_code=400, detail="Image file too large. Maximum size is 5MB"
-        )
+        raise HTTPException(status_code=400, detail="Image file too large. Maximum size is 5MB")
 
     await config_service.upload_welcome_image(agent_id, image_data)
     return {"status": "success", "message": "Welcome image uploaded successfully"}
 
 
 @router.get("/configs/{agent_id}/welcome-image")
-async def get_welcome_image(
-    agent_id: UUID, config_service: AgentConfigService = Injected(AgentConfigService)
-):
+async def get_welcome_image(agent_id: UUID, config_service: AgentConfigService = Injected(AgentConfigService)):
     """Get welcome image for an agent"""
     image_data = await config_service.get_welcome_image(agent_id)
 
@@ -197,9 +182,7 @@ async def get_welcome_image(
         Depends(auth),
     ],
 )
-async def delete_welcome_image(
-    agent_id: UUID, config_service: AgentConfigService = Injected(AgentConfigService)
-):
+async def delete_welcome_image(agent_id: UUID, config_service: AgentConfigService = Injected(AgentConfigService)):
     """Delete welcome image for an agent"""
     await config_service.delete_welcome_image(agent_id)
     return {"status": "success", "message": "Welcome image deleted successfully"}

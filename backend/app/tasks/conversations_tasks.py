@@ -1,10 +1,12 @@
 import asyncio
-from celery import shared_task
-from app.dependencies.injector import injector
-from datetime import datetime, timedelta, timezone
 import logging
-from app.services.conversations import ConversationService
+from datetime import datetime, timedelta, timezone
+
+from celery import shared_task
+
 from app.core.config.settings import settings
+from app.dependencies.injector import injector
+from app.services.conversations import ConversationService
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +19,7 @@ def backfill_missing_conversation_analyses():
 
 async def backfill_missing_conversation_analyses_with_scope():
     from app.tasks.base import run_task_with_tenant_support
+
     return await run_task_with_tenant_support(
         backfill_missing_conversation_analyses_async,
         "backfill missing conversation analyses",
@@ -56,10 +59,8 @@ def cleanup_stale_conversations():
 async def cleanup_stale_conversations_async_with_scope():
     """Wrapper to run cleanup for all tenants"""
     from app.tasks.base import run_task_with_tenant_support
-    return await run_task_with_tenant_support(
-        cleanup_stale_conversations_async,
-        "cleanup of stale conversations"
-    )
+
+    return await run_task_with_tenant_support(cleanup_stale_conversations_async, "cleanup of stale conversations")
 
 
 async def cleanup_stale_conversations_async():

@@ -10,7 +10,6 @@ class NodeRegistry {
   register(nodeType: NodeTypeDefinition<NodeData>): void {
     this.nodeTypes.set(nodeType.type, nodeType);
 
-    
     // Add to categories
     if (!this.nodeCategories.has(nodeType.category)) {
       this.nodeCategories.set(nodeType.category, []);
@@ -49,15 +48,17 @@ class NodeRegistry {
     return Array.from(this.nodeCategories.keys());
   }
   getAllToolTypes(): string[] {
-    const toolTypes = [
-      "toolBuilderNode",
-      "mcpNode",
-    ];
-    return Array.from(this.nodeTypes.keys()).filter(type => toolTypes.includes(type));
+    const toolTypes = ['toolBuilderNode', 'mcpNode'];
+    return Array.from(this.nodeTypes.keys()).filter((type) => toolTypes.includes(type));
   }
 
   // Create a new node instance
-  createNode(type: string, id: string, position: { x: number; y: number }, overrideData?: Record<string, unknown>): Node | null {
+  createNode(
+    type: string,
+    id: string,
+    position: { x: number; y: number },
+    overrideData?: Record<string, unknown>
+  ): Node | null {
     const nodeType = this.getNodeType(type);
     if (!nodeType) return null;
 
@@ -65,7 +66,7 @@ class NodeRegistry {
     const data = {
       ...nodeType.defaultData,
       ...overrideData,
-      label: overrideData?.label || nodeType.label
+      label: overrideData?.label || nodeType.label,
     };
 
     return createNode(type, id, position, data);
@@ -75,4 +76,4 @@ class NodeRegistry {
 // Create singleton instance
 const nodeRegistry = new NodeRegistry();
 
-export default nodeRegistry; 
+export default nodeRegistry;

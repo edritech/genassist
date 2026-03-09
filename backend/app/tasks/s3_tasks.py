@@ -4,16 +4,17 @@ import logging
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
+
+from celery import shared_task
 from croniter import croniter
-from app.dependencies.injector import injector
+
 from app.core.utils.s3_utils import S3Client
+from app.dependencies.injector import injector
 from app.modules.data.manager import AgentRAGServiceManager
 from app.modules.data.utils import FileTextExtractor
 from app.schemas.agent_knowledge import KBCreate
 from app.services.agent_knowledge import KnowledgeBaseService
 from app.services.datasources import DataSourceService
-from celery import shared_task
-
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +40,8 @@ def import_s3_files_to_kb():
 async def import_s3_files_to_kb_async_with_scope():
     """Wrapper to run S3 import for all tenants"""
     from app.tasks.base import run_task_with_tenant_support
-    return await run_task_with_tenant_support(
-        import_s3_files_to_kb_async,
-        "S3 file import"
-    )
+
+    return await run_task_with_tenant_support(import_s3_files_to_kb_async, "S3 file import")
 
 
 async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
@@ -69,9 +68,7 @@ async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
         logger.info(f"Processing knowledge base {kb.name}")
 
         if kb.sync_active == 0 or not kb.sync_source_id:
-            logger.info(
-                f"Knowledge base {kb.id} is not active or does not have a sync source"
-            )
+            logger.info(f"Knowledge base {kb.id} is not active or does not have a sync source")
             continue
 
         ds = await injector.get(DataSourceService).get_by_id(kb.sync_source_id, True)
@@ -80,9 +77,7 @@ async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
             continue
 
         if ds.source_type.lower() != "s3":
-            logger.info(
-                f"Knowledge base {kb.id} has a sync source that is not an S3 bucket ({ds.source_type})"
-            )
+            logger.info(f"Knowledge base {kb.id} has a sync source that is not an S3 bucket ({ds.source_type})")
             continue
 
         cron_string = kb.sync_schedule
@@ -96,20 +91,14 @@ async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
             logger.info("Getting next run time from last synced")
             next_run_time = cron_iter.get_next(start_time=kb.last_synced)
             next_run_time = datetime.fromtimestamp(next_run_time)
-            logger.info(
-                f"Knowledge base {kb.id} last synced at {kb.last_synced}, next run time: {next_run_time}"
-            )
+            logger.info(f"Knowledge base {kb.id} last synced at {kb.last_synced}, next run time: {next_run_time}")
 
         if datetime.now() < next_run_time:
-            logger.info(
-                f"Knowledge base {kb.id} is not due for sync, next sync at {next_run_time}"
-            )
+            logger.info(f"Knowledge base {kb.id} is not due for sync, next sync at {next_run_time}")
             continue
 
         if not ds.connection_data:
-            logger.info(
-                f"Knowledge base {kb.id} has no connection data for sync source {ds.name}"
-            )
+            logger.info(f"Knowledge base {kb.id} has no connection data for sync source {ds.name}")
             continue
 
         conn_data = ds.connection_data
@@ -134,9 +123,7 @@ async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
         )
 
         if not result["files"]:
-            logger.info(
-                f"No files found in S3 with prefix: {prefix} in datasource {ds.name}"
-            )
+            logger.info(f"No files found in S3 with prefix: {prefix} in datasource {ds.name}")
             processed_ds += 1
             kb.last_synced = datetime.now()
             await kb_service.update(kb.id, KBCreate(**kb.__dict__))  # type: ignore
@@ -149,9 +136,7 @@ async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
         logger.info("Getting existing files from RAG...")
         # Get existing documents using simplified manager
         existing_files = await rag_manager.get_document_ids(kb)
-        logger.info(
-            f"Found {len(existing_files)} existing files in RAG for knowledge base {kb.id}"
-        )
+        logger.info(f"Found {len(existing_files)} existing files in RAG for knowledge base {kb.id}")
         logger.info(f"Existing files: {existing_files}")
 
         s3_new_files = [
@@ -159,27 +144,19 @@ async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
             for file_info in result["files"]
             # if file_info["key"] not in existing_files
             if not any(
-                existing_file.startswith(f"KB:{str(kb.id)}#{file_info['key']}")
-                for existing_file in existing_files
+                existing_file.startswith(f"KB:{str(kb.id)}#{file_info['key']}") for existing_file in existing_files
             )
         ]
-        logger.info(
-            f"Found {len(s3_new_files)} new files in S3 to process for knowledge base {kb.id}"
-        )
+        logger.info(f"Found {len(s3_new_files)} new files in S3 to process for knowledge base {kb.id}")
         logger.info(f"New files: {s3_new_files}")
 
         s3_deleted_files = [
             ex_file
             for ex_file in existing_files
             # if ex_file not in [f"KB:{str(kb.id)}#{f['key']}" for f in result["files"]]
-            if not any(
-                ex_file.startswith(f"KB:{str(kb.id)}#{f['key']}")
-                for f in result["files"]
-            )
+            if not any(ex_file.startswith(f"KB:{str(kb.id)}#{f['key']}") for f in result["files"])
         ]
-        logger.info(
-            f"Found {len(s3_deleted_files)} deleted files in S3 to process for knowledge base {kb.id}"
-        )
+        logger.info(f"Found {len(s3_deleted_files)} deleted files in S3 to process for knowledge base {kb.id}")
 
         # Delete files from RAG
         if s3_deleted_files:
@@ -204,14 +181,10 @@ async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
                 # Download file content
                 file_content = s3_client.get_file_content(file_info["key"])
                 logger.info(f"Extracting text from {file_info}...")
-                extracted_text = FileTextExtractor().extract(
-                    filename=file_info["key"], content=file_content
-                )
+                extracted_text = FileTextExtractor().extract(filename=file_info["key"], content=file_content)
 
                 # Create knowledge base item
-                last_file_date = datetime.strptime(
-                    file_info["last_modified"], "%Y-%m-%dT%H:%M:%S%z"
-                )
+                last_file_date = datetime.strptime(file_info["last_modified"], "%Y-%m-%dT%H:%M:%S%z")
                 if not kb.last_file_date or last_file_date > kb.last_file_date:
                     last_file_date = datetime.now()
 
@@ -226,9 +199,7 @@ async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
                 }
 
                 # Add to knowledge base using simplified manager
-                res = await rag_manager.add_document(
-                    kb, doc_id, extracted_text, metadata
-                )
+                res = await rag_manager.add_document(kb, doc_id, extracted_text, metadata)
                 logger.info(f"Document {file_name} processed with result: {res}")
                 files_added += 1
 
@@ -240,14 +211,10 @@ async def import_s3_files_to_kb_async(kb_id: Optional[UUID] = None):
 
         # Check final status
         existing_files = await rag_manager.get_document_ids(kb)
-        logger.info(
-            f"Updated to {len(existing_files)} existing files in RAG for knowledge base {kb.id}"
-        )
+        logger.info(f"Updated to {len(existing_files)} existing files in RAG for knowledge base {kb.id}")
 
         search_results = await rag_manager.search([kb], "Test", limit=2)
-        logger.info(
-            f"Found {len(search_results)} search results in RAG for knowledge base {kb.id}"
-        )
+        logger.info(f"Found {len(search_results)} search results in RAG for knowledge base {kb.id}")
 
         # Update last synced time
         logger.info(f"Updating knowledge base {kb.id} last synced time...")

@@ -64,7 +64,7 @@ export const validateSchemaCompatibility = (
 
   return {
     isValid: errors.length === 0,
-    errors: errors.length > 0 ? errors : undefined
+    errors: errors.length > 0 ? errors : undefined,
   };
 };
 
@@ -74,7 +74,7 @@ export const validateSchemaCompatibility = (
 const isTypeCompatible = (sourceType: SchemaType, targetType: SchemaType): boolean => {
   if (sourceType === targetType) return true;
   if (targetType === 'any') return true;
-  
+
   // Add more type compatibility rules as needed
   const compatibilityMap: Record<SchemaType, SchemaType[]> = {
     string: ['any'],
@@ -82,7 +82,7 @@ const isTypeCompatible = (sourceType: SchemaType, targetType: SchemaType): boole
     boolean: ['any'],
     object: ['any'],
     array: ['any'],
-    any: ['string', 'number', 'boolean', 'object', 'array', 'any']
+    any: ['string', 'number', 'boolean', 'object', 'array', 'any'],
   };
 
   return compatibilityMap[sourceType]?.includes(targetType) || false;
@@ -91,14 +91,10 @@ const isTypeCompatible = (sourceType: SchemaType, targetType: SchemaType): boole
 /**
  * Converts a simple type string to a SchemaField
  */
-export const createSchemaField = (
-  type: SchemaType,
-  description?: string,
-  required: boolean = false
-): SchemaField => ({
+export const createSchemaField = (type: SchemaType, description?: string, required: boolean = false): SchemaField => ({
   type,
   description,
-  required
+  required,
 });
 
 /**
@@ -196,7 +192,7 @@ const generateSampleValue = (fieldSchema: SchemaField): unknown => {
         if (desc.includes('time')) return '14:30:00';
       }
       return 'sample_string';
-    
+
     case 'number':
       if (fieldSchema.description) {
         const desc = fieldSchema.description.toLowerCase();
@@ -207,16 +203,16 @@ const generateSampleValue = (fieldSchema: SchemaField): unknown => {
         if (desc.includes('year')) return 2024;
       }
       return 123;
-    
+
     case 'boolean':
       return true;
-    
+
     case 'object':
       if (fieldSchema.properties) {
         return generateSampleOutput(fieldSchema.properties);
       }
       return { key: 'value' };
-    
+
     case 'array':
       if (fieldSchema.items) {
         // Generate array with 2-3 sample items
@@ -228,10 +224,10 @@ const generateSampleValue = (fieldSchema: SchemaField): unknown => {
         return items;
       }
       return ['item1', 'item2', 'item3'];
-    
+
     case 'any':
       return 'sample_value';
-    
+
     default:
       return 'unknown_type_sample';
   }
@@ -248,4 +244,4 @@ export const generateFieldSample = (fieldName: string, fieldSchema: SchemaField)
     return parseDefaultValue(fieldSchema.defaultValue, fieldSchema.type);
   }
   return generateSampleValue(fieldSchema);
-}; 
+};

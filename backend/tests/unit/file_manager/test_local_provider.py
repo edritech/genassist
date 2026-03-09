@@ -1,19 +1,19 @@
-import pytest
-import tempfile
-import shutil
-import logging
 import io
+import logging
+import shutil
+import tempfile
+from unittest.mock import AsyncMock, MagicMock, create_autospec
 from uuid import uuid4
-from unittest.mock import AsyncMock, MagicMock, create_autospec, patch
 
+import pytest
 from fastapi import UploadFile
 
-from app.services.file_manager import FileManagerService
+from app.core.tenant_scope import clear_tenant_context, set_tenant_context
+from app.db.models.file import FileModel
+from app.modules.filemanager.providers.local.provider import LocalFileSystemProvider
 from app.repositories.file_manager import FileManagerRepository
 from app.schemas.file import FileBase
-from app.modules.filemanager.providers.local.provider import LocalFileSystemProvider
-from app.db.models.file import FileModel
-from app.core.tenant_scope import set_tenant_context, clear_tenant_context
+from app.services.file_manager import FileManagerService
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,7 @@ def create_mock_upload_file(filename: str = "test.txt", content: bytes = b"test 
 
 
 # ==================== Fixtures ====================
+
 
 @pytest.fixture
 def temp_storage_dir():
@@ -92,6 +93,7 @@ def create_mock_file_model(
 
 # ==================== Unit Tests ====================
 
+
 class TestLocalFileManagerService:
     """Test file manager service with real local storage provider."""
 
@@ -104,11 +106,7 @@ class TestLocalFileManagerService:
         file_name = "test_file.txt"
 
         # Setup mock repository response
-        mock_file = create_mock_file_model(
-            name=file_name,
-            user_id=test_user_id,
-            size=len(file_content)
-        )
+        mock_file = create_mock_file_model(name=file_name, user_id=test_user_id, size=len(file_content))
         mock_repository.create_file.return_value = mock_file
 
         # Create service with real local provider
@@ -124,12 +122,8 @@ class TestLocalFileManagerService:
         result = await service.create_file(
             file=mock_upload_file,
             file_base=FileBase(
-                name=file_name,
-                path="",
-                storage_path=file_name,
-                storage_provider="local",
-                file_extension="txt"
-            )
+                name=file_name, path="", storage_path=file_name, storage_provider="local", file_extension="txt"
+            ),
         )
 
         # Verify file was created in repository
@@ -145,9 +139,7 @@ class TestLocalFileManagerService:
         assert stored_content == file_content
 
     @pytest.mark.asyncio
-    async def test_get_file_content_reads_from_local_storage(
-        self, mock_repository, temp_storage_dir
-    ):
+    async def test_get_file_content_reads_from_local_storage(self, mock_repository, temp_storage_dir):
         """Test reading file content from local storage."""
         file_content = b"Content to read"
         file_id = uuid4()
@@ -176,9 +168,7 @@ class TestLocalFileManagerService:
         assert result == file_content
 
     @pytest.mark.asyncio
-    async def test_download_file_fetches_metadata_and_content(
-        self, mock_repository, temp_storage_dir
-    ):
+    async def test_download_file_fetches_metadata_and_content(self, mock_repository, temp_storage_dir):
         """Test download_file returns both metadata and content."""
         file_content = b"Downloaded content"
         file_id = uuid4()
@@ -223,10 +213,7 @@ class TestLocalFileManagerService:
 
         # Setup mock repository
         mock_file = create_mock_file_model(
-            file_id=file_id,
-            storage_provider="local",
-            storage_path=storage_path,
-            user_id=test_user_id
+            file_id=file_id, storage_provider="local", storage_path=storage_path, user_id=test_user_id
         )
         mock_repository.get_file_by_id.return_value = mock_file
 
@@ -247,11 +234,7 @@ class TestFileManagerServiceBuildFileHeaders:
 
     def test_build_file_headers_basic(self, mock_repository):
         """Test building headers with basic file info."""
-        mock_file = create_mock_file_model(
-            name="test.txt",
-            mime_type="text/plain",
-            size=100
-        )
+        mock_file = create_mock_file_model(name="test.txt", mime_type="text/plain", size=100)
 
         service = FileManagerService(repository=mock_repository)
         headers, media_type = service.build_file_headers(mock_file)
@@ -265,11 +248,7 @@ class TestFileManagerServiceBuildFileHeaders:
 
     def test_build_file_headers_with_content(self, mock_repository):
         """Test building headers with content provided."""
-        mock_file = create_mock_file_model(
-            name="test.txt",
-            mime_type="text/plain",
-            size=100
-        )
+        mock_file = create_mock_file_model(name="test.txt", mime_type="text/plain", size=100)
         content = b"Hello, World!"
 
         service = FileManagerService(repository=mock_repository)
@@ -280,26 +259,16 @@ class TestFileManagerServiceBuildFileHeaders:
     @pytest.mark.parametrize("disposition_type", ["attachment", "inline"])
     def test_build_file_headers_disposition_type(self, mock_repository, disposition_type):
         """Test building headers with different disposition types."""
-        mock_file = create_mock_file_model(
-            name="test_file.pdf",
-            mime_type="application/pdf",
-            size=1000
-        )
+        mock_file = create_mock_file_model(name="test_file.pdf", mime_type="application/pdf", size=1000)
 
         service = FileManagerService(repository=mock_repository)
-        headers, media_type = service.build_file_headers(
-            mock_file, disposition_type=disposition_type
-        )
+        headers, media_type = service.build_file_headers(mock_file, disposition_type=disposition_type)
 
         assert disposition_type in headers["content-disposition"]
 
     def test_build_file_headers_unicode_filename(self, mock_repository):
         """Test building headers with unicode characters in filename."""
-        mock_file = create_mock_file_model(
-            name="文件测试.txt",
-            mime_type="text/plain",
-            size=100
-        )
+        mock_file = create_mock_file_model(name="文件测试.txt", mime_type="text/plain", size=100)
 
         service = FileManagerService(repository=mock_repository)
         headers, media_type = service.build_file_headers(mock_file)
@@ -309,11 +278,7 @@ class TestFileManagerServiceBuildFileHeaders:
 
     def test_build_file_headers_no_mime_type(self, mock_repository):
         """Test building headers when mime_type is None."""
-        mock_file = create_mock_file_model(
-            name="unknown_file",
-            mime_type=None,
-            size=100
-        )
+        mock_file = create_mock_file_model(name="unknown_file", mime_type=None, size=100)
 
         service = FileManagerService(repository=mock_repository)
         headers, media_type = service.build_file_headers(mock_file)

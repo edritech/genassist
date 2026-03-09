@@ -1,36 +1,30 @@
-import { Card } from "@/components/card";
-import { CheckCircle, FolderCog, Save } from "lucide-react";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/select";
-import type { FileManagerSettings } from "@/services/fileManager";
-import { useState } from "react";
-import { Button } from "@/components/button";
-import toast from "react-hot-toast";
-import { updateFileManagerSettings } from "@/services/appSettings";
+import { Card } from '@/components/card';
+import { CheckCircle, FolderCog, Save } from 'lucide-react';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/select';
+import type { FileManagerSettings } from '@/services/fileManager';
+import { useState } from 'react';
+import { Button } from '@/components/button';
+import toast from 'react-hot-toast';
+import { updateFileManagerSettings } from '@/services/appSettings';
 
 interface FileManagerSettingsCardProps {
   settings: FileManagerSettings;
 }
 
 const providerOptions = [
-  { value: "local", label: "Local", disabled: false },
-  { value: "s3", label: "S3", disabled: false },
-  { value: "azure", label: "Azure", disabled: true },
-  { value: "sharepoint", label: "SharePoint", disabled: true },
-  { value: "gcs", label: "GCS", disabled: true },
+  { value: 'local', label: 'Local', disabled: false },
+  { value: 's3', label: 'S3', disabled: false },
+  { value: 'azure', label: 'Azure', disabled: true },
+  { value: 'sharepoint', label: 'SharePoint', disabled: true },
+  { value: 'gcs', label: 'GCS', disabled: true },
 ];
 
 export const FileManagerSettingsCard = ({ settings }: FileManagerSettingsCardProps) => {
-  const provider = settings.values.file_manager_provider || "local";
+  const provider = settings.values.file_manager_provider || 'local';
   const [selectedProvider, setSelectedProvider] = useState(provider);
   const [isSaving, setIsSaving] = useState(false);
-  const [basePath, setBasePath] = useState(settings.values.base_path || "");
-  const [awsBucketName, setAwsBucketName] = useState(settings.values.aws_bucket_name || "");
+  const [basePath, setBasePath] = useState(settings.values.base_path || '');
+  const [awsBucketName, setAwsBucketName] = useState(settings.values.aws_bucket_name || '');
   const showProviderOptions = false; // TODO: show provider options based on the provider
 
   const handleSave = async () => {
@@ -47,25 +41,25 @@ export const FileManagerSettingsCard = ({ settings }: FileManagerSettingsCardPro
         },
       });
 
-      toast.success("File manager settings saved", {
+      toast.success('File manager settings saved', {
         icon: <FolderCog className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />,
         duration: 3000,
       });
     } catch (error) {
-      toast.error("Failed to update file manager settings", {
+      toast.error('Failed to update file manager settings', {
         icon: <FolderCog className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />,
         duration: 3000,
       });
-      throw new Error("Failed to update file manager settings");
+      throw new Error('Failed to update file manager settings');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleInputChange = (value: string, key: string) => {
-    if (key === "base_path") {
+    if (key === 'base_path') {
       setBasePath(value);
-    } else if (key === "aws_bucket_name") {
+    } else if (key === 'aws_bucket_name') {
       setAwsBucketName(value);
     }
   };
@@ -76,9 +70,7 @@ export const FileManagerSettingsCard = ({ settings }: FileManagerSettingsCardPro
         <FolderCog className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
         <div>
           <h2 className="text-base sm:text-lg font-semibold">File Manager Settings</h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Storage provider configuration
-          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Storage provider configuration</p>
         </div>
 
         <Button
@@ -87,7 +79,8 @@ export const FileManagerSettingsCard = ({ settings }: FileManagerSettingsCardPro
           className="ml-auto rounded-full"
           loading={isSaving}
           icon={<Save className="w-4 h-4" />}
-          onClick={handleSave}>
+          onClick={handleSave}
+        >
           Save
         </Button>
       </div>
@@ -101,41 +94,35 @@ export const FileManagerSettingsCard = ({ settings }: FileManagerSettingsCardPro
             </SelectTrigger>
             <SelectContent>
               {providerOptions.map((opt) => (
-                <SelectItem
-                  key={opt.value}
-                  value={opt.value}
-                  disabled={opt.disabled}
-                >
+                <SelectItem key={opt.value} value={opt.value} disabled={opt.disabled}>
                   {opt.label}
-                  {opt.disabled && (
-                    <span className="ml-1 text-xs text-muted-foreground">(coming soon)</span>
-                  )}
+                  {opt.disabled && <span className="ml-1 text-xs text-muted-foreground">(coming soon)</span>}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        {showProviderOptions && selectedProvider === "local" && (
+        {showProviderOptions && selectedProvider === 'local' && (
           <div className="flex items-center justify-between h-[40px]">
             <label className="text-sm font-medium">Base Path</label>
             <input
               type="text"
               value={basePath}
-              onChange={(e) => handleInputChange(e.target.value, "base_path")}
+              onChange={(e) => handleInputChange(e.target.value, 'base_path')}
               disabled={isSaving}
               className="w-1/2 rounded-full border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none disabled:opacity-75"
             />
           </div>
         )}
 
-        {showProviderOptions && selectedProvider === "s3" && (
+        {showProviderOptions && selectedProvider === 's3' && (
           <div className="flex items-center justify-between h-[40px]">
             <label className="text-sm font-medium">Bucket Name</label>
             <input
               type="text"
               value={awsBucketName}
-              onChange={(e) => handleInputChange(e.target.value, "aws_bucket_name")}
+              onChange={(e) => handleInputChange(e.target.value, 'aws_bucket_name')}
               disabled={isSaving}
               className="w-1/2 rounded-full border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none disabled:opacity-75"
             />

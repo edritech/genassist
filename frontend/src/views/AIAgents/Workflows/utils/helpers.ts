@@ -1,9 +1,9 @@
-import { Workflow } from "@/interfaces/workflow.interface";
-import { Node, ReactFlowInstance } from "reactflow";
-import { v4 as uuidv4 } from "uuid";
-import nodeRegistry from "../registry/nodeRegistry";
-import { NodeData } from "../types/nodes";
-import { NodeSchema, SchemaType } from "../types/schemas";
+import { Workflow } from '@/interfaces/workflow.interface';
+import { Node, ReactFlowInstance } from 'reactflow';
+import { v4 as uuidv4 } from 'uuid';
+import nodeRegistry from '../registry/nodeRegistry';
+import { NodeData } from '../types/nodes';
+import { NodeSchema, SchemaType } from '../types/schemas';
 
 export const getHandlerPosition = (index: number, total: number) => {
   return `${(index + 1) * (100 / (total + 1))}%`;
@@ -12,7 +12,7 @@ export const getHandlerPosition = (index: number, total: number) => {
 // Calculate next version based on existing workflows
 export const calculateNextVersion = (workflows: Workflow[]): string => {
   if (workflows.length === 0) {
-    return "1.0";
+    return '1.0';
   }
 
   // Extract and parse version numbers
@@ -28,7 +28,7 @@ export const calculateNextVersion = (workflows: Workflow[]): string => {
     .filter((version) => version > 0);
 
   if (versions.length === 0) {
-    return "1.0";
+    return '1.0';
   }
 
   // Find the highest version and add 0.1
@@ -40,36 +40,25 @@ export const calculateNextVersion = (workflows: Workflow[]): string => {
 };
 
 // Check if a version already exists in the workflows
-export const isVersionDuplicate = (
-  workflows: Workflow[],
-  version: string,
-  excludeWorkflowId?: string
-): boolean => {
+export const isVersionDuplicate = (workflows: Workflow[], version: string, excludeWorkflowId?: string): boolean => {
   if (!version?.trim()) return false;
 
-  return workflows.some(
-    (workflow) =>
-      workflow.version?.trim() === version.trim() &&
-      workflow.id !== excludeWorkflowId
-  );
+  return workflows.some((workflow) => workflow.version?.trim() === version.trim() && workflow.id !== excludeWorkflowId);
 };
 
 // Find the previous version to switch to when deleting a workflow
-export const findPreviousVersion = (
-  workflows: Workflow[],
-  deletedWorkflow: Workflow
-): Workflow | null => {
+export const findPreviousVersion = (workflows: Workflow[], deletedWorkflow: Workflow): Workflow | null => {
   if (workflows.length <= 1) return null;
 
   const remaining = workflows.filter((w) => w.id !== deletedWorkflow.id);
   if (!remaining.length) return null;
 
-  const deletedVersion = parseFloat(deletedWorkflow.version || "0");
+  const deletedVersion = parseFloat(deletedWorkflow.version || '0');
 
   const versioned = remaining
     .map((w) => ({
       ...w,
-      parsedVersion: parseFloat(w.version || "0"),
+      parsedVersion: parseFloat(w.version || '0'),
     }))
     .filter((w) => !isNaN(w.parsedVersion) && w.parsedVersion > 0);
 
@@ -92,34 +81,21 @@ export const findPreviousVersion = (
 };
 
 const getMostRecentWorkflow = (workflows: Workflow[]): Workflow =>
-  workflows.reduce((latest, curr) =>
-    new Date(curr.created_at) > new Date(latest.created_at) ? curr : latest
-  );
+  workflows.reduce((latest, curr) => (new Date(curr.created_at) > new Date(latest.created_at) ? curr : latest));
 
-const getHighestVersion = (
-  workflows: (Workflow & { parsedVersion: number })[]
-): Workflow =>
-  workflows.reduce((max, curr) =>
-    curr.parsedVersion > max.parsedVersion ? curr : max
-  );
+const getHighestVersion = (workflows: (Workflow & { parsedVersion: number })[]): Workflow =>
+  workflows.reduce((max, curr) => (curr.parsedVersion > max.parsedVersion ? curr : max));
 
-const getLowestVersion = (
-  workflows: (Workflow & { parsedVersion: number })[]
-): Workflow =>
-  workflows.reduce((min, curr) =>
-    curr.parsedVersion < min.parsedVersion ? curr : min
-  );
+const getLowestVersion = (workflows: (Workflow & { parsedVersion: number })[]): Workflow =>
+  workflows.reduce((min, curr) => (curr.parsedVersion < min.parsedVersion ? curr : min));
 
 export const maskToken = (token: string) => {
-  if (!token) return "";
+  if (!token) return '';
   const maskedLength = Math.min(token.length, 20); // Limit to 20 characters
-  return "●".repeat(maskedLength) + (token.length > 20 ? "..." : "");
+  return '●'.repeat(maskedLength) + (token.length > 20 ? '...' : '');
 };
 
-export const createWorkflowNodeFromDrop = (
-  nodeType: string,
-  position?: { x: number; y: number }
-): Node | null => {
+export const createWorkflowNodeFromDrop = (nodeType: string, position?: { x: number; y: number }): Node | null => {
   const id = uuidv4();
   const nodePosition = position ?? { x: 0, y: 0 };
 
@@ -127,9 +103,7 @@ export const createWorkflowNodeFromDrop = (
   return newNode;
 };
 
-export const getNodeDimensions = (
-  node: Node
-): { width: number; height: number } => {
+export const getNodeDimensions = (node: Node): { width: number; height: number } => {
   // Default fallback values
   let nodeWidth = 400;
   let nodeHeight = 200;
@@ -155,7 +129,7 @@ export const getNodeCenter = (
 
 export const handleDragOver = (event: React.DragEvent) => {
   event.preventDefault();
-  event.dataTransfer.dropEffect = "move";
+  event.dataTransfer.dropEffect = 'move';
 };
 
 export const handleDrop = (
@@ -165,9 +139,9 @@ export const handleDrop = (
   setNodes: React.Dispatch<React.SetStateAction<Node[]>>
 ): Node | null => {
   event.preventDefault();
-  const nodeType = event.dataTransfer.getData("application/reactflow");
+  const nodeType = event.dataTransfer.getData('application/reactflow');
 
-  if (typeof nodeType === "undefined" || !nodeType) {
+  if (typeof nodeType === 'undefined' || !nodeType) {
     return null;
   }
 
@@ -239,29 +213,26 @@ export const extractDynamicVariables = (text: string): Set<string> => {
 
   return variables;
 };
-export const extractDynamicVariablesAsRecord = (
-  text: string
-): Record<string, { type: string; required?: boolean }> => {
+export const extractDynamicVariablesAsRecord = (text: string): Record<string, { type: string; required?: boolean }> => {
   const variables = extractDynamicVariables(text);
 
-  const params = Object.fromEntries(
-    Array.from(variables).map((v) => [v, { type: "string", required: true }])
-  );
+  const params = Object.fromEntries(Array.from(variables).map((v) => [v, { type: 'string', required: true }]));
 
   return params;
 };
 
-export const convertSchemaToParams = (
-  schema: Record<string, { type: string; required?: boolean }>
-) => {
+export const convertSchemaToParams = (schema: Record<string, { type: string; required?: boolean }>) => {
   if (!schema) return {};
-  return Object.entries(schema).reduce((acc, [key, value]) => {
-    acc[key] = {
-      type: value.type,
-      required: value.required || false,
-    };
-    return acc;
-  }, {} as Record<string, { type: string; required?: boolean }>);
+  return Object.entries(schema).reduce(
+    (acc, [key, value]) => {
+      acc[key] = {
+        type: value.type,
+        required: value.required || false,
+      };
+      return acc;
+    },
+    {} as Record<string, { type: string; required?: boolean }>
+  );
 };
 
 /**
@@ -269,38 +240,28 @@ export const convertSchemaToParams = (
  * @param data The node data containing inputSchema and potentially other properties
  * @returns An object with generated values for each inputSchema field and extracted variable
  */
-export const generateSampleOutput = (
-  data: NodeData
-): Record<string, unknown> => {
+export const generateSampleOutput = (data: NodeData): Record<string, unknown> => {
   const output: Record<string, unknown> = {};
 
   // Generate sample values for inputSchema fields
-  if ("inputSchema" in data && data.inputSchema) {
+  if ('inputSchema' in data && data.inputSchema) {
     Object.entries(data.inputSchema).forEach(([fieldName, fieldSchema]) => {
       output[fieldName] = generateSampleValue(fieldSchema);
     });
   }
 
   // Generate sample values for extracted variables from text fields
-  if ("template" in data && data.template) {
+  if ('template' in data && data.template) {
     const extractedVars = extractDynamicVariables(data.template);
     extractedVars.forEach((variable) => {
       if (!output[variable]) {
-        output[variable] = generateSampleValue({ type: "string" });
+        output[variable] = generateSampleValue({ type: 'string' });
       }
     });
   }
 
   // Check other text fields that might contain variables
-  const textFields = [
-    "message",
-    "body",
-    "subject",
-    "description",
-    "query",
-    "code",
-    "pythonScript",
-  ];
+  const textFields = ['message', 'body', 'subject', 'description', 'query', 'code', 'pythonScript'];
   textFields.forEach((field) => {
     if (hasStringField(data, field)) {
       const textValue = getStringField(data, field);
@@ -308,7 +269,7 @@ export const generateSampleOutput = (
         const extractedVars = extractDynamicVariables(textValue);
         extractedVars.forEach((variable) => {
           if (!output[variable]) {
-            output[variable] = generateSampleValue({ type: "string" });
+            output[variable] = generateSampleValue({ type: 'string' });
           }
         });
       }
@@ -318,29 +279,27 @@ export const generateSampleOutput = (
   return output;
 };
 
-export const generateTemplateFromInputSchema = (
-  inputSchema: NodeSchema
-): string => {
+export const generateTemplateFromInputSchema = (inputSchema: NodeSchema): string => {
   if (inputSchema === null || inputSchema === undefined) {
-    return "{}";
+    return '{}';
   }
-  
+
   const entries = Object.entries(inputSchema);
   if (entries.length === 0) {
-    return "{}";
+    return '{}';
   }
-  
+
   // Build JSON string manually, checking types to determine if values should be quoted
   const parts = entries.map(([key, fieldSchema]) => {
     const templateValue = `{{direct_input.parameters.${key}}}`;
     const sourceKey = `source.${key}`;
-    
+
     // Only quote string types; leave object, array, number, boolean unquoted
-    const shouldQuote = fieldSchema.type === "string";
-    
+    const shouldQuote = fieldSchema.type === 'string';
+
     // Use JSON.stringify for keys to properly escape special characters
     const escapedKey = JSON.stringify(sourceKey);
-    
+
     if (shouldQuote) {
       // For string types, quote the template value
       return `${escapedKey}:${JSON.stringify(templateValue)}`;
@@ -349,8 +308,8 @@ export const generateTemplateFromInputSchema = (
       return `${escapedKey}:${templateValue}`;
     }
   });
-  
-  return `{${parts.join(",")}}`;
+
+  return `{${parts.join(',')}}`;
 };
 
 /**
@@ -364,13 +323,13 @@ const generateSampleValue = (fieldSchema: {
   items?: unknown;
 }): unknown => {
   switch (fieldSchema.type) {
-    case "string":
+    case 'string':
       return `sample_${fieldSchema.type}_value`;
-    case "number":
+    case 'number':
       return 42;
-    case "boolean":
+    case 'boolean':
       return true;
-    case "array":
+    case 'array':
       if (fieldSchema.items) {
         return [
           generateSampleValue(
@@ -382,8 +341,8 @@ const generateSampleValue = (fieldSchema: {
           ),
         ];
       }
-      return ["sample_array_item"];
-    case "object":
+      return ['sample_array_item'];
+    case 'object':
       if (fieldSchema.properties) {
         const obj: Record<string, unknown> = {};
         Object.entries(fieldSchema.properties).forEach(([key, prop]) => {
@@ -397,11 +356,11 @@ const generateSampleValue = (fieldSchema: {
         });
         return obj;
       }
-      return { sample_key: "sample_value" };
-    case "any":
-      return "sample_any_value";
+      return { sample_key: 'sample_value' };
+    case 'any':
+      return 'sample_any_value';
     default:
-      return "sample_value";
+      return 'sample_value';
   }
 };
 
@@ -409,10 +368,7 @@ const generateSampleValue = (fieldSchema: {
  * Type guard to check if data has a specific field
  */
 const hasStringField = (data: NodeData, field: string): boolean => {
-  return (
-    field in data &&
-    typeof (data as unknown as Record<string, unknown>)[field] === "string"
-  );
+  return field in data && typeof (data as unknown as Record<string, unknown>)[field] === 'string';
 };
 
 /**
@@ -425,22 +381,14 @@ const getStringField = (data: NodeData, field: string): string | null => {
   return null;
 };
 
-export const getValueFromPath = (
-  obj: Record<string, unknown> | null | undefined,
-  path: string
-): unknown => {
+export const getValueFromPath = (obj: Record<string, unknown> | null | undefined, path: string): unknown => {
   if (!obj || !path) return undefined;
 
-  const keys = path.split(".");
+  const keys = path.split('.');
   let current: unknown = obj;
 
   for (const key of keys) {
-    if (
-      current &&
-      typeof current === "object" &&
-      current !== null &&
-      key in current
-    ) {
+    if (current && typeof current === 'object' && current !== null && key in current) {
       current = (current as Record<string, unknown>)[key];
     } else {
       return undefined;
@@ -457,39 +405,39 @@ export const getValueFromPath = (
  * @returns Parsed value of the correct type, or the original string if parsing fails
  */
 export const parseInputValue = (value: string, type: SchemaType): unknown => {
-  if (!value || value.trim() === "") {
+  if (!value || value.trim() === '') {
     return value;
   }
 
   try {
     switch (type) {
-      case "string":
+      case 'string':
         return value;
-      case "number": {
+      case 'number': {
         const num = parseFloat(value);
         if (isNaN(num)) {
           throw new Error(`Invalid number: ${value}`);
         }
         return num;
       }
-      case "boolean": {
+      case 'boolean': {
         const lowerValue = value.toLowerCase().trim();
-        if (lowerValue === "true" || lowerValue === "1" || lowerValue === "yes") {
+        if (lowerValue === 'true' || lowerValue === '1' || lowerValue === 'yes') {
           return true;
         }
-        if (lowerValue === "false" || lowerValue === "0" || lowerValue === "no") {
+        if (lowerValue === 'false' || lowerValue === '0' || lowerValue === 'no') {
           return false;
         }
         throw new Error(`Invalid boolean: ${value}`);
       }
-      case "object":
-      case "array":
+      case 'object':
+      case 'array':
         try {
           return JSON.parse(value);
         } catch (e) {
           throw new Error(`Invalid JSON: ${value}`);
         }
-      case "any":
+      case 'any':
         // Try to parse as JSON first, then number, then boolean, finally string
         try {
           return JSON.parse(value);
@@ -497,8 +445,8 @@ export const parseInputValue = (value: string, type: SchemaType): unknown => {
           const num = parseFloat(value);
           if (!isNaN(num)) return num;
           const lowerValue = value.toLowerCase().trim();
-          if (lowerValue === "true") return true;
-          if (lowerValue === "false") return false;
+          if (lowerValue === 'true') return true;
+          if (lowerValue === 'false') return false;
           return value;
         }
       default:
@@ -519,21 +467,21 @@ export const parseInputValue = (value: string, type: SchemaType): unknown => {
  */
 export const valueToString = (value: unknown, type: SchemaType): string => {
   if (value === null || value === undefined) {
-    return "";
+    return '';
   }
-  
-  if (type === "object" || type === "array") {
+
+  if (type === 'object' || type === 'array') {
     try {
       return JSON.stringify(value, null, 2);
     } catch {
       return String(value);
     }
   }
-  
-  if (type === "boolean") {
+
+  if (type === 'boolean') {
     return String(value);
   }
-  
+
   return String(value);
 };
 
@@ -545,7 +493,7 @@ export const truncateNodeOutput = (data: unknown, maxItems: number = 4): unknown
   if (Array.isArray(data)) {
     return data.slice(0, maxItems).map((item) => truncateNodeOutput(item, maxItems));
   }
-  if (data !== null && typeof data === "object") {
+  if (data !== null && typeof data === 'object') {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
       result[key] = truncateNodeOutput(value, maxItems);

@@ -4,13 +4,13 @@ Local File System Storage Provider
 Implements storage operations using the local file system.
 """
 
-import os
 import logging
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
+from app.core.project_path import DATA_VOLUME
 
 from ..base import BaseStorageProvider
-from app.core.project_path import DATA_VOLUME
 
 logger = logging.getLogger(__name__)
 
@@ -74,12 +74,8 @@ class LocalFileSystemProvider(BaseStorageProvider):
         """
         return (self.base_path / Path(file_path)).resolve()
 
-
     async def upload_file(
-        self,
-        file_content: bytes,
-        file_path: str,
-        file_metadata: Optional[Dict[str, Any]] = None
+        self, file_content: bytes, file_path: str, file_metadata: Optional[Dict[str, Any]] = None
     ) -> bool:
         """
         Upload a file to local file system.
@@ -167,11 +163,7 @@ class LocalFileSystemProvider(BaseStorageProvider):
         except Exception:
             return False
 
-    async def list_files(
-        self,
-        prefix: Optional[str] = None,
-        limit: Optional[int] = None
-    ) -> List[str]:
+    async def list_files(self, prefix: Optional[str] = None, limit: Optional[int] = None) -> List[str]:
         """
         List files in local file system.
 
@@ -246,6 +238,7 @@ class LocalFileSystemProvider(BaseStorageProvider):
             if full_path.exists() and full_path.is_dir():
                 if recursive:
                     import shutil
+
                     shutil.rmtree(full_path)
                 else:
                     full_path.rmdir()
@@ -282,9 +275,7 @@ class LocalFileSystemProvider(BaseStorageProvider):
             Dictionary containing provider statistics
         """
         try:
-            total_size = sum(
-                f.stat().st_size for f in self.base_path.rglob("*") if f.is_file()
-            )
+            total_size = sum(f.stat().st_size for f in self.base_path.rglob("*") if f.is_file())
             file_count = len([f for f in self.base_path.rglob("*") if f.is_file()])
             folder_count = len([d for d in self.base_path.rglob("*") if d.is_dir()])
 

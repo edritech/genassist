@@ -7,12 +7,12 @@ Supports multiple connection types:
 """
 
 import logging
-from typing import Dict, Any, List, Optional, Literal
 from contextlib import asynccontextmanager
+from typing import Any, Dict, List, Literal, Optional
 
 from mcp import ClientSession as MCPClientSession
-from mcp.client.stdio import stdio_client as mcp_stdio_client
 from mcp.client.sse import sse_client as mcp_sse_client
+from mcp.client.stdio import stdio_client as mcp_stdio_client
 from mcp.types import TextContent as MCPTextContent
 
 logger = logging.getLogger(__name__)
@@ -153,9 +153,7 @@ class MCPConnectionManager:
             logger.error(f"Failed to discover MCP tools: {str(e)}", exc_info=True)
             raise
 
-    async def execute_tool(
-        self, tool_name: str, tool_arguments: Dict[str, Any]
-    ) -> Any:
+    async def execute_tool(self, tool_name: str, tool_arguments: Dict[str, Any]) -> Any:
         """
         Execute a tool on the MCP server.
 
@@ -194,9 +192,7 @@ class MCPConnectionManager:
 
                 return result
         except Exception as e:
-            logger.error(
-                f"Failed to execute MCP tool {tool_name}: {str(e)}", exc_info=True
-            )
+            logger.error(f"Failed to execute MCP tool {tool_name}: {str(e)}", exc_info=True)
             raise
 
     def _convert_tool_input_schema(self, tool: Any) -> Dict[str, Any]:

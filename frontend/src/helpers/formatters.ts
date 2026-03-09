@@ -2,7 +2,7 @@ export const formatCallDuration = (time: string | number | null | undefined): st
   if (typeof time === 'number') {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
-    
+
     if (minutes >= 60) {
       const hours = Math.floor(minutes / 60);
       const remainingMinutes = minutes % 60;
@@ -13,12 +13,12 @@ export const formatCallDuration = (time: string | number | null | undefined): st
       return `${seconds}s`;
     }
   }
-  
-  if (!time || typeof time !== "string") return "0m";
 
-  const timeParts = time.split(":").map(Number);
+  if (!time || typeof time !== 'string') return '0m';
+
+  const timeParts = time.split(':').map(Number);
   if (timeParts.length !== 3 || timeParts.some(isNaN)) {
-    return "0m";
+    return '0m';
   }
 
   const [hours, minutes, seconds] = timeParts;
@@ -32,7 +32,7 @@ export const formatTimeAgo = (timestamp: string): string => {
   const callTime = new Date(timestamp);
   const differenceInSeconds = Math.floor((now.getTime() - callTime.getTime()) / 1000);
 
-  if (differenceInSeconds < 60) return "Just now";
+  if (differenceInSeconds < 60) return 'Just now';
   if (differenceInSeconds < 3600) return `${Math.floor(differenceInSeconds / 60)} min ago`;
   if (differenceInSeconds < 86400) return `${Math.floor(differenceInSeconds / 3600)} hours ago`;
   if (differenceInSeconds < 604800) return `${Math.floor(differenceInSeconds / 86400)} days ago`;
@@ -41,12 +41,12 @@ export const formatTimeAgo = (timestamp: string): string => {
 
 export const formatPercentage = (value: number | string | undefined | null): string => {
   if (value === undefined || value === null || isNaN(Number(value))) {
-    return "0%";
+    return '0%';
   }
-  
+
   return `${Math.round(Number(value) * 100)}%`;
 };
 
-export const getInitials = (firstName = "", lastName = ""): string => {
+export const getInitials = (firstName = '', lastName = ''): string => {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-}; 
+};

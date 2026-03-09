@@ -1,29 +1,31 @@
+import logging
+from datetime import datetime, timezone
+from typing import List, Optional
 from uuid import UUID
+
 from injector import inject
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from sqlalchemy.exc import IntegrityError
-from typing import List, Optional
-from datetime import datetime, timezone
+from starlette_context import context
+from starlette_context.errors import ContextDoesNotExistError
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.ml_model_pipeline import (
+    ArtifactType,
+    MLModelPipelineArtifact,
     MLModelPipelineConfig,
     MLModelPipelineRun,
-    MLModelPipelineArtifact,
     PipelineRunStatus,
-    ArtifactType
 )
 from app.schemas.ml_model_pipeline import (
+    MLModelPipelineArtifactCreate,
     MLModelPipelineConfigCreate,
     MLModelPipelineConfigUpdate,
     MLModelPipelineRunCreate,
-    MLModelPipelineArtifactCreate
 )
-from starlette_context import context
-from starlette_context.errors import ContextDoesNotExistError
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -51,19 +53,14 @@ class MLModelPipelineConfigRepository:
         except IntegrityError as e:
             await self.db.rollback()
             logger.error(f"IntegrityError while creating pipeline config: {str(e)}")
-            raise AppException(
-                error_key=ErrorKey.INTERNAL_ERROR
-            ) from e
+            raise AppException(error_key=ErrorKey.INTERNAL_ERROR) from e
 
     async def get_by_id(self, config_id: UUID) -> MLModelPipelineConfig:
         """Fetch pipeline configuration by ID."""
         query = (
             select(MLModelPipelineConfig)
             .options(selectinload(MLModelPipelineConfig.workflow))
-            .where(
-                MLModelPipelineConfig.id == config_id,
-                MLModelPipelineConfig.is_deleted == 0
-            )
+            .where(MLModelPipelineConfig.id == config_id, MLModelPipelineConfig.is_deleted == 0)
         )
         result = await self.db.execute(query)
         config = result.scalars().first()
@@ -78,10 +75,7 @@ class MLModelPipelineConfigRepository:
         query = (
             select(MLModelPipelineConfig)
             .options(selectinload(MLModelPipelineConfig.workflow))
-            .where(
-                MLModelPipelineConfig.model_id == model_id,
-                MLModelPipelineConfig.is_deleted == 0
-            )
+            .where(MLModelPipelineConfig.model_id == model_id, MLModelPipelineConfig.is_deleted == 0)
             .order_by(MLModelPipelineConfig.is_default.desc(), MLModelPipelineConfig.created_at.desc())
         )
         result = await self.db.execute(query)
@@ -95,7 +89,7 @@ class MLModelPipelineConfigRepository:
             .where(
                 MLModelPipelineConfig.model_id == model_id,
                 MLModelPipelineConfig.is_default.is_(True),
-                MLModelPipelineConfig.is_deleted == 0
+                MLModelPipelineConfig.is_deleted == 0,
             )
         )
         result = await self.db.execute(query)
@@ -123,9 +117,7 @@ class MLModelPipelineConfigRepository:
         except IntegrityError as e:
             await self.db.rollback()
             logger.error(f"IntegrityError while updating pipeline config: {str(e)}")
-            raise AppException(
-                error_key=ErrorKey.INTERNAL_ERROR
-            ) from e
+            raise AppException(error_key=ErrorKey.INTERNAL_ERROR) from e
 
     async def delete(self, config_id: UUID) -> MLModelPipelineConfig:
         """Soft delete a pipeline configuration."""
@@ -136,13 +128,10 @@ class MLModelPipelineConfigRepository:
 
     async def unset_default_for_model(self, model_id: UUID, exclude_config_id: Optional[UUID] = None):
         """Unset is_default for all configs of a model, optionally excluding one."""
-        query = (
-            select(MLModelPipelineConfig)
-            .where(
-                MLModelPipelineConfig.model_id == model_id,
-                MLModelPipelineConfig.is_default.is_(True),
-                MLModelPipelineConfig.is_deleted == 0
-            )
+        query = select(MLModelPipelineConfig).where(
+            MLModelPipelineConfig.model_id == model_id,
+            MLModelPipelineConfig.is_default.is_(True),
+            MLModelPipelineConfig.is_deleted == 0,
         )
         if exclude_config_id:
             query = query.where(MLModelPipelineConfig.id != exclude_config_id)
@@ -177,9 +166,7 @@ class MLModelPipelineRunRepository:
         except IntegrityError as e:
             await self.db.rollback()
             logger.error(f"IntegrityError while creating pipeline run: {str(e)}")
-            raise AppException(
-                error_key=ErrorKey.INTERNAL_ERROR
-            ) from e
+            raise AppException(error_key=ErrorKey.INTERNAL_ERROR) from e
 
     async def get_by_id(self, run_id: UUID) -> MLModelPipelineRun:
         """Fetch pipeline run by ID."""
@@ -188,12 +175,9 @@ class MLModelPipelineRunRepository:
             .options(
                 selectinload(MLModelPipelineRun.workflow),
                 selectinload(MLModelPipelineRun.pipeline_config),
-                selectinload(MLModelPipelineRun.artifacts)
+                selectinload(MLModelPipelineRun.artifacts),
             )
-            .where(
-                MLModelPipelineRun.id == run_id,
-                MLModelPipelineRun.is_deleted == 0
-            )
+            .where(MLModelPipelineRun.id == run_id, MLModelPipelineRun.is_deleted == 0)
         )
         result = await self.db.execute(query)
         run = result.scalars().first()
@@ -204,23 +188,13 @@ class MLModelPipelineRunRepository:
         return run
 
     async def get_by_model_id(
-        self,
-        model_id: UUID,
-        status: Optional[PipelineRunStatus] = None,
-        limit: int = 50,
-        offset: int = 0
+        self, model_id: UUID, status: Optional[PipelineRunStatus] = None, limit: int = 50, offset: int = 0
     ) -> List[MLModelPipelineRun]:
         """Fetch pipeline runs for a model with optional status filter."""
         query = (
             select(MLModelPipelineRun)
-            .options(
-                selectinload(MLModelPipelineRun.workflow),
-                selectinload(MLModelPipelineRun.pipeline_config)
-            )
-            .where(
-                MLModelPipelineRun.model_id == model_id,
-                MLModelPipelineRun.is_deleted == 0
-            )
+            .options(selectinload(MLModelPipelineRun.workflow), selectinload(MLModelPipelineRun.pipeline_config))
+            .where(MLModelPipelineRun.model_id == model_id, MLModelPipelineRun.is_deleted == 0)
         )
         if status:
             query = query.where(MLModelPipelineRun.status == status)
@@ -235,7 +209,7 @@ class MLModelPipelineRunRepository:
         status: PipelineRunStatus,
         error_message: Optional[str] = None,
         execution_output: Optional[dict] = None,
-        execution_id: Optional[UUID] = None
+        execution_id: Optional[UUID] = None,
     ) -> MLModelPipelineRun:
         """Update pipeline run status and related fields."""
         run = await self.get_by_id(run_id)
@@ -293,15 +267,12 @@ class MLModelPipelineArtifactRepository:
         except IntegrityError as e:
             await self.db.rollback()
             logger.error(f"IntegrityError while creating pipeline artifact: {str(e)}")
-            raise AppException(
-                error_key=ErrorKey.INTERNAL_ERROR
-            ) from e
+            raise AppException(error_key=ErrorKey.INTERNAL_ERROR) from e
 
     async def get_by_id(self, artifact_id: UUID) -> MLModelPipelineArtifact:
         """Fetch pipeline artifact by ID."""
         query = select(MLModelPipelineArtifact).where(
-            MLModelPipelineArtifact.id == artifact_id,
-            MLModelPipelineArtifact.is_deleted == 0
+            MLModelPipelineArtifact.id == artifact_id, MLModelPipelineArtifact.is_deleted == 0
         )
         result = await self.db.execute(query)
         artifact = result.scalars().first()
@@ -315,12 +286,8 @@ class MLModelPipelineArtifactRepository:
         """Fetch all artifacts for a pipeline run."""
         query = (
             select(MLModelPipelineArtifact)
-            .where(
-                MLModelPipelineArtifact.pipeline_run_id == run_id,
-                MLModelPipelineArtifact.is_deleted == 0
-            )
+            .where(MLModelPipelineArtifact.pipeline_run_id == run_id, MLModelPipelineArtifact.is_deleted == 0)
             .order_by(MLModelPipelineArtifact.created_at.desc())
         )
         result = await self.db.execute(query)
         return list(result.scalars().all())
-

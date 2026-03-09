@@ -1,7 +1,9 @@
+import logging
 import os
 import uuid
-import logging
+
 from fastapi import APIRouter, HTTPException
+
 from app.core.project_path import DATA_VOLUME
 
 router = APIRouter()
@@ -15,7 +17,7 @@ FILE_PATH = os.path.join(DATA_VOLUME, FILE_NAME)
 async def get_registration_id():
     # Ensure directory exists
     os.makedirs(DATA_VOLUME, exist_ok=True)
-     
+
     # Check if the file already exists
     if os.path.exists(FILE_PATH):
         try:

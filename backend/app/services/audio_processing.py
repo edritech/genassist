@@ -1,5 +1,6 @@
 from pydub import AudioSegment
 
+
 def slice_audio(file_path, speaker_segments):
     audio = AudioSegment.from_file(file_path)
     chunks = {}

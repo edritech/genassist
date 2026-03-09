@@ -1,14 +1,15 @@
-from injector import inject
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from typing import Optional
 from uuid import UUID
 
+from injector import inject
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
+from app.db.models.permission import PermissionModel
 from app.repositories.db_repository import DbRepository
 from app.schemas.permission import PermissionCreate, PermissionUpdate
-from app.db.models.permission import PermissionModel
 
 
 @inject
@@ -38,9 +39,7 @@ class PermissionsRepository(DbRepository[PermissionModel]):
         # Use the base class create method
         return await self.create(new_permission)
 
-    async def update_permission(
-        self, permission_id: UUID, data: PermissionUpdate
-    ) -> Optional[PermissionModel]:
+    async def update_permission(self, permission_id: UUID, data: PermissionUpdate) -> Optional[PermissionModel]:
         """
         Updates an existing permission.
         """
@@ -62,7 +61,5 @@ class PermissionsRepository(DbRepository[PermissionModel]):
         """
         Internal helper to find a permission by name.
         """
-        result = await self.db.execute(
-            select(PermissionModel).where(PermissionModel.name == name)
-        )
+        result = await self.db.execute(select(PermissionModel).where(PermissionModel.name == name))
         return result.scalars().first()

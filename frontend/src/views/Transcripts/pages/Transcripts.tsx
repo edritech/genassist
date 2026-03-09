@@ -1,5 +1,5 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/sidebar";
-import { AppSidebar } from "@/layout/app-sidebar";
+import { SidebarProvider, SidebarTrigger } from '@/components/sidebar';
+import { AppSidebar } from '@/layout/app-sidebar';
 import {
   MessageSquare,
   PlayCircle,
@@ -12,18 +12,12 @@ import {
   Upload,
   ChevronDown,
   RefreshCw,
-} from "lucide-react";
-import { Card } from "@/components/card";
-import { Button } from "@/components/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/tabs";
-import { useIsMobile } from "@/hooks/useMobile";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
+} from 'lucide-react';
+import { Card } from '@/components/card';
+import { Button } from '@/components/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/tabs';
+import { useIsMobile } from '@/hooks/useMobile';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,24 +26,30 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/dropdown-menu";
-import { useState, useEffect, type ReactNode } from "react";
-import { Transcript } from "@/interfaces/transcript.interface";
-import { TranscriptDialog } from "../components/TranscriptDialog";
-import { ActiveConversationDialog } from "@/views/ActiveConversations/components/ActiveConversationDialog";
-import { useTranscriptData } from "../hooks/useTranscriptData";
-import { formatDuration, getSentimentStyles, getEffectiveSentiment, HOSTILITY_POSITIVE_MAX, HOSTILITY_NEUTRAL_MAX } from "../helpers/formatting";
-import { Badge } from "@/components/badge";
-import { Switch } from "@/components/switch";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/useToast";
-import { conversationService } from "@/services/liveConversations";
-import { transformTranscript } from "../helpers/transformers";
-import { UploadMediaDialog } from "@/views/MediaUpload";
-import { getPaginationMeta } from "@/helpers/pagination";
-import { PaginationBar } from "@/components/PaginationBar";
-import { SearchInput } from "@/components/SearchInput";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/RadixTooltip";
+} from '@/components/dropdown-menu';
+import { useState, useEffect, type ReactNode } from 'react';
+import { Transcript } from '@/interfaces/transcript.interface';
+import { TranscriptDialog } from '../components/TranscriptDialog';
+import { ActiveConversationDialog } from '@/views/ActiveConversations/components/ActiveConversationDialog';
+import { useTranscriptData } from '../hooks/useTranscriptData';
+import {
+  formatDuration,
+  getSentimentStyles,
+  getEffectiveSentiment,
+  HOSTILITY_POSITIVE_MAX,
+  HOSTILITY_NEUTRAL_MAX,
+} from '../helpers/formatting';
+import { Badge } from '@/components/badge';
+import { Switch } from '@/components/switch';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/useToast';
+import { conversationService } from '@/services/liveConversations';
+import { transformTranscript } from '../helpers/transformers';
+import { UploadMediaDialog } from '@/views/MediaUpload';
+import { getPaginationMeta } from '@/helpers/pagination';
+import { PaginationBar } from '@/components/PaginationBar';
+import { SearchInput } from '@/components/SearchInput';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/RadixTooltip';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -58,31 +58,29 @@ const Transcripts = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const searchParams = new URLSearchParams(location.search);
-  
+
   const [selectedTranscript, setSelectedTranscript] = useState<Transcript | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLiveTranscriptSelected, setIsLiveTranscriptSelected] = useState(false);
-  const [activeTab, setActiveTab] = useState(searchParams.get("sentiment") || "all");
-  const [supportType, setSupportType] = useState(searchParams.get("type") || "all");
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "");
-  const [currentPage, setCurrentPage] = useState(
-    Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1)
-  );
+  const [activeTab, setActiveTab] = useState(searchParams.get('sentiment') || 'all');
+  const [supportType, setSupportType] = useState(searchParams.get('type') || 'all');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('query') || '');
+  const [currentPage, setCurrentPage] = useState(Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1));
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-  const [orderBy, setOrderBy] = useState("");
-  const [sortDirection, setSortDirection] = useState("desc");
+  const [orderBy, setOrderBy] = useState('');
+  const [sortDirection, setSortDirection] = useState('desc');
 
   // Initialize showLiveOnly based on URL parameters
-  const statusParams = searchParams.getAll("status");
+  const statusParams = searchParams.getAll('status');
   const [showLiveOnly, setShowLiveOnly] = useState(
-    statusParams.includes("in_progress") && statusParams.includes("takeover")
+    statusParams.includes('in_progress') && statusParams.includes('takeover')
   );
 
   // Calculate hostility parameters based on sentiment
   const getHostilityParams = (sentiment: string) => {
     return {
       hostility_positive_max: HOSTILITY_POSITIVE_MAX,
-      hostility_neutral_max: HOSTILITY_NEUTRAL_MAX
+      hostility_neutral_max: HOSTILITY_NEUTRAL_MAX,
     };
   };
 
@@ -94,48 +92,48 @@ const Transcripts = () => {
     sentiment: activeTab,
     hostility_positive_max: hostilityParams.hostility_positive_max,
     hostility_neutral_max: hostilityParams.hostility_neutral_max,
-    conversation_status: showLiveOnly ? ["in_progress", "takeover"] : undefined,
+    conversation_status: showLiveOnly ? ['in_progress', 'takeover'] : undefined,
     order_by: orderBy || undefined,
     sort_direction: orderBy ? sortDirection : undefined,
   });
-  
+
   const isMobile = useIsMobile();
   const transcripts = Array.isArray(data) ? data : [];
-  const totalCount = typeof total === "number" ? total : transcripts.length;
+  const totalCount = typeof total === 'number' ? total : transcripts.length;
 
   const updateUrlParams = (params: Record<string, string | number | string[] | null>) => {
     const newSearchParams = new URLSearchParams(location.search);
-    
+
     Object.entries(params).forEach(([key, value]) => {
-      if (value === null || value === undefined || value === "") {
+      if (value === null || value === undefined || value === '') {
         newSearchParams.delete(key);
       } else if (Array.isArray(value)) {
         newSearchParams.delete(key);
-        value.forEach(v => {
+        value.forEach((v) => {
           if (v) newSearchParams.append(key, v);
         });
       } else {
         newSearchParams.set(key, value.toString());
       }
     });
-    
+
     navigate({ search: newSearchParams.toString() }, { replace: true });
   };
 
   const handleLiveOnlyToggle = (checked: boolean) => {
     setShowLiveOnly(checked);
-    
+
     if (checked) {
-      updateUrlParams({ status: ["in_progress", "takeover"] });
+      updateUrlParams({ status: ['in_progress', 'takeover'] });
     } else {
       updateUrlParams({ status: null });
     }
-    
+
     setCurrentPage(1);
   };
 
   const isLiveTranscript = (transcript: Transcript) => {
-    return transcript?.status === "in_progress" || transcript?.status === "takeover";
+    return transcript?.status === 'in_progress' || transcript?.status === 'takeover';
   };
 
   const isCallTranscript = (transcript: Transcript) => {
@@ -144,19 +142,15 @@ const Transcripts = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    
+
     // Update filter states based on URL
-    setActiveTab(params.get("sentiment") || "all");
-    setSupportType(params.get("type") || "all");
-    setSearchQuery(params.get("query") || "");
-    setCurrentPage(
-      Math.max(1, parseInt(params.get("page") || "1", 10) || 1)
-    );
-    
-    const statusValues = params.getAll("status");
-    setShowLiveOnly(
-      statusValues.includes("in_progress") && statusValues.includes("takeover")
-    );
+    setActiveTab(params.get('sentiment') || 'all');
+    setSupportType(params.get('type') || 'all');
+    setSearchQuery(params.get('query') || '');
+    setCurrentPage(Math.max(1, parseInt(params.get('page') || '1', 10) || 1));
+
+    const statusValues = params.getAll('status');
+    setShowLiveOnly(statusValues.includes('in_progress') && statusValues.includes('takeover'));
   }, [location.search]);
 
   // Fetch latest conversation data when opening the dialog
@@ -174,9 +168,9 @@ const Transcripts = () => {
       } catch {
         if (!cancelled) {
           toast({
-            title: "Could not refresh",
-            description: "Failed to load latest conversation data.",
-            variant: "destructive",
+            title: 'Could not refresh',
+            description: 'Failed to load latest conversation data.',
+            variant: 'destructive',
           });
         }
       }
@@ -192,19 +186,19 @@ const Transcripts = () => {
   const handleSentimentChange = (value: string) => {
     setActiveTab(value);
     setCurrentPage(1);
-    
+
     const hostilityParams = getHostilityParams(value);
-    updateUrlParams({ 
-      sentiment: value === "all" ? null : value, 
+    updateUrlParams({
+      sentiment: value === 'all' ? null : value,
       page: 1,
       hostility_positive_max: hostilityParams.hostility_positive_max,
-      hostility_neutral_max: hostilityParams.hostility_neutral_max
+      hostility_neutral_max: hostilityParams.hostility_neutral_max,
     });
   };
 
   const handleSupportTypeChange = (value: string) => {
     setSupportType(value);
-    updateUrlParams({ type: value === "all" ? null : value, page: 1 });
+    updateUrlParams({ type: value === 'all' ? null : value, page: 1 });
   };
 
   const handleSearchChange = (value: string) => {
@@ -227,14 +221,14 @@ const Transcripts = () => {
 
   const getSortLabel = (): { label: string; icon: ReactNode } | null => {
     if (!orderBy) return null;
-    const dirLabel = sortDirection === "desc" ? "High→Low" : "Low→High";
-    if (orderBy === "thumbs_down_count") {
+    const dirLabel = sortDirection === 'desc' ? 'High→Low' : 'Low→High';
+    if (orderBy === 'thumbs_down_count') {
       return {
         label: `Thumbs Down · ${dirLabel}`,
         icon: <ThumbsDown className="h-4 w-4 text-red-600 shrink-0" />,
       };
     }
-    if (orderBy === "thumbs_up_count") {
+    if (orderBy === 'thumbs_up_count') {
       return {
         label: `Thumbs Up · ${dirLabel}`,
         icon: <ThumbsUp className="h-4 w-4 text-green-600 shrink-0" />,
@@ -248,32 +242,24 @@ const Transcripts = () => {
   const handleRefreshConversations = () => {
     refetch();
     toast({
-      title: "Refreshing",
-      description: "Conversations are being refreshed.",
+      title: 'Refreshing',
+      description: 'Conversations are being refreshed.',
     });
   };
 
   const filteredTranscripts = transcripts.filter((transcript) => {
-    const title = transcript?.metadata?.title?.toLowerCase() || "";
-    const topic = transcript?.metadata?.topic?.toLowerCase() || "";
+    const title = transcript?.metadata?.title?.toLowerCase() || '';
+    const topic = transcript?.metadata?.topic?.toLowerCase() || '';
     const searchLower = searchQuery.toLowerCase().trim();
 
-    const matchesSearch =
-      searchQuery.trim() === "" ||
-      title.includes(searchLower) ||
-      topic.includes(searchLower);
+    const matchesSearch = searchQuery.trim() === '' || title.includes(searchLower) || topic.includes(searchLower);
 
-    const matchesSupportType =
-      supportType === "all" || topic.includes(supportType.toLowerCase());
+    const matchesSupportType = supportType === 'all' || topic.includes(supportType.toLowerCase());
 
     return matchesSearch && matchesSupportType;
   });
 
-  const pagination = getPaginationMeta(
-    totalCount,
-    ITEMS_PER_PAGE,
-    currentPage
-  );
+  const pagination = getPaginationMeta(totalCount, ITEMS_PER_PAGE, currentPage);
   const paginatedTranscripts = filteredTranscripts;
   const pageItemCount = paginatedTranscripts.length;
 
@@ -282,20 +268,20 @@ const Transcripts = () => {
       const success = await conversationService.takeoverConversation(transcriptId);
       if (success) {
         toast({
-          title: "Success",
-          description: "Successfully took over the conversation",
+          title: 'Success',
+          description: 'Successfully took over the conversation',
         });
         refetch();
         if (selectedTranscript && selectedTranscript.id === transcriptId) {
-          setSelectedTranscript(prev => prev ? { ...prev, status: "takeover" } : null);
+          setSelectedTranscript((prev) => (prev ? { ...prev, status: 'takeover' } : null));
         }
       }
       return success;
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to take over conversation",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to take over conversation',
+        variant: 'destructive',
       });
       return false;
     }
@@ -312,14 +298,8 @@ const Transcripts = () => {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:flex-wrap">
                 <div className="min-w-0">
                   <div className="flex items-center gap-3">
-                    <h1 className="text-2xl md:text-3xl font-bold mb-1 animate-fade-down">
-                      Conversations
-                    </h1>
-                    <Button
-                      onClick={() => setIsUploadDialogOpen(true)}
-                      variant="outline"
-                      size="sm"
-                    >
+                    <h1 className="text-2xl md:text-3xl font-bold mb-1 animate-fade-down">Conversations</h1>
+                    <Button onClick={() => setIsUploadDialogOpen(true)} variant="outline" size="sm">
                       <Upload className="w-4 h-4" />
                       Upload
                     </Button>
@@ -332,10 +312,7 @@ const Transcripts = () => {
                   <div className="flex items-center gap-2 bg-white border rounded-full px-4 py-2 shadow-sm w-full sm:w-auto">
                     <Radio className="w-4 h-4 text-green-500" />
                     <span className="text-sm font-medium">Live Only</span>
-                    <Switch 
-                      checked={showLiveOnly} 
-                      onCheckedChange={handleLiveOnlyToggle}
-                    />
+                    <Switch checked={showLiveOnly} onCheckedChange={handleLiveOnlyToggle} />
                   </div>
                   <Select value={supportType} onValueChange={handleSupportTypeChange}>
                     <SelectTrigger className="w-full sm:w-[180px] bg-white">
@@ -343,15 +320,9 @@ const Transcripts = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="Product Inquiry">
-                        Product Inquiry
-                      </SelectItem>
-                      <SelectItem value="Technical Support">
-                        Technical Support
-                      </SelectItem>
-                      <SelectItem value="Billing Question">
-                        Billing Questions
-                      </SelectItem>
+                      <SelectItem value="Product Inquiry">Product Inquiry</SelectItem>
+                      <SelectItem value="Technical Support">Technical Support</SelectItem>
+                      <SelectItem value="Billing Question">Billing Questions</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -364,33 +335,21 @@ const Transcripts = () => {
               </div>
 
               <div className="w-full flex flex-wrap items-center justify-between gap-2">
-                <Tabs
-                  value={activeTab}
-                  className="flex-1 min-w-0"
-                  onValueChange={handleSentimentChange}
-                >
+                <Tabs value={activeTab} className="flex-1 min-w-0" onValueChange={handleSentimentChange}>
                   <TabsList className="w-full flex-wrap justify-start gap-2">
                     <TabsTrigger value="all" className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4" />
                       All
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="positive"
-                      className="flex items-center gap-2"
-                    >
+                    <TabsTrigger value="positive" className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500" />
                       Positive
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="neutral"
-                      className="flex items-center gap-2"
-                    >
+                    <TabsTrigger value="neutral" className="flex items-center gap-2">
                       <MinusCircle className="w-4 h-4 text-yellow-500" />
                       Neutral
                     </TabsTrigger>
-                    <TabsTrigger
-                    value="negative"
-                    className="flex items-center gap-2">
+                    <TabsTrigger value="negative" className="flex items-center gap-2">
                       <AlertCircle className="w-4 h-4 text-orange-400" />
                       Bad
                     </TabsTrigger>
@@ -403,8 +362,8 @@ const Transcripts = () => {
                         type="button"
                         className={`flex h-10 shrink-0 items-center justify-between gap-2 rounded-full border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 ${
                           activeSort
-                            ? "min-w-[200px] border-zinc-300 bg-zinc-100 text-foreground"
-                            : "min-w-[140px] w-[200px] border-input bg-white"
+                            ? 'min-w-[200px] border-zinc-300 bg-zinc-100 text-foreground'
+                            : 'min-w-[140px] w-[200px] border-input bg-white'
                         }`}
                       >
                         <span className="flex min-w-0 items-center gap-2">
@@ -424,8 +383,8 @@ const Transcripts = () => {
                       {activeSort && (
                         <DropdownMenuItem
                           onClick={() => {
-                            setOrderBy("");
-                            setSortDirection("desc");
+                            setOrderBy('');
+                            setSortDirection('desc');
                             setCurrentPage(1);
                             updateUrlParams({ page: 1 });
                           }}
@@ -440,10 +399,10 @@ const Transcripts = () => {
                           Thumbs Down
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                          <DropdownMenuItem onClick={() => applySort("thumbs_down_count", "desc")}>
+                          <DropdownMenuItem onClick={() => applySort('thumbs_down_count', 'desc')}>
                             High to low
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => applySort("thumbs_down_count", "asc")}>
+                          <DropdownMenuItem onClick={() => applySort('thumbs_down_count', 'asc')}>
                             Low to high
                           </DropdownMenuItem>
                         </DropdownMenuSubContent>
@@ -454,10 +413,10 @@ const Transcripts = () => {
                           Thumbs Up
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                          <DropdownMenuItem onClick={() => applySort("thumbs_up_count", "desc")}>
+                          <DropdownMenuItem onClick={() => applySort('thumbs_up_count', 'desc')}>
                             High to low
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => applySort("thumbs_up_count", "asc")}>
+                          <DropdownMenuItem onClick={() => applySort('thumbs_up_count', 'asc')}>
                             Low to high
                           </DropdownMenuItem>
                         </DropdownMenuSubContent>
@@ -474,10 +433,7 @@ const Transcripts = () => {
                         disabled={loading}
                         aria-label="Refresh conversations"
                       >
-                        <RefreshCw
-                          className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-                          aria-hidden
-                        />
+                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -489,13 +445,9 @@ const Transcripts = () => {
 
               <Card className="divide-y bg-white">
                 {loading ? (
-                  <p className="text-center text-gray-500 p-6">
-                    Loading transcripts...
-                  </p>
+                  <p className="text-center text-gray-500 p-6">Loading transcripts...</p>
                 ) : error ? (
-                  <p className="text-center text-red-500 p-6">
-                    Error loading transcripts. Please try again.
-                  </p>
+                  <p className="text-center text-red-500 p-6">Error loading transcripts. Please try again.</p>
                 ) : paginatedTranscripts.length > 0 ? (
                   paginatedTranscripts.map((transcript) => (
                     <div
@@ -508,90 +460,85 @@ const Transcripts = () => {
                       className="p-6 cursor-pointer transition-colors hover:bg-gray-50"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <div className="flex items-start space-x-4 min-w-0">
-                        {isCallTranscript(transcript) ? (
-                          <PlayCircle className="w-6 h-6 text-primary mt-1" />
-                        ) : (
-                          <MessageSquare className="w-6 h-6 text-primary mt-1" />
-                        )}
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-semibold">
-                              {isCallTranscript(transcript) ? "Call" : "Chat"} #
-                              {(transcript?.metadata?.title ?? "----").slice(-4) || "Untitled"}{" - "} 
-                              {transcript?.metadata?.topic}
-                            </h3>
-                            {isLiveTranscript(transcript) && (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 animate-pulse">
-                                <Radio className="w-3 h-3" />
-                                <span>Live</span>
-                              </Badge>
-                            )}
+                        <div className="flex items-start space-x-4 min-w-0">
+                          {isCallTranscript(transcript) ? (
+                            <PlayCircle className="w-6 h-6 text-primary mt-1" />
+                          ) : (
+                            <MessageSquare className="w-6 h-6 text-primary mt-1" />
+                          )}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-semibold">
+                                {isCallTranscript(transcript) ? 'Call' : 'Chat'} #
+                                {(transcript?.metadata?.title ?? '----').slice(-4) || 'Untitled'}
+                                {' - '}
+                                {transcript?.metadata?.topic}
+                              </h3>
+                              {isLiveTranscript(transcript) && (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 animate-pulse"
+                                >
+                                  <Radio className="w-3 h-3" />
+                                  <span>Live</span>
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Duration: {formatDuration(transcript?.metadata?.duration ?? 0)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Date: {transcript?.timestamp ? new Date(transcript.timestamp).toLocaleString() : 'N/A'}
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Duration: {formatDuration(transcript?.metadata?.duration ?? 0)}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Date:{" "}
-                            {transcript?.timestamp
-                              ? new Date(transcript.timestamp).toLocaleString()
-                              : "N/A"}
-                          </p>
                         </div>
-                      </div>
                         <div className="text-right flex items-center gap-2 sm:justify-end flex-wrap mt-2 sm:mt-0">
                           <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full">
-                            {transcript?.feedback && transcript.feedback.length > 0 && (() => {
-                              const latestFeedback = transcript.feedback[transcript.feedback.length - 1];
-                              const isGoodFeedback = latestFeedback.feedback === "good";
-                              const message = latestFeedback.feedback_message?.trim() || "";
-                              const tooltipText = message
-                                ? `Supervisor feedback: ${message}`
-                                : "Supervisor feedback.";
-                              return (
-                                <>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="inline-flex cursor-default">
-                                        {isGoodFeedback ? (
-                                          <ThumbsUp className="w-3 h-3 text-green-600 shrink-0 fill-current" />
-                                        ) : (
-                                          <ThumbsDown className="w-3 h-3 text-red-600 shrink-0 fill-current" />
-                                        )}
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      {tooltipText}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                  <span className="mx-1 h-3 w-px bg-gray-300 shrink-0" aria-hidden />
-                                </>
-                              );
-                            })()}
+                            {transcript?.feedback &&
+                              transcript.feedback.length > 0 &&
+                              (() => {
+                                const latestFeedback = transcript.feedback[transcript.feedback.length - 1];
+                                const isGoodFeedback = latestFeedback.feedback === 'good';
+                                const message = latestFeedback.feedback_message?.trim() || '';
+                                const tooltipText = message
+                                  ? `Supervisor feedback: ${message}`
+                                  : 'Supervisor feedback.';
+                                return (
+                                  <>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="inline-flex cursor-default">
+                                          {isGoodFeedback ? (
+                                            <ThumbsUp className="w-3 h-3 text-green-600 shrink-0 fill-current" />
+                                          ) : (
+                                            <ThumbsDown className="w-3 h-3 text-red-600 shrink-0 fill-current" />
+                                          )}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>{tooltipText}</TooltipContent>
+                                    </Tooltip>
+                                    <span className="mx-1 h-3 w-px bg-gray-300 shrink-0" aria-hidden />
+                                  </>
+                                );
+                              })()}
                             <ThumbsUp className="w-3 h-3 text-green-600 shrink-0" />
-                            <span className="text-xs text-gray-700">
-                              {transcript?.thumbs_up_count ?? 0}
-                            </span>
+                            <span className="text-xs text-gray-700">{transcript?.thumbs_up_count ?? 0}</span>
                             <ThumbsDown className="w-3 h-3 text-red-600 ml-0.5 shrink-0" />
-                            <span className="text-xs text-gray-700">
-                              {transcript?.thumbs_down_count ?? 0}
-                            </span>
+                            <span className="text-xs text-gray-700">{transcript?.thumbs_down_count ?? 0}</span>
                           </div>
                           <span
                             className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getSentimentStyles(
-                              transcript ? getEffectiveSentiment(transcript) : ""
+                              transcript ? getEffectiveSentiment(transcript) : ''
                             )}`}
                           >
-                            {transcript ? getEffectiveSentiment(transcript) : "Unknown"}
+                            {transcript ? getEffectiveSentiment(transcript) : 'Unknown'}
                           </span>
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                    <p className="text-center text-gray-500 p-6">
-                      No transcripts found. Try adjusting your filters.
-                    </p>
+                  <p className="text-center text-gray-500 p-6">No transcripts found. Try adjusting your filters.</p>
                 )}
               </Card>
 
@@ -606,24 +553,17 @@ const Transcripts = () => {
           </div>
         </main>
       </div>
-      <UploadMediaDialog
-        isOpen={isUploadDialogOpen}
-        onOpenChange={setIsUploadDialogOpen}
-      />
+      <UploadMediaDialog isOpen={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen} />
       {isLiveTranscriptSelected ? (
-        <ActiveConversationDialog 
-          transcript={selectedTranscript} 
-          isOpen={isModalOpen} 
+        <ActiveConversationDialog
+          transcript={selectedTranscript}
+          isOpen={isModalOpen}
           onOpenChange={setIsModalOpen}
           refetchConversations={refetch}
           onTakeOver={handleTakeOver}
         />
       ) : (
-        <TranscriptDialog 
-          transcript={selectedTranscript} 
-          isOpen={isModalOpen} 
-          onOpenChange={setIsModalOpen} 
-        />
+        <TranscriptDialog transcript={selectedTranscript} isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
       )}
     </SidebarProvider>
   );

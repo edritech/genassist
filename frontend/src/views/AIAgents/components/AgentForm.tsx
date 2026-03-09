@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import {
   createAgentConfig,
   getAgentConfig,
@@ -8,21 +8,14 @@ import {
   uploadWelcomeImage,
   getWelcomeImage,
   deleteWelcomeImage,
-} from "@/services/api";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { ChevronLeft, CheckCircle2, Trash2, Plus, HelpCircle, MessageSquare, X } from "lucide-react";
+} from '@/services/api';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { ChevronLeft, CheckCircle2, Trash2, Plus, HelpCircle, MessageSquare, X } from 'lucide-react';
 // import { createWorkflow, updateWorkflow } from "@/services/workflows";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetClose,
-} from "@/components/sheet";
-import { Textarea } from "@/components/textarea";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/sheet';
+import { Textarea } from '@/components/textarea';
 
 interface AgentFormData {
   id?: string;
@@ -63,24 +56,21 @@ const AgentForm: React.FC<AgentFormProps> = ({
   const id = data?.id;
   const navigate = useNavigate();
   const isEditMode = !!id;
-  const cleanedQueries =
-    data?.possible_queries?.filter((q) => q.trim() !== "") ?? [];
-  const cleanedThinkingPhrases =
-    data?.thinking_phrases?.filter((p) => p.trim() !== "") ?? [];
+  const cleanedQueries = data?.possible_queries?.filter((q) => q.trim() !== '') ?? [];
+  const cleanedThinkingPhrases = data?.thinking_phrases?.filter((p) => p.trim() !== '') ?? [];
 
   const [formData, setFormData] = useState<AgentFormData>({
     ...(data || {
-      name: "",
-      description: "",
-      welcome_message: "",
-      welcome_title: "",
+      name: '',
+      description: '',
+      welcome_message: '',
+      welcome_title: '',
       thinking_phrase_delay: 0,
       possible_queries: [],
       thinking_phrases: [],
     }),
     possible_queries: cleanedQueries.length > 0 ? cleanedQueries : [],
-    thinking_phrases:
-      cleanedThinkingPhrases.length > 0 ? cleanedThinkingPhrases : [],
+    thinking_phrases: cleanedThinkingPhrases.length > 0 ? cleanedThinkingPhrases : [],
   });
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -109,16 +99,13 @@ const AgentForm: React.FC<AgentFormProps> = ({
     loadExistingImage();
   }, [isEditMode, id, data?.has_welcome_image]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "thinking_phrase_delay" ? Number(value) || 0 : value,
+      [name]: name === 'thinking_phrase_delay' ? Number(value) || 0 : value,
     }));
   };
-
 
   const handlePossibleQueryChange = (index: number, value: string) => {
     setFormData((prev) => {
@@ -134,7 +121,7 @@ const AgentForm: React.FC<AgentFormProps> = ({
   const addPossibleQuery = () => {
     setFormData((prev) => ({
       ...prev,
-      possible_queries: [...prev.possible_queries, ""],
+      possible_queries: [...prev.possible_queries, ''],
     }));
   };
 
@@ -163,7 +150,7 @@ const AgentForm: React.FC<AgentFormProps> = ({
   const addThinkingPhrase = () => {
     setFormData((prev) => ({
       ...prev,
-      thinking_phrases: [...prev.thinking_phrases, ""],
+      thinking_phrases: [...prev.thinking_phrases, ''],
     }));
   };
 
@@ -195,7 +182,7 @@ const AgentForm: React.FC<AgentFormProps> = ({
       // If we're in edit mode and there was an existing image, delete it from the server
       if (isEditMode && id) {
         await deleteWelcomeImage(id);
-        toast.success("Welcome image removed successfully.");
+        toast.success('Welcome image removed successfully.');
       }
     } catch (error) {
       // Don't show error toast since the image might not exist
@@ -206,14 +193,14 @@ const AgentForm: React.FC<AgentFormProps> = ({
 
   const processFile = (file: File) => {
     // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file.");
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file.');
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image file too large. Maximum size is 5MB.");
+      toast.error('Image file too large. Maximum size is 5MB.');
       return;
     }
 
@@ -251,20 +238,18 @@ const AgentForm: React.FC<AgentFormProps> = ({
     e.preventDefault();
 
     const requiredFields = [
-      { label: "Name", isEmpty: !formData.name },
-      { label: "Description", isEmpty: !formData.description },
-      { label: "Welcome Message", isEmpty: !formData.welcome_message },
+      { label: 'Name', isEmpty: !formData.name },
+      { label: 'Description', isEmpty: !formData.description },
+      { label: 'Welcome Message', isEmpty: !formData.welcome_message },
     ];
 
-    const missingFields = requiredFields
-      .filter((field) => field.isEmpty)
-      .map((field) => field.label);
+    const missingFields = requiredFields.filter((field) => field.isEmpty).map((field) => field.label);
 
     if (missingFields.length > 0) {
       if (missingFields.length === 1) {
         toast.error(`${missingFields[0]} is required.`);
       } else {
-        toast.error(`Please provide: ${missingFields.join(", ")}.`);
+        toast.error(`Please provide: ${missingFields.join(', ')}.`);
       }
       return;
     }
@@ -303,31 +288,22 @@ const AgentForm: React.FC<AgentFormProps> = ({
         setImageLoading(true);
         try {
           await uploadWelcomeImage(agentId, imageFile);
-          toast.success("Welcome image uploaded successfully.");
+          toast.success('Welcome image uploaded successfully.');
         } catch (error) {
-          toast.error("Failed to upload welcome image.");
+          toast.error('Failed to upload welcome image.');
         } finally {
           setImageLoading(false);
         }
       }
 
-      toast.success(
-        `Workflow ${isEditMode ? "updated" : "created"} successfully.`
-      );
+      toast.success(`Workflow ${isEditMode ? 'updated' : 'created'} successfully.`);
     } catch (err: unknown) {
-      let errorMessage =
-        err instanceof Error ? err.message : "Unknown error occurred.";
+      let errorMessage = err instanceof Error ? err.message : 'Unknown error occurred.';
 
-      if (
-        (errorMessage.includes("email") && errorMessage.includes("exist")) ||
-        errorMessage.includes("400")
-      )
-        errorMessage = "An agent with this name already exists.";
+      if ((errorMessage.includes('email') && errorMessage.includes('exist')) || errorMessage.includes('400'))
+        errorMessage = 'An agent with this name already exists.';
 
-      toast.error(
-        `Failed to ${isEditMode ? "update" : "create"} agent: ${errorMessage}`
-      );
-
+      toast.error(`Failed to ${isEditMode ? 'update' : 'create'} agent: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -338,15 +314,13 @@ const AgentForm: React.FC<AgentFormProps> = ({
       {success && (
         <div className="flex items-center gap-2 p-3 text-green-600 bg-green-50 rounded-md">
           <CheckCircle2 className="h-4 w-4" />
-          <p className="text-sm font-medium">
-            Agent successfully {isEditMode ? "updated" : "created"}!
-          </p>
+          <p className="text-sm font-medium">Agent successfully {isEditMode ? 'updated' : 'created'}!</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} id={formId}>
         <div className="space-y-6">
-          <div className={`${plain ? "" : "rounded-lg border bg-white p-6 "}`}>
+          <div className={`${plain ? '' : 'rounded-lg border bg-white p-6 '}`}>
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Workflow Name</Label>
@@ -386,8 +360,8 @@ const AgentForm: React.FC<AgentFormProps> = ({
                         htmlFor="welcome_image"
                         className={`relative flex flex-col items-center justify-center w-full p-8 border-2 border-dashed rounded-xl transition-all duration-200 cursor-pointer overflow-hidden ${
                           isDragOver
-                            ? "border-primary bg-primary/10 shadow-lg shadow-primary/20 scale-[1.02]"
-                            : "border-border bg-gradient-to-br from-muted/30 to-muted/10 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md"
+                            ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20 scale-[1.02]'
+                            : 'border-border bg-gradient-to-br from-muted/30 to-muted/10 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md'
                         }`}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
@@ -401,13 +375,13 @@ const AgentForm: React.FC<AgentFormProps> = ({
                           <div
                             className={`relative w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${
                               isDragOver
-                                ? "bg-primary/20 scale-110 shadow-lg shadow-primary/30"
-                                : "bg-primary/10 group-hover:bg-primary/15 group-hover:scale-105"
+                                ? 'bg-primary/20 scale-110 shadow-lg shadow-primary/30'
+                                : 'bg-primary/10 group-hover:bg-primary/15 group-hover:scale-105'
                             }`}
                           >
                             <svg
                               className={`w-8 h-8 transition-all duration-300 ${
-                                isDragOver ? "text-primary scale-110" : "text-primary/80 group-hover:text-primary"
+                                isDragOver ? 'text-primary scale-110' : 'text-primary/80 group-hover:text-primary'
                               }`}
                               fill="none"
                               stroke="currentColor"
@@ -431,14 +405,12 @@ const AgentForm: React.FC<AgentFormProps> = ({
                           <div className="text-center space-y-1.5">
                             <p
                               className={`text-base font-semibold transition-colors duration-200 ${
-                                isDragOver ? "text-primary" : "text-foreground/90 group-hover:text-primary"
+                                isDragOver ? 'text-primary' : 'text-foreground/90 group-hover:text-primary'
                               }`}
                             >
-                              {isDragOver ? "Drop your image here" : "Choose a file or drag & drop"}
+                              {isDragOver ? 'Drop your image here' : 'Choose a file or drag & drop'}
                             </p>
-                            <p className="text-sm text-muted-foreground">
-                              Click to select or drag and drop
-                            </p>
+                            <p className="text-sm text-muted-foreground">Click to select or drag and drop</p>
                             <div className="flex items-center justify-center gap-2 pt-2">
                               <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-background/80 border text-xs font-medium text-muted-foreground">
                                 PNG, JPG, GIF
@@ -485,7 +457,7 @@ const AgentForm: React.FC<AgentFormProps> = ({
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-foreground truncate mb-1">
-                                  {imageFile?.name || "Welcome image"}
+                                  {imageFile?.name || 'Welcome image'}
                                 </p>
                                 {imageFile && (
                                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -519,12 +491,7 @@ const AgentForm: React.FC<AgentFormProps> = ({
                             size="sm"
                             className="w-full relative z-0 hover:bg-primary/5 hover:border-primary/50 hover:text-primary transition-colors"
                           >
-                            <svg
-                              className="w-4 h-4 mr-2"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -572,9 +539,7 @@ const AgentForm: React.FC<AgentFormProps> = ({
                 <div className="flex items-center justify-between px-4 py-3 bg-muted/30">
                   <div className="flex items-center gap-2">
                     <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">
-                      Frequently Asked Questions
-                    </span>
+                    <span className="text-sm font-medium">Frequently Asked Questions</span>
                     {formData.possible_queries.length > 0 && (
                       <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                         {formData.possible_queries.length}
@@ -596,14 +561,10 @@ const AgentForm: React.FC<AgentFormProps> = ({
                   <div className="px-4 py-3 space-y-3 bg-white">
                     {formData.possible_queries.map((query, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground w-5 text-center">
-                          {index + 1}.
-                        </span>
+                        <span className="text-xs text-muted-foreground w-5 text-center">{index + 1}.</span>
                         <Input
                           value={query}
-                          onChange={(e) =>
-                            handlePossibleQueryChange(index, e.target.value)
-                          }
+                          onChange={(e) => handlePossibleQueryChange(index, e.target.value)}
                           placeholder="Enter a sample query"
                           className="flex-1"
                         />
@@ -632,9 +593,7 @@ const AgentForm: React.FC<AgentFormProps> = ({
                 <div className="flex items-center justify-between px-4 py-3 bg-muted/30">
                   <div className="flex items-center gap-2">
                     <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">
-                      Thinking Phrases
-                    </span>
+                    <span className="text-sm font-medium">Thinking Phrases</span>
                     {formData.thinking_phrases.length > 0 && (
                       <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                         {formData.thinking_phrases.length}
@@ -659,14 +618,10 @@ const AgentForm: React.FC<AgentFormProps> = ({
                     </p>
                     {formData.thinking_phrases.map((phrase, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground w-5 text-center">
-                          {index + 1}.
-                        </span>
+                        <span className="text-xs text-muted-foreground w-5 text-center">{index + 1}.</span>
                         <Input
                           value={phrase}
-                          onChange={(e) =>
-                            handleThinkingPhraseChange(index, e.target.value)
-                          }
+                          onChange={(e) => handleThinkingPhraseChange(index, e.target.value)}
                           placeholder="I think...|Getting the data..."
                           className="flex-1"
                         />
@@ -710,20 +665,12 @@ const AgentForm: React.FC<AgentFormProps> = ({
 
           {/* Submit buttons */}
           {!hideButtons && (
-            <div
-              className={`flex justify-end gap-3 ${
-                plain ? "pt-6 mt-2 border-t" : ""
-              }`}
-            >
+            <div className={`flex justify-end gap-3 ${plain ? 'pt-6 mt-2 border-t' : ''}`}>
               <Button type="button" variant="outline" onClick={() => onClose?.()}>
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading
-                  ? "Saving..."
-                  : isEditMode
-                  ? "Update Agent"
-                  : "Create Agent"}
+                {loading ? 'Saving...' : isEditMode ? 'Update Agent' : 'Create Agent'}
               </Button>
             </div>
           )}
@@ -740,8 +687,8 @@ export const AgentFormPage: React.FC = () => {
   const isEditMode = !!id;
   const [formData, setFormData] = useState<AgentFormData>({
     id: isEditMode ? id : undefined,
-    name: "",
-    description: "",
+    name: '',
+    description: '',
     welcome_message: undefined,
     welcome_title: undefined,
     thinking_phrase_delay: undefined,
@@ -758,23 +705,20 @@ export const AgentFormPage: React.FC = () => {
         try {
           setLoading(true);
           const config = await getAgentConfig(id);
-          const cleanedQueries = config.possible_queries?.filter(
-            (q) => q.trim() !== ""
-          );
+          const cleanedQueries = config.possible_queries?.filter((q) => q.trim() !== '');
           const cleanedThinkingPhrases = Array.isArray(config.thinking_phrases)
-            ? config.thinking_phrases.filter((p) => p.trim() !== "")
+            ? config.thinking_phrases.filter((p) => p.trim() !== '')
             : [];
 
           setFormData({
             ...config,
             possible_queries: cleanedQueries.length > 0 ? cleanedQueries : [],
-            thinking_phrases:
-              cleanedThinkingPhrases.length > 0 ? cleanedThinkingPhrases : [],
+            thinking_phrases: cleanedThinkingPhrases.length > 0 ? cleanedThinkingPhrases : [],
           });
 
           setError(null);
         } catch (err) {
-          setError("Failed to load agent configuration");
+          setError('Failed to load agent configuration');
         } finally {
           setLoading(false);
         }
@@ -788,16 +732,11 @@ export const AgentFormPage: React.FC = () => {
       <div className="dashboard max-w-7xl mx-auto space-y-6 pt-8">
         <div className="space-y-8">
           <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/ai-agents")}
-              className="mr-2"
-            >
+            <Button variant="ghost" size="icon" onClick={() => navigate('/ai-agents')} className="mr-2">
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <h2 className="text-2xl font-bold tracking-tight">
-              {isEditMode ? "Edit Workflow" : "Create New Workflow"}
+              {isEditMode ? 'Edit Workflow' : 'Create New Workflow'}
             </h2>
           </div>
           <AgentForm data={formData} />
@@ -816,14 +755,8 @@ interface AgentDialogProps {
   onCreated?: (agentId: string) => void;
 }
 
-export const AgentFormDialog = ({
-  isOpen,
-  onClose,
-  data,
-  redirectOnCreate,
-  onCreated,
-}: AgentDialogProps) => {
-  const formId = "agent-form-dialog";
+export const AgentFormDialog = ({ isOpen, onClose, data, redirectOnCreate, onCreated }: AgentDialogProps) => {
+  const formId = 'agent-form-dialog';
   const isEditMode = !!data?.id;
 
   // Prevent body scroll when dialog is open
@@ -842,16 +775,20 @@ export const AgentFormDialog = ({
 
   return (
     <Sheet open={isOpen} modal={false}>
-      <SheetContent hideOverlay={true} hideDefaultClose={true} className="sm:max-w-lg w-full flex flex-col p-0 top-2 right-2 h-[calc(100vh-1rem)] rounded-2xl border-2 shadow-2xl data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-right-full">
+      <SheetContent
+        hideOverlay={true}
+        hideDefaultClose={true}
+        className="sm:max-w-lg w-full flex flex-col p-0 top-2 right-2 h-[calc(100vh-1rem)] rounded-2xl border-2 shadow-2xl data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-right-full"
+      >
         <SheetHeader className="p-6 pb-4 border-b shrink-0 flex flex-row">
           <SheetTitle className="text-xl font-semibold truncate">
-            {data?.id ? `Edit (${data?.name})` : "Create New Agent"}
+            {data?.id ? `Edit (${data?.name})` : 'Create New Agent'}
 
-          <SheetDescription>
-            {data?.id
-              ? "Update your agent's configuration and settings."
-              : "Configure your new AI agent with a name, description, and welcome settings."}
-          </SheetDescription>
+            <SheetDescription>
+              {data?.id
+                ? "Update your agent's configuration and settings."
+                : 'Configure your new AI agent with a name, description, and welcome settings.'}
+            </SheetDescription>
           </SheetTitle>
           <SheetClose className="ml-auto self-start" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -874,7 +811,7 @@ export const AgentFormDialog = ({
             Cancel
           </Button>
           <Button type="submit" form={formId}>
-            {isEditMode ? `Update Agent` : "Create Agent"}
+            {isEditMode ? `Update Agent` : 'Create Agent'}
           </Button>
         </div>
       </SheetContent>

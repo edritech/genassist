@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface CollapsibleSectionProps {
   title: string;
@@ -7,12 +7,7 @@ interface CollapsibleSectionProps {
   children: React.ReactNode;
 }
 
-export function CollapsibleSection({
-  title,
-  open,
-  onOpenChange,
-  children,
-}: CollapsibleSectionProps) {
+export function CollapsibleSection({ title, open, onOpenChange, children }: CollapsibleSectionProps) {
   return (
     <div className="border border-border rounded-lg overflow-hidden">
       <button

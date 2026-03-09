@@ -1,8 +1,9 @@
-from typing import Optional, Dict, List, Literal
-from uuid import UUID
-from fastapi import Form, UploadFile
-from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
+from typing import Dict, List, Literal, Optional
+from uuid import UUID
+
+from fastapi import Form
+from pydantic import BaseModel, ConfigDict, Field
 
 StorageProviderType = Literal["local", "s3", "azure", "gcs", "sharepoint"]
 
@@ -36,8 +37,8 @@ class FileBase(BaseModel):
         description: Optional[str] = Form(None),
         file_metadata: Optional[str] = Form(None),  # or JSON → str, then parse
         file_extension: Optional[str] = Form(None),
-        tags: Optional[str] = Form(None),           # e.g. JSON string, then parse
-        permissions: Optional[str] = Form(None),    # same
+        tags: Optional[str] = Form(None),  # e.g. JSON string, then parse
+        permissions: Optional[str] = Form(None),  # same
     ) -> "FileBase":
         # Optionally parse JSON strings for file_metadata, tags, permissions here
         return cls(
@@ -55,12 +56,14 @@ class FileBase(BaseModel):
             permissions=permissions,
         )
 
+
 class FileResponse(FileBase):
     id: UUID
     created_at: datetime
     updated_at: datetime
     is_deleted: int
     model_config = ConfigDict(from_attributes=True)
+
 
 class FileUploadResponse(BaseModel):
     original_filename: str = Field(..., description="Original file name")

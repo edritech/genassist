@@ -1,17 +1,16 @@
 import pytest
 
+
 @pytest.fixture(scope="module")
 def new_app_setting_data():
     return {
         "name": "Test Integration",
         "type": "Other",
-        "values": {
-            "test_key": "test_value",
-            "another_key": "another_value"
-        },
+        "values": {"test_key": "test_value", "another_key": "another_value"},
         "description": "Test app setting for integration tests",
-        "is_active": 1
+        "is_active": 1,
     }
+
 
 @pytest.mark.asyncio
 async def test_create_app_setting(authorized_client, new_app_setting_data):
@@ -23,6 +22,7 @@ async def test_create_app_setting(authorized_client, new_app_setting_data):
     assert data["type"] == new_app_setting_data["type"]
     assert data["values"] == new_app_setting_data["values"]
     new_app_setting_data["id"] = data["id"]
+
 
 @pytest.mark.asyncio
 async def test_get_all_app_settings(authorized_client):
@@ -39,6 +39,7 @@ async def test_get_all_app_settings(authorized_client):
         assert "values" in item
         assert isinstance(item["values"], dict)
 
+
 @pytest.mark.asyncio
 async def test_get_app_setting_by_id(authorized_client, new_app_setting_data):
     setting_id = new_app_setting_data["id"]
@@ -49,6 +50,7 @@ async def test_get_app_setting_by_id(authorized_client, new_app_setting_data):
     assert data["name"] == new_app_setting_data["name"]
     assert data["type"] == new_app_setting_data["type"]
     assert data["values"] == new_app_setting_data["values"]
+
 
 @pytest.mark.asyncio
 async def test_get_schemas_endpoint(authorized_client):
@@ -69,16 +71,14 @@ async def test_get_schemas_endpoint(authorized_client):
         assert "fields" in zendesk_schema
         assert isinstance(zendesk_schema["fields"], list)
 
+
 @pytest.mark.asyncio
 async def test_update_app_setting(authorized_client, new_app_setting_data):
     setting_id = new_app_setting_data["id"]
     update_payload = {
-        "values": {
-            "test_key": "updated_value",
-            "another_key": "another_value"
-        },
+        "values": {"test_key": "updated_value", "another_key": "another_value"},
         "description": "Updated description",
-        "is_active": 0
+        "is_active": 0,
     }
     response = authorized_client.patch(f"/api/app-settings/{setting_id}", json=update_payload)
     assert response.status_code == 200
@@ -87,6 +87,7 @@ async def test_update_app_setting(authorized_client, new_app_setting_data):
     assert data["values"] == update_payload["values"]
     assert data["description"] == update_payload["description"]
     assert data["is_active"] == update_payload["is_active"]
+
 
 @pytest.mark.asyncio
 async def test_delete_app_setting(authorized_client, new_app_setting_data):

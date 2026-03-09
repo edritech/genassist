@@ -8,6 +8,7 @@ def register_updated_by_event(model: type):
     """
     Registers a before_update hook for any model that has an `updated_by` field.
     """
+
     @event.listens_for(model, "before_update", propagate=True)
     def set_updated_by(mapper: Mapper, connection, target):
         user_id = get_current_user_id()

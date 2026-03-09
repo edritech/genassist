@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { AgentNodeData, BaseLLMNodeData } from "../types/nodes";
-import { Button } from "@/components/button";
-import { ModelConfiguration } from "../components/ModelConfiguration";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
+import React, { useState, useEffect } from 'react';
+import { AgentNodeData, BaseLLMNodeData } from '../types/nodes';
+import { Button } from '@/components/button';
+import { ModelConfiguration } from '../components/ModelConfiguration';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
 
 type AgentDialogProps = BaseNodeDialogProps<AgentNodeData, BaseLLMNodeData>;
 
@@ -35,9 +35,7 @@ export const AgentDialog: React.FC<AgentDialogProps> = (props) => {
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
-            Save Changes
-          </Button>
+          <Button onClick={handleSave}>Save Changes</Button>
         </>
       }
       {...props}
@@ -46,12 +44,7 @@ export const AgentDialog: React.FC<AgentDialogProps> = (props) => {
         ...config,
       }}
     >
-      <ModelConfiguration
-        id="agent-config"
-        config={config}
-        onConfigChange={setConfig}
-        typeSelect="agent"
-      />
+      <ModelConfiguration id="agent-config" config={config} onConfigChange={setConfig} typeSelect="agent" />
     </NodeConfigPanel>
   );
 };

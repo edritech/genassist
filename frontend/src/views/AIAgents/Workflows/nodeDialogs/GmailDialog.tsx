@@ -1,58 +1,47 @@
-import React, { useState, useEffect, useRef } from "react";
-import { GmailNodeData, GmailOperation } from "../types/nodes";
-import { DataSource } from "@/interfaces/dataSource.interface";
-import { Button } from "@/components/button";
-import { DraggableInput } from "../components/custom/DraggableInput";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { Paperclip, X, Save } from "lucide-react";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
-import { DraggableTextArea } from "../components/custom/DraggableTextArea";
-import { DataSourceDialog } from "@/views/DataSources/components/DataSourceDialog";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
+import React, { useState, useEffect, useRef } from 'react';
+import { GmailNodeData, GmailOperation } from '../types/nodes';
+import { DataSource } from '@/interfaces/dataSource.interface';
+import { Button } from '@/components/button';
+import { DraggableInput } from '../components/custom/DraggableInput';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { Paperclip, X, Save } from 'lucide-react';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
+import { DraggableTextArea } from '../components/custom/DraggableTextArea';
+import { DataSourceDialog } from '@/views/DataSources/components/DataSourceDialog';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
 
-interface GmailDialogProps
-  extends BaseNodeDialogProps<GmailNodeData, GmailNodeData> {
+interface GmailDialogProps extends BaseNodeDialogProps<GmailNodeData, GmailNodeData> {
   connectors: DataSource[];
 }
 
 export const GmailDialog: React.FC<GmailDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate, connectors } = props;
-  const [name, setName] = useState(data.name || "");
-  const [subject, setSubject] = useState(data.subject || "");
-  const [body, setBody] = useState(data.body || "");
-  const [to, setTo] = useState(data.to || "");
-  const [cc, setCc] = useState(data.cc || "");
-  const [bcc, setBcc] = useState(data.bcc || "");
-  const [dataSourceId, setDataSourceId] = useState(
-    data.dataSourceId?.toString() || ""
-  );
+  const [name, setName] = useState(data.name || '');
+  const [subject, setSubject] = useState(data.subject || '');
+  const [body, setBody] = useState(data.body || '');
+  const [to, setTo] = useState(data.to || '');
+  const [cc, setCc] = useState(data.cc || '');
+  const [bcc, setBcc] = useState(data.bcc || '');
+  const [dataSourceId, setDataSourceId] = useState(data.dataSourceId?.toString() || '');
   const [attachments, setAttachments] = useState<string[]>([]);
-  const [operation, setOperation] = useState<GmailOperation>(
-    (data.operation as GmailOperation) || "send_email"
-  );
+  const [operation, setOperation] = useState<GmailOperation>((data.operation as GmailOperation) || 'send_email');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCreateDataSourceOpen, setIsCreateDataSourceOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setSubject(data.subject || "");
-      setBody(data.body || "");
-      setTo(data.to || "");
-      setCc(data.cc || "");
-      setBcc(data.bcc || "");
-      setDataSourceId(data.dataSourceId?.toString() || "");
+      setName(data.name || '');
+      setSubject(data.subject || '');
+      setBody(data.body || '');
+      setTo(data.to || '');
+      setCc(data.cc || '');
+      setBcc(data.bcc || '');
+      setDataSourceId(data.dataSourceId?.toString() || '');
       setAttachments(data.attachments || []);
-      setOperation((data.operation as GmailOperation) || "send_email");
+      setOperation((data.operation as GmailOperation) || 'send_email');
     }
   }, [isOpen, data]);
 
@@ -140,7 +129,7 @@ export const GmailDialog: React.FC<GmailDialogProps> = (props) => {
           <Select
             value={dataSourceId}
             onValueChange={(val) => {
-              if (val === "__create__") {
+              if (val === '__create__') {
                 setIsCreateDataSourceOpen(true);
                 return;
               }
@@ -163,10 +152,7 @@ export const GmailDialog: React.FC<GmailDialogProps> = (props) => {
 
         <div className="space-y-2">
           <Label htmlFor="operation-select">Operation</Label>
-          <Select
-            value={operation}
-            onValueChange={(value) => setOperation(value as GmailOperation)}
-          >
+          <Select value={operation} onValueChange={(value) => setOperation(value as GmailOperation)}>
             <SelectTrigger id="operation-select">
               <SelectValue placeholder="Select operation" />
             </SelectTrigger>
@@ -252,35 +238,18 @@ export const GmailDialog: React.FC<GmailDialogProps> = (props) => {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="font-bold">Attachments</Label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={triggerFileSelect}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={triggerFileSelect}>
               <Paperclip className="h-3 w-3 mr-1" /> Add Files
             </Button>
           </div>
-          <Input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            onChange={handleFileSelect}
-            className="hidden"
-            accept="*/*"
-          />
+          <Input ref={fileInputRef} type="file" multiple onChange={handleFileSelect} className="hidden" accept="*/*" />
           <div className="space-y-2">
             {attachments.length > 0 ? (
               attachments.map((attachment, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-2 bg-muted rounded-md w-full"
-                >
+                <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md w-full">
                   <div className="flex items-center space-x-2 flex-1 min-w-0">
                     <Paperclip className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm font-medium truncate break-all">
-                      {`Attachment ${index + 1}`}
-                    </span>
+                    <span className="text-sm font-medium truncate break-all">{`Attachment ${index + 1}`}</span>
                   </div>
                   <Button
                     type="button"
@@ -298,9 +267,7 @@ export const GmailDialog: React.FC<GmailDialogProps> = (props) => {
                 className="text-center py-5 border-2 border-dashed rounded-md cursor-pointer hover:border-primary/50 transition-colors w-full"
                 onClick={triggerFileSelect}
               >
-                <p className="text-sm text-muted-foreground break-words">
-                  Click to add attachments
-                </p>
+                <p className="text-sm text-muted-foreground break-words">Click to add attachments</p>
               </div>
             )}
           </div>

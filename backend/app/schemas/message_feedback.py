@@ -1,8 +1,8 @@
-from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class MessageFeedbackBase(BaseModel):
@@ -12,17 +12,14 @@ class MessageFeedbackBase(BaseModel):
     feedback_user_id: UUID
     feedback_message: Optional[str] = None
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MessageFeedbackCreate(MessageFeedbackBase):
     pass
 
+
 class MessageFeedbackRead(MessageFeedbackBase):
     id: UUID
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)

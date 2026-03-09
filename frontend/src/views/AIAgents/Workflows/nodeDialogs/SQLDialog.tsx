@@ -1,63 +1,51 @@
-import React, { useState, useEffect } from "react";
-import { SQLNodeData, SQLMode } from "../types/nodes";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { DataSource } from "@/interfaces/dataSource.interface";
-import { LLMProvider } from "@/interfaces/llmProvider.interface";
-import { getAllDataSources } from "@/services/dataSources";
-import { getAllLLMProviders } from "@/services/llmProviders";
-import { useToast } from "@/components/use-toast";
-import { Save } from "lucide-react";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
-import { DraggableTextArea } from "../components/custom/DraggableTextArea";
-import { DraggableInput } from "../components/custom/DraggableInput";
-import { LLMProviderDialog } from "@/views/LlmProviders/components/LLMProviderDialog";
-import { DataSourceDialog } from "@/views/DataSources/components/DataSourceDialog";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
+import React, { useState, useEffect } from 'react';
+import { SQLNodeData, SQLMode } from '../types/nodes';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { DataSource } from '@/interfaces/dataSource.interface';
+import { LLMProvider } from '@/interfaces/llmProvider.interface';
+import { getAllDataSources } from '@/services/dataSources';
+import { getAllLLMProviders } from '@/services/llmProviders';
+import { useToast } from '@/components/use-toast';
+import { Save } from 'lucide-react';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
+import { DraggableTextArea } from '../components/custom/DraggableTextArea';
+import { DraggableInput } from '../components/custom/DraggableInput';
+import { LLMProviderDialog } from '@/views/LlmProviders/components/LLMProviderDialog';
+import { DataSourceDialog } from '@/views/DataSources/components/DataSourceDialog';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
 
 type SQLDialogProps = BaseNodeDialogProps<SQLNodeData, SQLNodeData>;
 
 export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
 
-  const [name, setName] = useState(data.name || "");
-  const [dataSourceId, setDatasourceId] = useState(data.dataSourceId || "");
+  const [name, setName] = useState(data.name || '');
+  const [dataSourceId, setDatasourceId] = useState(data.dataSourceId || '');
   const [mode, setMode] = useState<SQLMode | undefined>(undefined);
-  const [sqlQuery, setSqlQuery] = useState("");
-  const [providerId, setProviderId] = useState(data.providerId || "");
-  const [systemPrompt, setSystemPrompt] = useState(data.systemPrompt || "");
-  const [humanQuery, setHumanQuery] = useState("");
-  const [parameters, setParameters] = useState<Record<string, string>>(
-    data.parameters || {},
-  );
-  const [availableProviders, setAvailableProviders] = useState<LLMProvider[]>(
-    [],
-  );
-  const [availableDataSources, setAvailableDataSources] = useState<
-    DataSource[]
-  >([]);
+  const [sqlQuery, setSqlQuery] = useState('');
+  const [providerId, setProviderId] = useState(data.providerId || '');
+  const [systemPrompt, setSystemPrompt] = useState(data.systemPrompt || '');
+  const [humanQuery, setHumanQuery] = useState('');
+  const [parameters, setParameters] = useState<Record<string, string>>(data.parameters || {});
+  const [availableProviders, setAvailableProviders] = useState<LLMProvider[]>([]);
+  const [availableDataSources, setAvailableDataSources] = useState<DataSource[]>([]);
   const { toast } = useToast();
   const [isCreateProviderOpen, setIsCreateProviderOpen] = useState(false);
   const [isCreateDataSourceOpen, setIsCreateDataSourceOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setDatasourceId(data.dataSourceId || "");
+      setName(data.name || '');
+      setDatasourceId(data.dataSourceId || '');
       setMode(data.mode || undefined);
-      setSqlQuery(data.sqlQuery || "");
-      setProviderId(data.providerId || "");
-      setSystemPrompt(data.systemPrompt || "");
-      setHumanQuery(data.humanQuery || "");
+      setSqlQuery(data.sqlQuery || '');
+      setProviderId(data.providerId || '');
+      setSystemPrompt(data.systemPrompt || '');
+      setHumanQuery(data.humanQuery || '');
       setParameters(data.parameters || {});
 
       loadProviders();
@@ -71,9 +59,9 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
       setAvailableProviders(providers.filter((p) => p.is_active === 1));
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Failed to load LLM providers",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load LLM providers',
+        variant: 'destructive',
       });
     }
   };
@@ -84,19 +72,19 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
       // Filter for database-type data sources
       const dbDataSources = dataSources.filter(
         (ds) =>
-          ds.source_type.toLowerCase().includes("sql") ||
-          ds.source_type.toLowerCase().includes("database") ||
-          ds.source_type.toLowerCase().includes("mysql") ||
-          ds.source_type.toLowerCase().includes("postgres") ||
-          ds.source_type.toLowerCase().includes("sqlite") ||
-          ds.source_type.toLowerCase().includes("snowflake"),
+          ds.source_type.toLowerCase().includes('sql') ||
+          ds.source_type.toLowerCase().includes('database') ||
+          ds.source_type.toLowerCase().includes('mysql') ||
+          ds.source_type.toLowerCase().includes('postgres') ||
+          ds.source_type.toLowerCase().includes('sqlite') ||
+          ds.source_type.toLowerCase().includes('snowflake')
       );
       setAvailableDataSources(dbDataSources);
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Failed to load data sources",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load data sources',
+        variant: 'destructive',
       });
     }
   };
@@ -160,9 +148,9 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
           <div className="space-y-2">
             <Label htmlFor="datasource">Data Source</Label>
             <Select
-              value={dataSourceId || ""}
+              value={dataSourceId || ''}
               onValueChange={(value) => {
-                if (value === "__create__") {
+                if (value === '__create__') {
                   setIsCreateDataSourceOpen(true);
                   return;
                 }
@@ -181,33 +169,24 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
                 <CreateNewSelectItem />
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">
-              Select the database data source to query
-            </p>
+            <p className="text-xs text-gray-500">Select the database data source to query</p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="mode">Mode</Label>
-            <Select
-              value={mode || ""}
-              onValueChange={(value) => setMode(value as SQLMode)}
-            >
+            <Select value={mode || ''} onValueChange={(value) => setMode(value as SQLMode)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select mode" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="sqlQuery">Write SQL Manually</SelectItem>
-                <SelectItem value="humanQuery">
-                  Generate SQL from Text
-                </SelectItem>
+                <SelectItem value="humanQuery">Generate SQL from Text</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">
-              Choose how you want to provide the query
-            </p>
+            <p className="text-xs text-gray-500">Choose how you want to provide the query</p>
           </div>
 
-          {mode === "sqlQuery" && (
+          {mode === 'sqlQuery' && (
             <div className="space-y-2">
               <Label htmlFor="sqlQuery">SQL Query</Label>
               <DraggableTextArea
@@ -218,20 +197,19 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
                 className="w-full min-h-[150px] font-mono text-sm"
               />
               <p className="text-xs text-gray-500">
-                Enter the SQL query to execute. Use variables from previous
-                nodes if needed.
+                Enter the SQL query to execute. Use variables from previous nodes if needed.
               </p>
             </div>
           )}
 
-          {mode === "humanQuery" && (
+          {mode === 'humanQuery' && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="provider">LLM Provider</Label>
                 <Select
-                  value={providerId || ""}
+                  value={providerId || ''}
                   onValueChange={(value) => {
-                    if (value === "__create__") {
+                    if (value === '__create__') {
                       setIsCreateProviderOpen(true);
                       return;
                     }
@@ -250,9 +228,7 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
                     <CreateNewSelectItem />
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500">
-                  Select the LLM provider to generate SQL from your text
-                </p>
+                <p className="text-xs text-gray-500">Select the LLM provider to generate SQL from your text</p>
               </div>
 
               <div className="space-y-2">
@@ -264,9 +240,7 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
                   placeholder="Enter system prompt for the SQL generator"
                   className="w-full min-h-[100px] text-sm"
                 />
-                <p className="text-xs text-gray-500">
-                  Optional system prompt to guide the SQL generation behavior
-                </p>
+                <p className="text-xs text-gray-500">Optional system prompt to guide the SQL generation behavior</p>
               </div>
 
               <div className="space-y-2">
@@ -279,8 +253,7 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
                   className="w-full min-h-[100px] text-sm"
                 />
                 <p className="text-xs text-gray-500">
-                  Describe what you want to query in plain English. AI will
-                  convert it to SQL.
+                  Describe what you want to query in plain English. AI will convert it to SQL.
                 </p>
               </div>
             </>
@@ -333,7 +306,7 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
                   onClick={() => {
                     setParameters({
                       ...parameters,
-                      "": "",
+                      '': '',
                     });
                   }}
                 >
@@ -341,8 +314,8 @@ export const SQLDialog: React.FC<SQLDialogProps> = (props) => {
                 </Button>
               </div>
               <p className="text-xs text-gray-500">
-                Optional parameters that can be used in the SQL query. These
-                will be passed to the backend for processing.
+                Optional parameters that can be used in the SQL query. These will be passed to the backend for
+                processing.
               </p>
             </div>
           )}

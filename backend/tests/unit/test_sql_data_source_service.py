@@ -1,24 +1,18 @@
-import pytest
+import logging
 from unittest.mock import AsyncMock
 from urllib.parse import quote
 
-from app.cache.redis_cache import invalidate_llm_provider_cache
-from app.services.datasources import DataSourceService
-from app.repositories.datasources import DataSourcesRepository
-
-from app.modules.integration.database import DatabaseManager, translate_to_query
-
-from app.core.config.settings import settings
-import copy
-import json
-import logging
-from app.dependencies.injector import injector
-from app.modules.workflow.llm.provider import LLMProvider
+import pytest
 from fastapi import HTTPException
 from fastapi_injector import RequestScopeFactory
 
+from app.cache.redis_cache import invalidate_llm_provider_cache
+from app.core.config.settings import settings
+from app.dependencies.injector import injector
+from app.modules.integration.database import DatabaseManager, translate_to_query
+from app.repositories.datasources import DataSourcesRepository
+from app.services.datasources import DataSourceService
 from app.services.llm_providers import LlmProviderService
-
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +50,6 @@ def sample_data_source_data():
 @pytest.mark.skip(reason="Skiped since it is failing the pipeline")
 @pytest.mark.asyncio
 async def test_search_data_source(sample_data_source_data):
-
     database_config = sample_data_source_data["connection_data"]
     sql_provider = DatabaseManager(db_config=database_config)
 
@@ -86,30 +79,22 @@ async def test_search_data_source(sample_data_source_data):
         await invalidate_llm_provider_cache(provider_id=None)
         configs = await llm_provider.get_all()
         if not configs:
-            raise HTTPException(
-                status_code=500, detail="No LLM provider configuration found."
-            )
-        default_model_id = str(
-            next(
-                (c for c in configs if getattr(c, "is_default", 0) == 1), configs[0]
-            ).id
-        )
+            raise HTTPException(status_code=500, detail="No LLM provider configuration found.")
+        default_model_id = str(next((c for c in configs if getattr(c, "is_default", 0) == 1), configs[0]).id)
         llm = await llm_provider.get_model(default_model_id)
 
         results = []
         for param in [param1, param2, param3]:
             logger.info(f"Query: {param['query']}")
             db_query = translate_to_query(sql_provider, param["query"], llm_model=llm)
-            results, error_msg = sql_provider.execute_query(
-                db_query["formatted_query"], db_query["parameters"]
-            )
+            results, error_msg = sql_provider.execute_query(db_query["formatted_query"], db_query["parameters"])
 
             logger.info(f"Translated Query: {results[-1].get('translated_query', '')}")
 
             translated_query: str = results[-1].get("translated_query", "")
-            assert (
-                param["translated_query"].lower() in translated_query.lower()
-            ), f"Expected: {param['translated_query']}, but got: {translated_query}"
+            assert param["translated_query"].lower() in translated_query.lower(), (
+                f"Expected: {param['translated_query']}, but got: {translated_query}"
+            )
 
             results.append(results)
 

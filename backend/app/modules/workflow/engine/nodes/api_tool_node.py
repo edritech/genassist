@@ -4,10 +4,11 @@ API tool node implementation using the BaseNode class.
 
 import json
 import logging
-from typing import Dict, Any
-import aiohttp
-from app.modules.workflow.engine import BaseNode
+from typing import Any, Dict
 
+import aiohttp
+
+from app.modules.workflow.engine import BaseNode
 
 logger = logging.getLogger(__name__)
 
@@ -42,19 +43,16 @@ class ApiToolNode(BaseNode):
         except (aiohttp.ClientError, json.JSONDecodeError, ValueError) as e:
             error_msg = f"Error processing API tool: {str(e)}"
             logger.error(error_msg)
-            return {
-                "status": 500,
-                "data": {"error": error_msg},
-                "headers": {}
-            }
+            return {"status": 500, "data": {"error": error_msg}, "headers": {}}
 
-    async def _make_api_call(self, method: str, endpoint: str, headers: Dict[str, str],
-                             parameters: Dict[str, Any], request_body: str | dict) -> Dict[str, Any]:
+    async def _make_api_call(
+        self, method: str, endpoint: str, headers: Dict[str, str], parameters: Dict[str, Any], request_body: str | dict
+    ) -> Dict[str, Any]:
         """Make an API call with the given parameters"""
         try:
             # Add https:// if no schema is provided
-            if not endpoint.startswith(('http://', 'https://')):
-                endpoint = f'https://{endpoint}'
+            if not endpoint.startswith(("http://", "https://")):
+                endpoint = f"https://{endpoint}"
                 logger.info(f"Added https:// schema to endpoint: {endpoint}")
 
             method = method.upper()
@@ -119,16 +117,12 @@ class ApiToolNode(BaseNode):
                     data = await response.text()
                     logger.debug("Response (text): %s", data)
 
-            return {
-                "status": response.status,
-                "data": data,
-                "headers": dict(response.headers)
-            }
+            return {"status": response.status, "data": data, "headers": dict(response.headers)}
 
         except aiohttp.ClientResponseError as e:
             logger.error(f"HTTP error {e.status}: {e.message}")
             return {
                 "status": e.status,
                 "data": {"error": e.message},
-                "headers": dict(response.headers) if hasattr(response, 'headers') else {}
+                "headers": dict(response.headers) if hasattr(response, "headers") else {},
             }

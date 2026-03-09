@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, Request
 from typing import List
 from uuid import UUID
-from app.core.permissions.constants import Permissions as P
+
+from fastapi import APIRouter, Depends, Request
 from fastapi_injector import Injected
 
 from app.auth.dependencies import auth, permissions
+from app.core.permissions.constants import Permissions as P
 from app.schemas.filter import BaseFilterModel
-from app.schemas.permission import PermissionRead, PermissionCreate, PermissionUpdate
+from app.schemas.permission import PermissionCreate, PermissionRead, PermissionUpdate
 from app.services.permissions import PermissionsService
 
 router = APIRouter()
@@ -44,9 +45,7 @@ async def get_all(
     response_model=PermissionRead,
     dependencies=[Depends(auth), Depends(permissions(P.Permission.READ))],
 )
-async def get(
-    permission_id: UUID, service: PermissionsService = Injected(PermissionsService)
-):
+async def get(permission_id: UUID, service: PermissionsService = Injected(PermissionsService)):
     return await service.get_by_id(permission_id)
 
 
@@ -54,9 +53,7 @@ async def get(
     "/{permission_id}",
     dependencies=[Depends(auth), Depends(permissions(P.Permission.DELETE))],
 )
-async def delete(
-    permission_id: UUID, service: PermissionsService = Injected(PermissionsService)
-):
+async def delete(permission_id: UUID, service: PermissionsService = Injected(PermissionsService)):
     return await service.delete(permission_id)
 
 

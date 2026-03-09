@@ -1,16 +1,10 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  ReactNode,
-} from "react";
-import { Node, Edge } from "reactflow";
-import { generateSampleOutput, NodeSchema } from "../types/schemas";
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { Node, Edge } from 'reactflow';
+import { generateSampleOutput, NodeSchema } from '../types/schemas';
 
 // Types for workflow execution state
 export interface NodeExecutionResult {
-  status: "success" | "error" | "pending";
+  status: 'success' | 'error' | 'pending';
   output: Record<string, unknown>;
   timestamp: number;
   nodeType: string;
@@ -60,16 +54,12 @@ export interface WorkflowExecutionContextType {
   hasNodeBeenExecuted: (nodeId: string) => boolean;
 }
 
-const WorkflowExecutionContext = createContext<
-  WorkflowExecutionContextType | undefined
->(undefined);
+const WorkflowExecutionContext = createContext<WorkflowExecutionContextType | undefined>(undefined);
 
 export const useWorkflowExecution = () => {
   const context = useContext(WorkflowExecutionContext);
   if (!context) {
-    throw new Error(
-      "useWorkflowExecution must be used within a WorkflowExecutionProvider"
-    );
+    throw new Error('useWorkflowExecution must be used within a WorkflowExecutionProvider');
   }
   return context;
 };
@@ -78,9 +68,7 @@ interface WorkflowExecutionProviderProps {
   children: ReactNode;
 }
 
-export const WorkflowExecutionProvider: React.FC<
-  WorkflowExecutionProviderProps
-> = ({ children }) => {
+export const WorkflowExecutionProvider: React.FC<WorkflowExecutionProviderProps> = ({ children }) => {
   const [state, setState] = useState<WorkflowExecutionState>({
     session: {},
     source: {},
@@ -99,17 +87,12 @@ export const WorkflowExecutionProvider: React.FC<
   );
 
   const updateNodeOutput = useCallback(
-    (
-      nodeId: string,
-      output: Record<string, unknown>,
-      nodeType: string,
-      nodeName: string
-    ) => {
+    (nodeId: string, output: Record<string, unknown>, nodeType: string, nodeName: string) => {
       setState((prevState) => {
         const newState = { ...prevState };
 
         newState.nodeOutputs[nodeId] = {
-          status: "success",
+          status: 'success',
           output: output,
           timestamp: Date.now(),
           nodeType,
@@ -117,7 +100,7 @@ export const WorkflowExecutionProvider: React.FC<
         };
 
         // Update session data for chat input nodes
-        if (nodeType === "chatInputNode") {
+        if (nodeType === 'chatInputNode') {
           newState.session = output;
           // Merge stateful parameters from persistent state
           if (newState.statefulState) {
@@ -126,7 +109,7 @@ export const WorkflowExecutionProvider: React.FC<
         }
 
         // Handle SetStateNode - update persistent stateful parameters
-        if (nodeType === "setStateNode") {
+        if (nodeType === 'setStateNode') {
           const node = nodes.find((n) => n.id === nodeId);
           if (node) {
             const nodeData = node.data as any;
@@ -147,7 +130,7 @@ export const WorkflowExecutionProvider: React.FC<
                         : output.value !== undefined
                           ? output.value
                           : stateEntry.value; // Fallback to the configured value
-                  
+
                   if (stateValue !== undefined) {
                     updatedState[stateEntry.key] = stateValue;
                   }
@@ -198,7 +181,7 @@ export const WorkflowExecutionProvider: React.FC<
         newState.session = { ...newState.statefulState };
       }
       remainingOutputs.forEach((result) => {
-        if (result.nodeType === "chatInputNode") {
+        if (result.nodeType === 'chatInputNode') {
           newState.session = { ...newState.session, ...result.output };
         }
       });
@@ -223,20 +206,14 @@ export const WorkflowExecutionProvider: React.FC<
     }));
   }, []);
 
-  const setWorkflowStructure = useCallback(
-    (newNodes: Node[], newEdges: Edge[]) => {
-      setNodes(newNodes);
-      setEdges(newEdges);
-    },
-    []
-  );
+  const setWorkflowStructure = useCallback((newNodes: Node[], newEdges: Edge[]) => {
+    setNodes(newNodes);
+    setEdges(newEdges);
+  }, []);
 
-  const loadExecutionState = useCallback(
-    (executionState: WorkflowExecutionState) => {
-      setState(executionState);
-    },
-    []
-  );
+  const loadExecutionState = useCallback((executionState: WorkflowExecutionState) => {
+    setState(executionState);
+  }, []);
 
   const getNodeOutput = useCallback(
     (nodeId: string) => {
@@ -269,7 +246,7 @@ export const WorkflowExecutionProvider: React.FC<
       if (!node) return null;
 
       // For chatInputNode, use its inputSchema
-      if (node.type === "chatInputNode" && node.data?.inputSchema) {
+      if (node.type === 'chatInputNode' && node.data?.inputSchema) {
         return generateSampleOutput(node.data.inputSchema as NodeSchema);
       }
 
@@ -307,16 +284,10 @@ export const WorkflowExecutionProvider: React.FC<
         return Array.from(predecessors);
       };
 
-      const predecessorIds = findPredecessors(nodeId).filter(
-        (id) => id !== nodeId
-      );
+      const predecessorIds = findPredecessors(nodeId).filter((id) => id !== nodeId);
       const node = getNodeById(nodeId);
 
-      if (
-        predecessorIds.length === 0 &&
-        node &&
-        node.type === "chatInputNode"
-      ) {
+      if (predecessorIds.length === 0 && node && node.type === 'chatInputNode') {
         // Return session data or generate from schema
         if (Object.keys(state.session).length > 0) {
           return state.session;
@@ -339,19 +310,19 @@ export const WorkflowExecutionProvider: React.FC<
         .map((edge) => edge.source)
         .filter((predecessorId) => {
           // If current node is an agent, exclude toolBuilder nodes
-          if (currentNode?.type === "agentNode") {
+          if (currentNode?.type === 'agentNode') {
             const predecessorNode = getNodeById(predecessorId);
-            return predecessorNode?.type !== "toolBuilderNode";
+            return predecessorNode?.type !== 'toolBuilderNode';
           }
           return true;
         });
 
       // Helper function to filter out keys containing "session.direct_input"
       const filterOutput = (output: unknown): unknown => {
-        if (!output || typeof output !== "object" || Array.isArray(output)) return output;
+        if (!output || typeof output !== 'object' || Array.isArray(output)) return output;
         const filtered: Record<string, unknown> = {};
         Object.entries(output as Record<string, unknown>).forEach(([key, value]) => {
-          if (!key.includes("session.direct_input")) {
+          if (!key.includes('session.direct_input')) {
             filtered[key] = value;
           }
         });
@@ -387,7 +358,7 @@ export const WorkflowExecutionProvider: React.FC<
       let sessionData = state.session;
       if (Object.keys(sessionData).length === 0) {
         // Find chatInputNode and generate session from its schema
-        const chatInputNode = nodes.find((n) => n.type === "chatInputNode");
+        const chatInputNode = nodes.find((n) => n.type === 'chatInputNode');
         if (chatInputNode?.data?.inputSchema) {
           sessionData = generateSampleOutput(chatInputNode.data.inputSchema as NodeSchema) || {};
         }
@@ -419,9 +390,5 @@ export const WorkflowExecutionProvider: React.FC<
     getAvailableDataForNode,
   };
 
-  return (
-    <WorkflowExecutionContext.Provider value={value}>
-      {children}
-    </WorkflowExecutionContext.Provider>
-  );
+  return <WorkflowExecutionContext.Provider value={value}>{children}</WorkflowExecutionContext.Provider>;
 };

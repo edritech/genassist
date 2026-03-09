@@ -6,7 +6,6 @@ from typing import Union
 from app.db.models import AgentModel
 from app.schemas.agent import AgentRead
 
-
 logger = logging.getLogger(__name__)
 
 

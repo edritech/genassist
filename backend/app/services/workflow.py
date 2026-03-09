@@ -1,12 +1,14 @@
 from typing import List
 from uuid import UUID
-from fastapi import Depends
+
 from injector import inject
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.workflow import WorkflowModel
 from app.repositories.workflow import WorkflowRepository
 from app.schemas.workflow import WorkflowCreate, WorkflowInDB, WorkflowUpdate
+
 
 @inject
 class WorkflowService:
@@ -62,6 +64,7 @@ class WorkflowService:
         if not orm_obj:
             raise AppException(status_code=404, error_key=ErrorKey.WORKFLOW_NOT_FOUND)
         from app.cache.redis_cache import invalidate_cache
+
         if orm_obj.agent:
             await invalidate_cache("agents:get_by_id_full", orm_obj.agent.id)
         await self.repository.delete(orm_obj)

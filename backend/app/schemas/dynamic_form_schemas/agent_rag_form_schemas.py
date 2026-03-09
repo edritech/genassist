@@ -7,16 +7,17 @@ All schemas use the unified TypeSchema structure from base.py.
 """
 
 from typing import Dict
-from .base import FieldSchema, SectionSchema, TypeSchema
-from .base import convert_typed_schemas_to_dict
+
 from app.constants.embedding_models import (
-    FORM_OPTIONS_VECTOR,
-    FORM_OPTIONS_LEGRA,
-    FORM_OPTIONS_BEDROCK,
-    DEFAULT_MODEL,
     DEFAULT_BEDROCK_MODEL,
     DEFAULT_BEDROCK_REGION,
+    DEFAULT_MODEL,
+    FORM_OPTIONS_BEDROCK,
+    FORM_OPTIONS_LEGRA,
+    FORM_OPTIONS_VECTOR,
 )
+
+from .base import FieldSchema, SectionSchema, TypeSchema, convert_typed_schemas_to_dict
 
 # Define RAG schemas using direct Pydantic models
 AGENT_RAG_FORM_SCHEMAS_VECTOR_AND_LEGRA: Dict[str, TypeSchema] = {

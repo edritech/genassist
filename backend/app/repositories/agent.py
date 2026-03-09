@@ -1,19 +1,20 @@
 from typing import Tuple
 from uuid import UUID
+
 from injector import inject
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
+
 from app.db.models import AgentModel, OperatorModel
 from app.repositories.db_repository import DbRepository
 from app.schemas.filter import BaseFilterModel
 
+
 @inject
 class AgentRepository(DbRepository[AgentModel]):
-
     def __init__(self, db: AsyncSession):
         super().__init__(AgentModel, db)
-
 
     async def get_by_id_full(self, agent_id: UUID) -> AgentModel | None:
         """
@@ -25,12 +26,11 @@ class AgentRepository(DbRepository[AgentModel]):
             .options(
                 joinedload(AgentModel.operator).joinedload(OperatorModel.user),
                 selectinload(AgentModel.workflow),  # separate query avoids cartesian product with other joins
-                joinedload(AgentModel.security_settings)
+                joinedload(AgentModel.security_settings),
             )
             .where(AgentModel.id == agent_id)
         )
         return result.scalars().first()
-
 
     async def get_all_full(self) -> list[AgentModel]:
         """
@@ -42,17 +42,13 @@ class AgentRepository(DbRepository[AgentModel]):
             .options(
                 joinedload(AgentModel.operator).joinedload(OperatorModel.user),
                 joinedload(AgentModel.workflow),
-                joinedload(AgentModel.security_settings)
+                joinedload(AgentModel.security_settings),
             )
             .order_by(AgentModel.created_at.asc())
         )
         return result.scalars().all()
 
-
-    async def get_by_user_id(self,
-                             user_id: UUID,
-                             with_workflow: bool = False
-                             ) -> AgentModel:
+    async def get_by_user_id(self, user_id: UUID, with_workflow: bool = False) -> AgentModel:
         options = [
             joinedload(AgentModel.operator).joinedload(OperatorModel.user),
             joinedload(AgentModel.security_settings),
@@ -60,27 +56,18 @@ class AgentRepository(DbRepository[AgentModel]):
         if with_workflow:
             options.append(joinedload(AgentModel.workflow))
 
-        stmt = (
-            select(AgentModel)
-            .join(OperatorModel)
-            .where(OperatorModel.user_id == user_id)
-            .options(*options)
-        )
+        stmt = select(AgentModel).join(OperatorModel).where(OperatorModel.user_id == user_id).options(*options)
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
-    async def get_list_paginated(
-        self, filter_obj: BaseFilterModel
-    ) -> Tuple[list[AgentModel], int]:
+    async def get_list_paginated(self, filter_obj: BaseFilterModel) -> Tuple[list[AgentModel], int]:
         """
         Return minimal agent data for list view with pagination.
         Only loads columns needed for the list display (no relationships).
         Returns tuple of (agents, total_count).
         """
         # Count query - get total without loading data
-        count_stmt = select(func.count(AgentModel.id)).where(
-            AgentModel.is_deleted == 0
-        )
+        count_stmt = select(func.count(AgentModel.id)).where(AgentModel.is_deleted == 0)
         count_result = await self.db.execute(count_stmt)
         total = count_result.scalar() or 0
 

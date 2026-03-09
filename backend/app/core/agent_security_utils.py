@@ -1,10 +1,13 @@
 """
 Utilities for agent-specific security settings (CORS and rate limiting)
 """
+
 import logging
 from typing import Tuple
+
 from starlette.requests import Request
 from starlette.responses import Response
+
 from app.core.config.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -29,11 +32,7 @@ def get_agent_cors_origins(agent_security_settings) -> list[str]:
 
     # Add global CORS origins from settings if provided
     if settings.CORS_ALLOWED_ORIGINS:
-        additional_origins = [
-            origin.strip()
-            for origin in settings.CORS_ALLOWED_ORIGINS.split(",")
-            if origin.strip()
-        ]
+        additional_origins = [origin.strip() for origin in settings.CORS_ALLOWED_ORIGINS.split(",") if origin.strip()]
         for origin in additional_origins:
             if origin not in allowed_origins:
                 allowed_origins.append(origin)
@@ -41,9 +40,7 @@ def get_agent_cors_origins(agent_security_settings) -> list[str]:
     # Add agent-specific origins if configured
     if agent_security_settings and agent_security_settings.cors_allowed_origins:
         agent_origins = [
-            origin.strip()
-            for origin in agent_security_settings.cors_allowed_origins.split(",")
-            if origin.strip()
+            origin.strip() for origin in agent_security_settings.cors_allowed_origins.split(",") if origin.strip()
         ]
         for origin in agent_origins:
             if origin not in allowed_origins:
@@ -52,11 +49,7 @@ def get_agent_cors_origins(agent_security_settings) -> list[str]:
     return allowed_origins
 
 
-def apply_agent_cors_headers(
-    request: Request,
-    response: Response,
-    agent_security_settings
-) -> Response:
+def apply_agent_cors_headers(request: Request, response: Response, agent_security_settings) -> Response:
     """
     Apply agent-specific CORS headers to the response.
     """
@@ -80,9 +73,7 @@ def apply_agent_cors_headers(
     return response
 
 
-def get_agent_rate_limit_start(
-    agent_security_settings
-) -> Tuple[str, str]:
+def get_agent_rate_limit_start(agent_security_settings) -> Tuple[str, str]:
     """
     Get rate limit strings for conversation start endpoint.
     Returns (per_minute, per_hour) rate limit strings.
@@ -103,9 +94,7 @@ def get_agent_rate_limit_start(
     return f"{per_minute}/minute", f"{per_hour}/hour"
 
 
-def get_agent_rate_limit_update(
-    agent_security_settings
-) -> Tuple[str, str]:
+def get_agent_rate_limit_update(agent_security_settings) -> Tuple[str, str]:
     """
     Get rate limit strings for conversation update endpoint.
     Returns (per_minute, per_hour) rate limit strings.

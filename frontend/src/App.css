@@ -1,4 +1,3 @@
-
 #root {
   margin: 0 auto;
   text-align: center;
@@ -53,7 +52,7 @@
   .card {
     padding: 1em;
   }
-  
+
   /* Remove desktop-specific padding */
   #root > div {
     padding: 0;

@@ -1,6 +1,8 @@
-from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict
+
 
 class FeatureFlagBase(BaseModel):
     key: str
@@ -8,14 +10,17 @@ class FeatureFlagBase(BaseModel):
     description: Optional[str] = None
     is_active: int
 
+
 class FeatureFlagCreate(FeatureFlagBase):
     pass
+
 
 class FeatureFlagUpdate(BaseModel):
     key: Optional[str] = None
     val: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[int] = None
+
 
 class FeatureFlagRead(FeatureFlagBase):
     id: UUID

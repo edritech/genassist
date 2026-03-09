@@ -1,40 +1,44 @@
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from fastapi import UploadFile
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.schemas.operator import OperatorReadMinimal
 from app.schemas.agent_security_settings import (
-    AgentSecuritySettingsRead,
     AgentSecuritySettingsCreate,
+    AgentSecuritySettingsRead,
     AgentSecuritySettingsUpdate,
 )
 from app.schemas.common import PaginatedResponse
+from app.schemas.operator import OperatorReadMinimal
 
 
 class AgentBase(BaseModel):
     name: str
     description: str
     is_active: bool = False
-    welcome_message: str = Field(..., max_length=500,
-                                 description="Welcome message returned when starting a conversation with an agent.")
-    welcome_image: Optional[bytes] = Field(None,
-                                           description="Welcome image blob displayed when starting a conversation with an agent.")
-    welcome_title: Optional[str] = Field(None, max_length=200,
-                                         description="Welcome title displayed when starting a conversation with an agent.")
-    possible_queries: list[str] = Field(...,
-                                        description="Possible queries, suggested when starting a conversation with an agent.")
-    thinking_phrases: Optional[list[str]] = Field(
-        description="Thinking phrases, suggested when starting a conversation with an agent.", default=[])
-    thinking_phrase_delay: Optional[int] = Field(None, ge=0,
-                                                 description="Delay in seconds before showing thinking phrases.")
-    security_settings: Optional[AgentSecuritySettingsCreate] = Field(
-        None,
-        description="Security settings for this agent. If null, uses global defaults."
+    welcome_message: str = Field(
+        ..., max_length=500, description="Welcome message returned when starting a conversation with an agent."
     )
-    model_config = ConfigDict(
-        extra='forbid', from_attributes=True)  # shared rules
+    welcome_image: Optional[bytes] = Field(
+        None, description="Welcome image blob displayed when starting a conversation with an agent."
+    )
+    welcome_title: Optional[str] = Field(
+        None, max_length=200, description="Welcome title displayed when starting a conversation with an agent."
+    )
+    possible_queries: list[str] = Field(
+        ..., description="Possible queries, suggested when starting a conversation with an agent."
+    )
+    thinking_phrases: Optional[list[str]] = Field(
+        description="Thinking phrases, suggested when starting a conversation with an agent.", default=[]
+    )
+    thinking_phrase_delay: Optional[int] = Field(
+        None, ge=0, description="Delay in seconds before showing thinking phrases."
+    )
+    security_settings: Optional[AgentSecuritySettingsCreate] = Field(
+        None, description="Security settings for this agent. If null, uses global defaults."
+    )
+    model_config = ConfigDict(extra="forbid", from_attributes=True)  # shared rules
     workflow_id: Optional[UUID] = None
 
 
@@ -55,7 +59,7 @@ class AgentUpdate(BaseModel):
     workflow_id: Optional[UUID] = None
     security_settings: Optional[AgentSecuritySettingsUpdate] = None
 
-    model_config = ConfigDict(extra='ignore', from_attributes=True)
+    model_config = ConfigDict(extra="ignore", from_attributes=True)
 
 
 class AgentRead(AgentBase):
@@ -72,15 +76,15 @@ class AgentRead(AgentBase):
     # Flag to indicate if agent has a welcome image (avoids unnecessary fetch)
     has_welcome_image: bool = False
 
-    model_config = ConfigDict(extra='ignore')  # shared rules
+    model_config = ConfigDict(extra="ignore")  # shared rules
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     @classmethod
     def convert_workflow_to_dict(cls, data: Any) -> Any:
         """Convert SQLAlchemy WorkflowModel to dict during validation"""
         # Handle SQLAlchemy model with workflow relationship
-        if hasattr(data, 'workflow') and data.workflow is not None:
-            if hasattr(data.workflow, 'to_dict'):
+        if hasattr(data, "workflow") and data.workflow is not None:
+            if hasattr(data.workflow, "to_dict"):
                 # It's a SQLAlchemy WorkflowModel - convert to dict
                 workflow_dict = data.workflow.to_dict()
                 # Need to convert SQLAlchemy model to dict for Pydantic to process
@@ -88,7 +92,7 @@ class AgentRead(AgentBase):
                     # Convert SQLAlchemy model attributes to dict
                     data_dict = {}
                     for key in dir(data):
-                        if not key.startswith('_') and key not in ['metadata', 'registry']:
+                        if not key.startswith("_") and key not in ["metadata", "registry"]:
                             try:
                                 value = getattr(data, key)
                                 # Skip methods and relationships except workflow and security_settings
@@ -96,25 +100,28 @@ class AgentRead(AgentBase):
                                     data_dict[key] = value
                             except Exception:
                                 pass
-                    data_dict['workflow'] = workflow_dict
+                    data_dict["workflow"] = workflow_dict
                     # Handle security_settings relationship
-                    if hasattr(data, 'security_settings') and data.security_settings is not None:
-                        data_dict['security_settings'] = data.security_settings
+                    if hasattr(data, "security_settings") and data.security_settings is not None:
+                        data_dict["security_settings"] = data.security_settings
                     # Set has_welcome_image flag
-                    data_dict['has_welcome_image'] = bool(data_dict.get('welcome_image'))
+                    data_dict["has_welcome_image"] = bool(data_dict.get("welcome_image"))
                     return data_dict
                 else:
-                    data['workflow'] = workflow_dict
+                    data["workflow"] = workflow_dict
 
         # Set has_welcome_image for dict data
         if isinstance(data, dict):
-            data['has_welcome_image'] = bool(data.get('welcome_image'))
-        elif hasattr(data, 'welcome_image'):
+            data["has_welcome_image"] = bool(data.get("welcome_image"))
+        elif hasattr(data, "welcome_image"):
             # For SQLAlchemy models without workflow
             if not isinstance(data, dict):
-                data_dict = {k: getattr(data, k) for k in dir(data)
-                           if not k.startswith('_') and not callable(getattr(data, k, None))}
-                data_dict['has_welcome_image'] = bool(data.welcome_image)
+                data_dict = {
+                    k: getattr(data, k)
+                    for k in dir(data)
+                    if not k.startswith("_") and not callable(getattr(data, k, None))
+                }
+                data_dict["has_welcome_image"] = bool(data.welcome_image)
                 return data_dict
         return data
 
@@ -149,6 +156,7 @@ class AgentRead(AgentBase):
 
 class AgentImageUpload(BaseModel):
     """Schema for agent image upload"""
+
     image: UploadFile
 
 
@@ -159,6 +167,7 @@ class QueryRequest(BaseModel):
 
 class AgentListItem(BaseModel):
     """Minimal agent data for list view - optimized for performance"""
+
     id: UUID
     name: str
     workflow_id: Optional[UUID] = None

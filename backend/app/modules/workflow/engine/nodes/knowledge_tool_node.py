@@ -2,11 +2,11 @@
 Knowledge tool node implementation using the BaseNode class.
 """
 
-from typing import Dict, Any, List
 import logging
+from typing import Any, Dict, List
 
-from app.modules.workflow.engine.base_node import BaseNode
 from app.modules.data.manager import AgentRAGServiceManager
+from app.modules.workflow.engine.base_node import BaseNode
 from app.services.agent_knowledge import KnowledgeBaseService
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,9 @@ class KnowledgeToolNode(BaseNode):
             logger.error(error_msg)
             return {"error": error_msg}
 
-    async def _query_knowledge_base(self, base_ids: List[str], query: str, limit: int = 5, force_limit: bool = False) -> str:
+    async def _query_knowledge_base(
+        self, base_ids: List[str], query: str, limit: int = 5, force_limit: bool = False
+    ) -> str:
         """Query knowledge bases with the given query using simplified manager"""
         from app.dependencies.injector import injector
 
@@ -55,7 +57,9 @@ class KnowledgeToolNode(BaseNode):
             knowledge_configs = await knowledge_service.get_by_ids(base_ids)
 
             # Search using simplified manager
-            results = await rag_manager.search(knowledge_configs, query, limit=limit, format_results=True, force_limit=force_limit)
+            results = await rag_manager.search(
+                knowledge_configs, query, limit=limit, format_results=True, force_limit=force_limit
+            )
 
             if results:
                 return results

@@ -10,17 +10,17 @@ import asyncio
 import logging
 import os
 import tempfile
-import urllib.request
 import urllib.parse
-from typing import Dict, Optional, List, Any
+import urllib.request
+from typing import Any, Dict, List, Optional
 
-from app.schemas.agent_knowledge import KBRead
-from app.modules.data.utils import FileTextExtractor
 from app.core.config.settings import file_storage_settings
 from app.db.models import StorageProvider
+from app.modules.data.utils import FileTextExtractor
+from app.schemas.agent_knowledge import KBRead
 
-from .service import AgentRAGService
 from .providers import SearchResult
+from .service import AgentRAGService
 from .utils.doc import bulk_delete_documents, format_search_results
 
 logger = logging.getLogger(__name__)
@@ -64,8 +64,7 @@ class AgentRAGServiceManager:
                 return service
             else:
                 # Remove failed service
-                logger.warning(
-                    f"Removing uninitialized service for KB {kb_id}")
+                logger.warning(f"Removing uninitialized service for KB {kb_id}")
                 await self._remove_service(kb_id)
 
         # Ensure we have a lock for this KB
@@ -80,29 +79,24 @@ class AgentRAGServiceManager:
 
             try:
                 # Create service
-                service = AgentRAGService.from_kb_config(
-                    kb_id, kb_obj.rag_config)
+                service = AgentRAGService.from_kb_config(kb_id, kb_obj.rag_config)
                 if not service:
-                    logger.error(
-                        f"Failed to create AgentRAGService for KB {kb_id}")
+                    logger.error(f"Failed to create AgentRAGService for KB {kb_id}")
                     return None
 
                 # Initialize service
                 success = await service.initialize()
                 if not success:
-                    logger.error(
-                        f"Failed to initialize AgentRAGService for KB {kb_id}")
+                    logger.error(f"Failed to initialize AgentRAGService for KB {kb_id}")
                     return None
 
                 # Cache the service
                 self._services[kb_id] = service
-                logger.info(
-                    f"[AgentRAGServiceManager] Created and cached AgentRAGService for KB {kb_id}")
+                logger.info(f"[AgentRAGServiceManager] Created and cached AgentRAGService for KB {kb_id}")
                 return service
 
             except Exception as e:
-                logger.error(
-                    f"Error creating AgentRAGService for KB {kb_id}: {e}")
+                logger.error(f"Error creating AgentRAGService for KB {kb_id}: {e}")
                 return None
 
     async def add_document(
@@ -227,9 +221,7 @@ class AgentRAGServiceManager:
             logger.warning(f"No LEGRA provider for KB {kb_obj.id}")
             return False
 
-    async def load_knowledge_items(
-        self, knowledge_items: List[KBRead], action: str
-    ) -> List[Dict[str, Any]]:
+    async def load_knowledge_items(self, knowledge_items: List[KBRead], action: str) -> List[Dict[str, Any]]:
         """
         Load multiple knowledge items efficiently
 
@@ -269,8 +261,7 @@ class AgentRAGServiceManager:
                 existing_ids = await service.get_document_ids()
                 if existing_ids:
                     delete_result: dict = await bulk_delete_documents(service, existing_ids)
-                    logger.debug(
-                        f"KB document deletion results: {delete_result}")
+                    logger.debug(f"KB document deletion results: {delete_result}")
 
             # Process all items for this KB
             for item in items:
@@ -279,12 +270,7 @@ class AgentRAGServiceManager:
                     contents = [getattr(item, "content", "")]
 
                     # Handle file content
-                    if (
-                        getattr(item, "type", "") == "file"
-                        and hasattr(item, "files")
-                        and item.files
-                    ):
-
+                    if getattr(item, "type", "") == "file" and hasattr(item, "files") and item.files:
                         doc_ids = []
                         contents = []
 
@@ -294,7 +280,9 @@ class AgentRAGServiceManager:
                                 if isinstance(file_item, str):
                                     doc_ids.append(f"KB:{kb_id}#file_{idx}:{file_item}")
                                     if file_item.startswith("http://") or file_item.startswith("https://"):
-                                        temp_content = await self._download_url_to_temp_file(file_item, extractor, delete_file=True)
+                                        temp_content = await self._download_url_to_temp_file(
+                                            file_item, extractor, delete_file=True
+                                        )
                                         # Download from URL to temp file and extract
                                         contents.append(temp_content)
                                     else:
@@ -306,12 +294,22 @@ class AgentRAGServiceManager:
                                     # file_url = file_item.get("url") or file_item.get("urls")
                                     file_url = file_item.get("file_url")
                                     # file storage provider
-                                    file_storage_provider = file_item.get("storage_provider") or file_storage_settings.FILE_MANAGER_PROVIDER or StorageProvider.LOCAL
+                                    file_storage_provider = (
+                                        file_item.get("storage_provider")
+                                        or file_storage_settings.FILE_MANAGER_PROVIDER
+                                        or StorageProvider.LOCAL
+                                    )
 
                                     # Handle url from file manager and other providers vs local file path
-                                    if file_storage_provider == StorageProvider.S3 and file_url and (file_url.startswith("http://") or file_url.startswith("https://")):
+                                    if (
+                                        file_storage_provider == StorageProvider.S3
+                                        and file_url
+                                        and (file_url.startswith("http://") or file_url.startswith("https://"))
+                                    ):
                                         doc_ids.append(f"KB:{kb_id}#file_{idx}:{file_url}")
-                                        temp_content = await self._download_url_to_temp_file(file_url, extractor, delete_file=True)
+                                        temp_content = await self._download_url_to_temp_file(
+                                            file_url, extractor, delete_file=True
+                                        )
                                         contents.append(temp_content)
                                     elif file_storage_provider == "local" and file_path:
                                         doc_ids.append(f"KB:{kb_id}#file_{idx}:{file_path}")
@@ -323,10 +321,12 @@ class AgentRAGServiceManager:
                                 file_path_str = (
                                     file_item
                                     if isinstance(file_item, str)
-                                    else file_item.get("file_path") or file_item.get("url") or file_item.get("urls") or "unknown"
+                                    else file_item.get("file_path")
+                                    or file_item.get("url")
+                                    or file_item.get("urls")
+                                    or "unknown"
                                 )
-                                logger.error(
-                                    f"Error extracting file {file_path_str}: {e}")
+                                logger.error(f"Error extracting file {file_path_str}: {e}")
 
                     # Handle URL content
                     elif getattr(item, "type", "") == "url":
@@ -336,7 +336,6 @@ class AgentRAGServiceManager:
                         contents = [getattr(item, "content", "")]
 
                     for doc_id, content in zip(doc_ids, contents):
-
                         metadata = {
                             "name": getattr(item, "name", ""),
                             "description": getattr(item, "description", ""),
@@ -348,15 +347,13 @@ class AgentRAGServiceManager:
                             doc_id,
                             content,
                             metadata,
-                            legra_finalize=getattr(
-                                item, "legra_finalize", False),
+                            legra_finalize=getattr(item, "legra_finalize", False),
                         )
                         results.append({"id": doc_id, "result": result})
 
                 except Exception as e:
                     logger.error(f"Error loading item {item.id}: {e}")
-                    results.append(
-                        {"id": doc_id, "result": {}, "error": str(e)})
+                    results.append({"id": doc_id, "result": {}, "error": str(e)})
 
         return results
 
@@ -389,9 +386,7 @@ class AgentRAGServiceManager:
         """Get statistics about cached services"""
         return {
             "total_services": len(self._services),
-            "initialized_services": sum(
-                1 for s in self._services.values() if s.is_initialized()
-            ),
+            "initialized_services": sum(1 for s in self._services.values() if s.is_initialized()),
             "service_ids": list(self._services.keys()),
         }
 
@@ -403,10 +398,7 @@ class AgentRAGServiceManager:
         return ""
 
     async def _download_url_to_temp_file(
-        self,
-        url: str,
-        extractor: FileTextExtractor,
-        delete_file: bool = False
+        self, url: str, extractor: FileTextExtractor, delete_file: bool = False
     ) -> str:
         """Download a URL to a temporary file, extract its content, and optionally delete it."""
 

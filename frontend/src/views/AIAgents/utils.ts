@@ -1,5 +1,6 @@
-export function pairsToObject(pairs: Array<{key: string, value: unknown}>): Record<string, unknown> {
-    return pairs.reduce((obj, pair) => {
+export function pairsToObject(pairs: Array<{ key: string; value: unknown }>): Record<string, unknown> {
+  return pairs.reduce(
+    (obj, pair) => {
       if (typeof pair.value === 'string') {
         try {
           const parsedValue = JSON.parse(pair.value);
@@ -11,12 +12,14 @@ export function pairsToObject(pairs: Array<{key: string, value: unknown}>): Reco
         obj[pair.key] = pair.value;
       }
       return obj;
-    }, {} as Record<string, unknown>);
-  }
-  
-  export function objectToPairs(obj: Record<string, unknown>): Array<{key: string, value: unknown}> {
-    return Object.entries(obj).map(([key, value]) => ({
-      key,
-      value
-    }));
-  } 
+    },
+    {} as Record<string, unknown>
+  );
+}
+
+export function objectToPairs(obj: Record<string, unknown>): Array<{ key: string; value: unknown }> {
+  return Object.entries(obj).map(([key, value]) => ({
+    key,
+    value,
+  }));
+}

@@ -3,10 +3,10 @@ from inspect import signature
 from typing import Any, Callable, cast
 from uuid import UUID
 
-from redis.asyncio import Redis
-from redis.exceptions import ResponseError
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+from redis.asyncio import Redis
+from redis.exceptions import ResponseError
 from starlette.datastructures import State
 
 logger = logging.getLogger(__name__)
@@ -48,6 +48,7 @@ async def init_fastapi_cache_with_redis(app, redis_binary: Redis):
 
     logger.info("FastAPI cache initialized")
 
+
 def make_key_builder(param: str | int = 1) -> Callable[[Any, str, Any], str]:
     """
     Build a tenant-aware `fastapi-cache` key_builder that plucks *one* argument from the
@@ -80,10 +81,7 @@ def make_key_builder(param: str | int = 1) -> Callable[[Any, str, Any], str]:
         # 2) Extract the chosen argument
         if isinstance(param, int):
             if len(pos_args) <= param:
-                raise IndexError(
-                    f"Key builder expected at least {param+1} positional args "
-                    f"for {func.__qualname__}"
-                )
+                raise IndexError(f"Key builder expected at least {param + 1} positional args for {func.__qualname__}")
             value = pos_args[param]
         else:  # param is str
             # kw > positional, to allow calling func(username="alice")
@@ -168,6 +166,7 @@ async def invalidate_agent_cache(agent_id: UUID, user_id: UUID):
     await invalidate_cache("agents:get_by_id_full", agent_id)
     await invalidate_cache("agents:get_by_user_id", user_id)
 
+
 async def clear_conversation_memory_cache(conversation_id: UUID) -> None:
     """
     Delete the Redis keys written by RedisConversationMemory for a conversation.
@@ -198,6 +197,7 @@ async def invalidate_conversation_cache(conversation_id: UUID):
     await invalidate_cache("conversations:get_conversation_by_id_with_operator_agent", conversation_id)
     await invalidate_cache("conversations:in_progress_poll", conversation_id)
     await clear_conversation_memory_cache(conversation_id)
+
 
 async def invalidate_llm_provider_cache(provider_id: UUID | None):
     if provider_id:

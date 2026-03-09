@@ -1,60 +1,44 @@
-import React, { useState, useEffect } from "react";
-import { CalendarEventToolNodeData } from "../types/nodes";
-import { DataSource } from "@/interfaces/dataSource.interface";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { Save } from "lucide-react";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { DraggableInput } from "../components/custom/DraggableInput";
-import { BaseNodeDialogProps } from "./base";
-import { DataSourceDialog } from "@/views/DataSources/components/DataSourceDialog";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
+import React, { useState, useEffect } from 'react';
+import { CalendarEventToolNodeData } from '../types/nodes';
+import { DataSource } from '@/interfaces/dataSource.interface';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { Save } from 'lucide-react';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { DraggableInput } from '../components/custom/DraggableInput';
+import { BaseNodeDialogProps } from './base';
+import { DataSourceDialog } from '@/views/DataSources/components/DataSourceDialog';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
 
-interface CalendarEventDialogProps
-  extends BaseNodeDialogProps<
-    CalendarEventToolNodeData,
-    CalendarEventToolNodeData
-  > {
+interface CalendarEventDialogProps extends BaseNodeDialogProps<CalendarEventToolNodeData, CalendarEventToolNodeData> {
   connectors: DataSource[];
 }
 
-export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = (
-  props
-) => {
+export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate, connectors } = props;
 
-  const [name, setName] = useState(data.name || "");
-  const [summary, setSummary] = useState(data.summary || "");
-  const [start, setStart] = useState(data.start || "");
-  const [end, setEnd] = useState(data.end || "");
-  const [operation, setOperation] = useState(data.operation || "");
-  const [dataSourceId, setDataSourceId] = useState(
-    data.dataSourceId?.toString() || ""
-  );
-  const [subjectContains, setSubjectContains] = useState(
-    data.subjectContains || ""
-  );
-  const [timezone, setTimezone] = useState("");
+  const [name, setName] = useState(data.name || '');
+  const [summary, setSummary] = useState(data.summary || '');
+  const [start, setStart] = useState(data.start || '');
+  const [end, setEnd] = useState(data.end || '');
+  const [operation, setOperation] = useState(data.operation || '');
+  const [dataSourceId, setDataSourceId] = useState(data.dataSourceId?.toString() || '');
+  const [subjectContains, setSubjectContains] = useState(data.subjectContains || '');
+  const [timezone, setTimezone] = useState('');
   const [isCreateDataSourceOpen, setIsCreateDataSourceOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setSummary(data.summary || "");
-      setStart(data.start || "");
-      setEnd(data.end || "");
-      setOperation(data.operation || "");
-      setDataSourceId(data.dataSourceId?.toString() || "");
-      setSubjectContains(data.subjectContains || "");
-      setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || "");
+      setName(data.name || '');
+      setSummary(data.summary || '');
+      setStart(data.start || '');
+      setEnd(data.end || '');
+      setOperation(data.operation || '');
+      setDataSourceId(data.dataSourceId?.toString() || '');
+      setSubjectContains(data.subjectContains || '');
+      setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || '');
     }
   }, [isOpen, data]);
 
@@ -115,7 +99,7 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = (
           <Select
             value={dataSourceId}
             onValueChange={(val) => {
-              if (val === "__create__") {
+              if (val === '__create__') {
                 setIsCreateDataSourceOpen(true);
                 return;
               }
@@ -151,20 +135,13 @@ export const CalendarEventDialog: React.FC<CalendarEventDialogProps> = (
               </div>
               <div className="space-y-2">
                 <Label htmlFor="operation-select">Operation</Label>
-                <Select
-                  value={operation}
-                  onValueChange={(val) => setOperation(val)}
-                >
+                <Select value={operation} onValueChange={(val) => setOperation(val)}>
                   <SelectTrigger id="operation-select">
                     <SelectValue placeholder="Select operation" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="create_calendar_event">
-                      Create event
-                    </SelectItem>
-                    <SelectItem value="search_calendar_events">
-                      Search event
-                    </SelectItem>
+                    <SelectItem value="create_calendar_event">Create event</SelectItem>
+                    <SelectItem value="search_calendar_events">Search event</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

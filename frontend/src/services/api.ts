@@ -1,15 +1,10 @@
-import { apiRequest, getApiUrl, api } from "@/config/api";
-import { DynamicFormSchema } from "@/interfaces/dynamicFormSchemas.interface";
-import {
-  AgentConfig,
-  AgentConfigCreate,
-  AgentConfigUpdate,
-  AgentListItem,
-} from "@/interfaces/ai-agent.interface";
-import { PaginatedResponse } from "@/interfaces/common.interface";
-import { getApiKeys, getApiKey } from "@/services/apiKeys";
-import { AxiosError } from "axios";
-import { UploadFileResponse } from "@/interfaces/file-manager.interface";
+import { apiRequest, getApiUrl, api } from '@/config/api';
+import { DynamicFormSchema } from '@/interfaces/dynamicFormSchemas.interface';
+import { AgentConfig, AgentConfigCreate, AgentConfigUpdate, AgentListItem } from '@/interfaces/ai-agent.interface';
+import { PaginatedResponse } from '@/interfaces/common.interface';
+import { getApiKeys, getApiKey } from '@/services/apiKeys';
+import { AxiosError } from 'axios';
+import { UploadFileResponse } from '@/interfaces/file-manager.interface';
 
 // Re-export types for backward compatibility
 export type { AgentConfig, AgentListItem, PaginatedResponse };
@@ -47,13 +42,13 @@ interface ParametersSchema {
 
 // Helper function for API requests with FormData support
 async function apiRequestWithFormData<T>(
-  method: "GET" | "POST" | "PUT" | "DELETE",
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   endpoint: string,
   formData?: FormData,
   config: Record<string, unknown> = {}
 ): Promise<T> {
   const baseURL = await getApiUrl();
-  const fullUrl = `${baseURL}genagent/${endpoint.replace(/^\//, "")}`;
+  const fullUrl = `${baseURL}genagent/${endpoint.replace(/^\//, '')}`;
 
   try {
     const response = await api.request<T>({
@@ -61,7 +56,7 @@ async function apiRequestWithFormData<T>(
       url: fullUrl,
       data: formData,
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
       ...config,
     });
@@ -69,16 +64,13 @@ async function apiRequestWithFormData<T>(
   } catch (error: unknown) {
     const axiosError = error as AxiosError;
     const errorData = (axiosError.response?.data as { detail?: string }) || {};
-    throw new Error(
-      errorData.detail ||
-        `API error: ${axiosError.response?.status || axiosError.message}`
-    );
+    throw new Error(errorData.detail || `API error: ${axiosError.response?.status || axiosError.message}`);
   }
 }
 
 // Agent configuration endpoints
 export async function getAllAgentConfigs(): Promise<AgentConfig[]> {
-  return apiRequest<AgentConfig[]>("GET", "genagent/agents/configs");
+  return apiRequest<AgentConfig[]>('GET', 'genagent/agents/configs');
 }
 
 // Paginated list endpoint - optimized for performance
@@ -86,67 +78,52 @@ export async function getAgentConfigsList(
   page: number = 1,
   pageSize: number = 20
 ): Promise<PaginatedResponse<AgentListItem>> {
-
   const skip = (page - 1) * pageSize;
   const limit = pageSize;
   return apiRequest<PaginatedResponse<AgentListItem>>(
-    "GET",
+    'GET',
     `genagent/agents/configs/list?skip=${skip}&limit=${limit}`
   );
 }
 
 export async function getAgentConfig(id: string): Promise<AgentConfig> {
-  return apiRequest<AgentConfig>("GET", `genagent/agents/configs/${id}`);
+  return apiRequest<AgentConfig>('GET', `genagent/agents/configs/${id}`);
 }
 
 export async function getIntegrationConfig(agentId: string) {
-  return apiRequest("GET", `genagent/agents/${agentId}/integration`);
+  return apiRequest('GET', `genagent/agents/${agentId}/integration`);
 }
 
-export async function createAgentConfig(
-  config: AgentConfigCreate
-): Promise<AgentConfig> {
-  return apiRequest<AgentConfig>("POST", "genagent/agents/configs", config);
+export async function createAgentConfig(config: AgentConfigCreate): Promise<AgentConfig> {
+  return apiRequest<AgentConfig>('POST', 'genagent/agents/configs', config);
 }
 
 export async function getRagFromSchema(): Promise<DynamicFormSchema> {
-  return apiRequest<DynamicFormSchema>(
-    "GET",
-    "genagent/knowledge/form_schemas"
-  );
+  return apiRequest<DynamicFormSchema>('GET', 'genagent/knowledge/form_schemas');
 }
 
 /** Fields the PUT /configs/{id} endpoint accepts (AgentUpdate schema). Extra fields cause 422. */
 const AGENT_UPDATE_ALLOWED_KEYS = [
-  "name",
-  "description",
-  "is_active",
-  "welcome_message",
-  "welcome_image",
-  "welcome_title",
-  "possible_queries",
-  "thinking_phrases",
-  "thinking_phrase_delay",
-  "workflow_id",
-  "security_settings",
+  'name',
+  'description',
+  'is_active',
+  'welcome_message',
+  'welcome_image',
+  'welcome_title',
+  'possible_queries',
+  'thinking_phrases',
+  'thinking_phrase_delay',
+  'workflow_id',
+  'security_settings',
 ] as const;
 
-export async function updateAgentConfig(
-  id: string,
-  config: AgentConfigUpdate
-): Promise<AgentConfig> {
-  const payload = Object.fromEntries(
-    AGENT_UPDATE_ALLOWED_KEYS.filter((k) => k in config).map((k) => [k, config[k]])
-  );
-  return apiRequest<AgentConfig>(
-    "PUT",
-    `genagent/agents/configs/${id}`,
-    payload
-  );
+export async function updateAgentConfig(id: string, config: AgentConfigUpdate): Promise<AgentConfig> {
+  const payload = Object.fromEntries(AGENT_UPDATE_ALLOWED_KEYS.filter((k) => k in config).map((k) => [k, config[k]]));
+  return apiRequest<AgentConfig>('PUT', `genagent/agents/configs/${id}`, payload);
 }
 
 export async function deleteAgentConfig(id: string) {
-  return apiRequest("DELETE", `genagent/agents/configs/${id}`);
+  return apiRequest('DELETE', `genagent/agents/configs/${id}`);
 }
 
 // Agent image operations
@@ -155,10 +132,10 @@ export async function uploadWelcomeImage(
   imageFile: File
 ): Promise<{ status: string; message: string }> {
   const formData = new FormData();
-  formData.append("image", imageFile);
+  formData.append('image', imageFile);
 
   return apiRequestWithFormData<{ status: string; message: string }>(
-    "POST",
+    'POST',
     `agents/configs/${agentId}/welcome-image`,
     formData
   );
@@ -170,131 +147,107 @@ export async function getWelcomeImage(agentId: string): Promise<Blob> {
 
   try {
     const response = await api.get(fullUrl, {
-      responseType: "blob",
+      responseType: 'blob',
     });
     return response.data;
   } catch (error: unknown) {
     const axiosError = error as AxiosError;
     if (axiosError.response?.status === 404) {
-      throw new Error("Welcome image not found");
+      throw new Error('Welcome image not found');
     }
-    throw new Error(
-      `Failed to get welcome image: ${
-        axiosError.response?.statusText || axiosError.message
-      }`
-    );
+    throw new Error(`Failed to get welcome image: ${axiosError.response?.statusText || axiosError.message}`);
   }
 }
 
-export async function deleteWelcomeImage(
-  agentId: string
-): Promise<{ status: string; message: string }> {
-  return apiRequest<{ status: string; message: string }>(
-    "DELETE",
-    `genagent/agents/configs/${agentId}/welcome-image`
-  );
+export async function deleteWelcomeImage(agentId: string): Promise<{ status: string; message: string }> {
+  return apiRequest<{ status: string; message: string }>('DELETE', `genagent/agents/configs/${agentId}/welcome-image`);
 }
 
 // Agent operations
 export async function initializeAgent(id: string) {
-  return apiRequest("POST", `genagent/agents/switch/${id}`);
+  return apiRequest('POST', `genagent/agents/switch/${id}`);
 }
 
-export async function queryAgent(
-  agentId: string,
-  threadId: string,
-  query: string
-) {
-  return apiRequest("POST", `genagent/agents/${agentId}/query/${threadId}`, {
+export async function queryAgent(agentId: string, threadId: string, query: string) {
+  return apiRequest('POST', `genagent/agents/${agentId}/query/${threadId}`, {
     query,
   });
 }
 
 // Knowledge base endpoints
 export async function getAllKnowledgeItems() {
-  return apiRequest("GET", "genagent/knowledge/items");
+  return apiRequest('GET', 'genagent/knowledge/items');
 }
 
 export async function getKnowledgeItem(id: string) {
-  return apiRequest("GET", `genagent/knowledge/items/${id}`);
+  return apiRequest('GET', `genagent/knowledge/items/${id}`);
 }
 
 export async function createKnowledgeItem(item: KnowledgeItem) {
-  return apiRequest("POST", "genagent/knowledge/items", item);
+  return apiRequest('POST', 'genagent/knowledge/items', item);
 }
 
 export async function updateKnowledgeItem(id: string, item: KnowledgeItem) {
-  return apiRequest("PUT", `genagent/knowledge/items/${id}`, item);
+  return apiRequest('PUT', `genagent/knowledge/items/${id}`, item);
 }
 
 export async function deleteKnowledgeItem(id: string) {
-  return apiRequest("DELETE", `genagent/knowledge/items/${id}`);
+  return apiRequest('DELETE', `genagent/knowledge/items/${id}`);
 }
 export async function finalizeKnowledgeItem(id: string) {
-  return apiRequest("POST", `genagent/knowledge/finalize/${id}`);
+  return apiRequest('POST', `genagent/knowledge/finalize/${id}`);
 }
 
 export const uploadFiles = async (files: File[]): Promise<UploadFileResponse[]> => {
   const formData = new FormData();
   files.forEach((file) => {
-    formData.append("files", file);
+    formData.append('files', file);
   });
 
-  return apiRequestWithFormData<UploadFileResponse[]>("POST", "knowledge/upload", formData);
+  return apiRequestWithFormData<UploadFileResponse[]>('POST', 'knowledge/upload', formData);
 };
 
 // Endpoint to trigger KB synchronization execution MANUALLY
 export const executeKnowledgeBaseSyncronizationManually = async (kbId: string) => {
-  return apiRequest(
-    "GET",
-    `genagent/knowledge/kb-batch-tasks-execution?kb_id=${kbId}`
-  );
+  return apiRequest('GET', `genagent/knowledge/kb-batch-tasks-execution?kb_id=${kbId}`);
 };
 
 // Tools endpoints
 export async function getAllTools() {
-  return apiRequest("GET", "genagent/tools");
+  return apiRequest('GET', 'genagent/tools');
 }
 
 export async function getTool(id: string) {
-  return apiRequest("GET", `genagent/tools/${id}`);
+  return apiRequest('GET', `genagent/tools/${id}`);
 }
 
 export async function createTool(tool: Tool) {
-  return apiRequest("POST", "genagent/tools", tool);
+  return apiRequest('POST', 'genagent/tools', tool);
 }
 
 export async function updateTool(id: string, tool: Tool) {
-  return apiRequest("PUT", `genagent/tools/${id}`, tool);
+  return apiRequest('PUT', `genagent/tools/${id}`, tool);
 }
 
 export async function deleteTool(id: string) {
-  return apiRequest("DELETE", `genagent/tools/${id}`);
+  return apiRequest('DELETE', `genagent/tools/${id}`);
 }
 
-export async function testPythonCode(
-  code: string,
-  params: Record<string, unknown>
-) {
-  return apiRequest("POST", "genagent/tools/python/test", {
+export async function testPythonCode(code: string, params: Record<string, unknown>) {
+  return apiRequest('POST', 'genagent/tools/python/test', {
     code,
     params,
   });
 }
 
-export async function generatePythonTemplate(
-  parametersSchema: ParametersSchema
-) {
-  return apiRequest("POST", "genagent/tools/python/generate-template", {
+export async function generatePythonTemplate(parametersSchema: ParametersSchema) {
+  return apiRequest('POST', 'genagent/tools/python/generate-template', {
     parameters_schema: parametersSchema,
   });
 }
 
 export async function generatePythonTemplateFromTool(toolId: string) {
-  return apiRequest(
-    "GET",
-    `genagent/tools/python/template-from-tool/${toolId}`
-  );
+  return apiRequest('GET', `genagent/tools/python/template-from-tool/${toolId}`);
 }
 
 export async function testPythonCodeWithSchema(
@@ -302,7 +255,7 @@ export async function testPythonCodeWithSchema(
   params: Record<string, unknown>,
   parametersSchema: ParametersSchema
 ) {
-  return apiRequest("POST", "genagent/tools/python/test-with-schema", {
+  return apiRequest('POST', 'genagent/tools/python/test-with-schema', {
     code,
     params,
     parameters_schema: parametersSchema,
@@ -313,7 +266,7 @@ export async function getAgentIntegrationKey(agentId: string): Promise<string> {
   const config = await getAgentConfig(agentId);
   const userId = config.user_id;
   if (!userId) {
-    throw new Error("Agent has no user_id");
+    throw new Error('Agent has no user_id');
   }
 
   const keys = await getApiKeys(userId);
@@ -325,12 +278,12 @@ export async function getAgentIntegrationKey(agentId: string): Promise<string> {
   }
 
   if (!active) {
-    throw new Error("No active API key found for this agent");
+    throw new Error('No active API key found for this agent');
   }
 
   const fullKey = await getApiKey(active.id);
   if (!fullKey?.key_val) {
-    throw new Error("API key value missing");
+    throw new Error('API key value missing');
   }
 
   return fullKey.key_val;

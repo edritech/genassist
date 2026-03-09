@@ -1,12 +1,12 @@
-import { MessageCircleMore, CircleCheckBig, Clock, DollarSign } from "lucide-react";
-import { Card } from "@/components/card";
-import { useState, useEffect } from "react";
-import { AgentDetailsDialog } from "./AgentDetailsDialog";
-import { fetchDashboardAgents } from "@/services/dashboard";
-import type { AgentStatsItem } from "@/interfaces/dashboard.interface";
-import { useNavigate } from "react-router-dom";
-import { useFeatureFlagVisible } from "@/components/featureFlag";
-import { FeatureFlags } from "@/config/featureFlags";
+import { MessageCircleMore, CircleCheckBig, Clock, DollarSign } from 'lucide-react';
+import { Card } from '@/components/card';
+import { useState, useEffect } from 'react';
+import { AgentDetailsDialog } from './AgentDetailsDialog';
+import { fetchDashboardAgents } from '@/services/dashboard';
+import type { AgentStatsItem } from '@/interfaces/dashboard.interface';
+import { useNavigate } from 'react-router-dom';
+import { useFeatureFlagVisible } from '@/components/featureFlag';
+import { FeatureFlags } from '@/config/featureFlags';
 
 interface AgentStats {
   id: string;
@@ -47,11 +47,14 @@ const transformApiAgent = (agent: AgentStatsItem): AgentStats => ({
   isActive: agent.is_active,
 });
 
-export function YourAgentsCard({ agents: propAgents, loading: propLoading, onViewAll, onManageKeys }: YourAgentsCardProps) {
+export function YourAgentsCard({
+  agents: propAgents,
+  loading: propLoading,
+  onViewAll,
+  onManageKeys,
+}: YourAgentsCardProps) {
   const navigate = useNavigate();
-  const showCostPerConversation = useFeatureFlagVisible(
-    FeatureFlags.ANALYTICS.SHOW_COST_PER_CONVERSATION
-  );
+  const showCostPerConversation = useFeatureFlagVisible(FeatureFlags.ANALYTICS.SHOW_COST_PER_CONVERSATION);
   const [selectedAgent, setSelectedAgent] = useState<AgentStats | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [agents, setAgents] = useState<AgentStats[]>([]);
@@ -74,7 +77,7 @@ export function YourAgentsCard({ agents: propAgents, loading: propLoading, onVie
           setAgents(response.agents.map(transformApiAgent));
         }
       } catch (error) {
-        console.error("Error fetching agents:", error);
+        console.error('Error fetching agents:', error);
       } finally {
         setLoading(false);
       }
@@ -92,7 +95,7 @@ export function YourAgentsCard({ agents: propAgents, loading: propLoading, onVie
     if (onViewAll) {
       onViewAll();
     } else {
-      navigate("/ai-agents");
+      navigate('/ai-agents');
     }
   };
 
@@ -103,10 +106,7 @@ export function YourAgentsCard({ agents: propAgents, loading: propLoading, onVie
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold text-foreground">Your Agents</h3>
         </div>
-        <button
-          onClick={handleViewAll}
-          className="text-sm font-medium text-foreground hover:underline"
-        >
+        <button onClick={handleViewAll} className="text-sm font-medium text-foreground hover:underline">
           View all
         </button>
       </div>
@@ -122,10 +122,7 @@ export function YourAgentsCard({ agents: propAgents, loading: propLoading, onVie
         ) : agents.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <p>No agents configured yet.</p>
-            <button
-              onClick={handleViewAll}
-              className="mt-2 text-sm text-primary hover:underline"
-            >
+            <button onClick={handleViewAll} className="mt-2 text-sm text-primary hover:underline">
               Create your first agent
             </button>
           </div>
@@ -137,39 +134,29 @@ export function YourAgentsCard({ agents: propAgents, loading: propLoading, onVie
               onClick={() => handleAgentClick(agent)}
             >
               <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                <p className="text-sm font-semibold text-accent-foreground truncate">
-                  {agent.name}
-                </p>
+                <p className="text-sm font-semibold text-accent-foreground truncate">{agent.name}</p>
 
                 {/* Stats Row */}
                 <div className="flex gap-3 items-center flex-wrap">
                   <div className="flex gap-1 items-center">
                     <MessageCircleMore className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {agent.conversationsToday} Today
-                    </span>
+                    <span className="text-xs text-muted-foreground">{agent.conversationsToday} Today</span>
                   </div>
 
                   <div className="flex gap-1 items-center">
                     <CircleCheckBig className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {agent.resolutionRate.toFixed(2)}% resolved
-                    </span>
+                    <span className="text-xs text-muted-foreground">{agent.resolutionRate.toFixed(2)}% resolved</span>
                   </div>
 
                   <div className="flex gap-1 items-center">
                     <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {agent.avgResponseTime} avg
-                    </span>
+                    <span className="text-xs text-muted-foreground">{agent.avgResponseTime} avg</span>
                   </div>
 
                   {showCostPerConversation && (
                     <div className="flex gap-1 items-center">
                       <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        ${agent.costPerConversation.toFixed(2)}
-                      </span>
+                      <span className="text-xs text-muted-foreground">${agent.costPerConversation.toFixed(2)}</span>
                     </div>
                   )}
                 </div>

@@ -1,4 +1,4 @@
-import { Role } from "./role.interface";
+import { Role } from './role.interface';
 
 export interface ApiKey {
   id: string;
@@ -13,5 +13,5 @@ export interface ApiKey {
   role_ids?: string[];
   masked_value?: string;
   key_val?: string;
-  agent_id: string; 
+  agent_id: string;
 }

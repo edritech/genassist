@@ -4,11 +4,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_injector import Injected
-from app.core.permissions.constants import Permissions as P
+
 from app.auth.dependencies import auth, permissions
 from app.cache.redis_cache import invalidate_agent_cache
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
+from app.core.permissions.constants import Permissions as P
 from app.modules.workflow.registry import RegistryItem
 from app.schemas.agent import QueryRequest
 from app.services.agent_config import AgentConfigService
@@ -17,14 +18,15 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/switch/{agent_id}", response_model=Dict[str, Any], dependencies=[
-        Depends(auth),
-        Depends(permissions(P.Agent.SWITCH))
-    ])
+@router.post(
+    "/switch/{agent_id}",
+    response_model=Dict[str, Any],
+    dependencies=[Depends(auth), Depends(permissions(P.Agent.SWITCH))],
+)
 async def switch_agent(
-        agent_id: UUID,
-        config_service: AgentConfigService = Injected(AgentConfigService),
-        ):
+    agent_id: UUID,
+    config_service: AgentConfigService = Injected(AgentConfigService),
+):
     """
     Switch an agent between active and inactive states.
 
@@ -49,25 +51,33 @@ async def switch_agent(
         return {"status": "success", "message": "Agent switched to active"}
 
 
-@router.post("/{agent_id}/query/{thread_id}", response_model=Dict[str, Any], dependencies=[
+@router.post(
+    "/{agent_id}/query/{thread_id}",
+    response_model=Dict[str, Any],
+    dependencies=[
         Depends(auth),
-    ])
+    ],
+)
 async def query_agent(
-        agent_id: UUID,
-        thread_id: str,
-        request: QueryRequest,
-        agent_service: AgentConfigService = Injected(AgentConfigService),
+    agent_id: UUID,
+    thread_id: str,
+    request: QueryRequest,
+    agent_service: AgentConfigService = Injected(AgentConfigService),
 ):
-    return await run_query_agent_logic(agent_service, str(agent_id), request.query, {**(request.metadata if
-                                                                                        request.metadata else {}), "thread_id": thread_id})
+    return await run_query_agent_logic(
+        agent_service,
+        str(agent_id),
+        request.query,
+        {**(request.metadata if request.metadata else {}), "thread_id": thread_id},
+    )
 
 
 async def run_query_agent_logic(
-        agent_service: AgentConfigService,
-        agent_id: str,
-        session_message: str,
-        metadata: Optional[Dict[str, Any]] = None,
-        ):
+    agent_service: AgentConfigService,
+    agent_id: str,
+    session_message: str,
+    metadata: Optional[Dict[str, Any]] = None,
+):
     """
     Run a query against an agent.
 
@@ -83,19 +93,16 @@ async def run_query_agent_logic(
 
     logger.debug(f"Workflow Metadata: {metadata}")
 
-    result = await agent.execute(
-            session_message=session_message,
-            metadata=metadata
-            )
+    result = await agent.execute(session_message=session_message, metadata=metadata)
     logger.debug(f"Workflow Final Result: {result}")
 
     backward_compatibility_result = {
-                "status": result.get("status"),
-                "response": result.get("output"),
-                "agent_id": agent_id,
-                "thread_id": metadata.get("thread_id"),
-                "rag_used": False,
-                "row_agent_response": result
+        "status": result.get("status"),
+        "response": result.get("output"),
+        "agent_id": agent_id,
+        "thread_id": metadata.get("thread_id"),
+        "rag_used": False,
+        "row_agent_response": result,
     }
 
     logger.debug(f"Result: {result}")

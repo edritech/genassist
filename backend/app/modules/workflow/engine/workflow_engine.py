@@ -2,51 +2,52 @@
 Workflow engine for building and executing workflows with state management.
 """
 
-from app.modules.workflow.utils import process_path_based_input_data
-from app.modules.workflow.engine.base_node import BaseNode
-from app.modules.workflow.engine.workflow_state import WorkflowState, WorkflowPausedException
-from app.modules.workflow.engine.nodes import (
-    ChatInputNode,
-    ChatOutputNode,
-    RouterNode,
-    AgentNode,
-    ApiToolNode,
-    OpenAPINode,
-    TemplateNode,
-    LLMModelNode,
-    KnowledgeToolNode,
-    PythonToolNode,
-    DataMapperNode,
-    ToolBuilderNode,
-    SlackToolNode,
-    CalendarEventsNode,
-    ReadMailsToolNode,
-    GmailToolNode,
-    WhatsAppToolNode,
-    ZendeskToolNode,
-    SQLNode,
-    AggregatorNode,
-    JiraNode,
-    MLModelInferenceNode,
-    TrainDataSourceNode,
-    TrainPreprocessNode,
-    TrainModelNode,
-    ThreadRAGNode,
-    MCPNode,
-    WorkflowExecutorNode,
-    HumanInTheLoopNode,
-    SetStateNode
-)
-from typing import Dict, Any, List, Optional, Set
-import logging
 import asyncio
-from collections import defaultdict
+import logging
 import uuid
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Set
+
 from fastapi_injector import RequestScopeFactory
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.dependencies.injector import injector
-from app.core.tenant_scope import get_tenant_context, set_tenant_context
 
+from app.core.tenant_scope import get_tenant_context, set_tenant_context
+from app.dependencies.injector import injector
+from app.modules.workflow.engine.base_node import BaseNode
+from app.modules.workflow.engine.nodes import (
+    AgentNode,
+    AggregatorNode,
+    ApiToolNode,
+    CalendarEventsNode,
+    ChatInputNode,
+    ChatOutputNode,
+    DataMapperNode,
+    GmailToolNode,
+    HumanInTheLoopNode,
+    JiraNode,
+    KnowledgeToolNode,
+    LLMModelNode,
+    MCPNode,
+    MLModelInferenceNode,
+    OpenAPINode,
+    PythonToolNode,
+    ReadMailsToolNode,
+    RouterNode,
+    SetStateNode,
+    SlackToolNode,
+    SQLNode,
+    TemplateNode,
+    ThreadRAGNode,
+    ToolBuilderNode,
+    TrainDataSourceNode,
+    TrainModelNode,
+    TrainPreprocessNode,
+    WhatsAppToolNode,
+    WorkflowExecutorNode,
+    ZendeskToolNode,
+)
+from app.modules.workflow.engine.workflow_state import WorkflowPausedException, WorkflowState
+from app.modules.workflow.utils import process_path_based_input_data
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +134,7 @@ class WorkflowEngine:
             "toolBuilderNode",
             "aggregatorNode",
             "humanInTheLoopNode",
-            "setStateNode"
+            "setStateNode",
         }
 
         # Return True if node is NOT in the no-DB list (i.e., it needs DB)
@@ -233,8 +234,7 @@ class WorkflowEngine:
             if len(start_node_ids) == 1:
                 start_node_id = start_node_ids[0]
             else:
-                raise ValueError(
-                    f"Multiple starting nodes found: {start_node_ids}")
+                raise ValueError(f"Multiple starting nodes found: {start_node_ids}")
 
         # Verify start node exists
         if start_node_id not in [node["id"] for node in self.workflow["nodes"]]:
@@ -256,7 +256,9 @@ class WorkflowEngine:
             # Execute from the specified node
             try:
                 await self._execute_from_node_recursive(
-                    start_node_id, state, set(),
+                    start_node_id,
+                    state,
+                    set(),
                     skip_requirement_check=True,
                 )
 
@@ -280,10 +282,7 @@ class WorkflowEngine:
         try:
             if initial_values.get("message") and persist:
                 asyncio.create_task(
-                    state.get_memory().add_input_output(
-                        initial_values.get("message", ""),
-                        state.output
-                    )
+                    state.get_memory().add_input_output(initial_values.get("message", ""), state.output)
                 )
         except Exception as e:
             logger.error(f"Error adding message to memory: {e}")
@@ -311,7 +310,10 @@ class WorkflowEngine:
         return starting_nodes
 
     async def _execute_from_node_recursive(
-        self, node_id: str, state: WorkflowState, visited: Set[str],
+        self,
+        node_id: str,
+        state: WorkflowState,
+        visited: Set[str],
         skip_requirement_check: bool = False,
     ) -> None:
         """Recursively execute nodes starting from a specific node."""
@@ -331,9 +333,7 @@ class WorkflowEngine:
             node_output = await self._execute_single_node(node_id, state)
         else:
             # Requirements not satisfied, skip execution and continue flow
-            logger.debug(
-                f"Node {node_id} requirements not satisfied, skipping execution"
-            )
+            logger.debug(f"Node {node_id} requirements not satisfied, skipping execution")
             return
 
         # Handle next nodes based on execution result
@@ -363,18 +363,14 @@ class WorkflowEngine:
                   "This session is provisioning a new connection; concurrent operations are not permitted".
                 """
                 if not run_in_new_scope:
-                    return await self._execute_from_node_recursive(
-                        next_node_id, state, visited_set
-                    )
+                    return await self._execute_from_node_recursive(next_node_id, state, visited_set)
 
                 request_scope_factory = injector.get(RequestScopeFactory)
                 async with request_scope_factory.create_scope():
                     # Preserve tenant context in the new scope
                     set_tenant_context(tenant)
                     try:
-                        return await self._execute_from_node_recursive(
-                            next_node_id, state, visited_set
-                        )
+                        return await self._execute_from_node_recursive(next_node_id, state, visited_set)
                     finally:
                         # Ensure any DI-created session is closed for this scope.
                         # (AsyncSession usually doesn't open a connection until first use, so this
@@ -414,9 +410,7 @@ class WorkflowEngine:
             # Log any other exceptions that occurred during parallel execution
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
-                    logger.error(
-                        f"Error in parallel execution of node {next_nodes[i]}: {result}"
-                    )
+                    logger.error(f"Error in parallel execution of node {next_nodes[i]}: {result}")
 
     def _find_next_nodes(self, node_id: str) -> List[str]:
         """Find next nodes connected to the current node."""
@@ -430,26 +424,20 @@ class WorkflowEngine:
 
     def get_node_config(self, node_id: str):
         """Get the node config and type."""
-        node_config = next(
-            node for node in self.workflow["nodes"] if node["id"] == node_id)
+        node_config = next(node for node in self.workflow["nodes"] if node["id"] == node_id)
         node_type = node_config.get("type", "")
         return node_config, node_type
 
-    def executable_node(
-        self, node_id: str, state: WorkflowState
-    ) -> BaseNode:
+    def executable_node(self, node_id: str, state: WorkflowState) -> BaseNode:
         """Create an executable node instance."""
         node_config, node_type = self.get_node_config(node_id)
         node_class = self.__class__._node_registry.get(node_type)
         if not node_class:
-            raise ValueError(
-                f"Unknown node type: {node_type}, skipping node {node_id}")
+            raise ValueError(f"Unknown node type: {node_type}, skipping node {node_id}")
         node = node_class(node_id, node_config, state)
         return node
 
-    async def _execute_single_node(
-        self, node_id: str, state: WorkflowState
-    ) -> Any:
+    async def _execute_single_node(self, node_id: str, state: WorkflowState) -> Any:
         """
         Execute a single node.
 
@@ -481,4 +469,3 @@ class WorkflowEngine:
             "edge_count": len(self.workflow["edges"]),
             "registered": True,
         }
-

@@ -1,48 +1,33 @@
-import { useState, useEffect, useMemo } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/dialog";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
+import { useState, useEffect, useMemo } from 'react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
 import {
   createDataSource,
   getDataSourceFormSchemas,
   updateDataSource,
   getDataSource,
   testConnection,
-} from "@/services/dataSources";
-import { Switch } from "@/components/switch";
-import { Label } from "@/components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { toast } from "react-hot-toast";
-import { Loader2 } from "lucide-react";
-import { ConnectionTestPanel } from "@/components/ConnectionTestPanel";
-import type { ConnectionStatus } from "@/interfaces/connectionStatus.interface";
-import {
-  DataSource,
-  DataSourceConfig,
-} from "@/interfaces/dataSource.interface";
-import { useQuery } from "@tanstack/react-query";
-import { GmailConnection } from "./GmailConnection";
-import { Office365Connection } from "./Office365Connection";
-import { SchemaFormRenderer } from "@/components/SchemaFormRenderer";
+} from '@/services/dataSources';
+import { Switch } from '@/components/switch';
+import { Label } from '@/components/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { toast } from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
+import { ConnectionTestPanel } from '@/components/ConnectionTestPanel';
+import type { ConnectionStatus } from '@/interfaces/connectionStatus.interface';
+import { DataSource, DataSourceConfig } from '@/interfaces/dataSource.interface';
+import { useQuery } from '@tanstack/react-query';
+import { GmailConnection } from './GmailConnection';
+import { Office365Connection } from './Office365Connection';
+import { SchemaFormRenderer } from '@/components/SchemaFormRenderer';
 
 interface DataSourceDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onDataSourceSaved: (createdOrUpdated?: DataSource) => void;
   dataSourceToEdit?: DataSource | null;
-  mode?: "create" | "edit";
+  mode?: 'create' | 'edit';
   defaultSourceType?: string;
   disableSourceType?: boolean;
 }
@@ -52,27 +37,23 @@ export function DataSourceDialog({
   onOpenChange,
   onDataSourceSaved,
   dataSourceToEdit = null,
-  mode = "create",
+  mode = 'create',
   defaultSourceType,
   disableSourceType = false,
 }: DataSourceDialogProps) {
-  const [name, setName] = useState("");
-  const [sourceType, setSourceType] = useState("");
-  const [connectionData, setConnectionData] = useState<
-    Record<string, string | number | boolean>
-  >({});
+  const [name, setName] = useState('');
+  const [sourceType, setSourceType] = useState('');
+  const [connectionData, setConnectionData] = useState<Record<string, string | number | boolean>>({});
   const [isActive, setIsActive] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [dataSourceId, setDataSourceId] = useState<string | undefined>("");
+  const [dataSourceId, setDataSourceId] = useState<string | undefined>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [currentDataSource, setCurrentDataSource] = useState<
-    DataSource | undefined
-  >();
+  const [currentDataSource, setCurrentDataSource] = useState<DataSource | undefined>();
   const [isTesting, setIsTesting] = useState(false);
   const [testStatus, setTestStatus] = useState<ConnectionStatus | null>(null);
 
   const { data, isLoading: isLoadingConfig } = useQuery({
-    queryKey: ["dataSourceSchemas"],
+    queryKey: ['dataSourceSchemas'],
     queryFn: () => getDataSourceFormSchemas(),
     refetchOnWindowFocus: false,
   });
@@ -80,23 +61,18 @@ export function DataSourceDialog({
   const dataSourceSchemas = useMemo(() => {
     if (!data) return {};
 
-    return Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key.toLowerCase(), value]),
-    );
+    return Object.fromEntries(Object.entries(data).map(([key, value]) => [key.toLowerCase(), value]));
   }, [data]);
 
   useEffect(() => {
     const initializeForm = async () => {
       if (isOpen) {
         resetForm();
-        if (mode === "create" && defaultSourceType) {
+        if (mode === 'create' && defaultSourceType) {
           setSourceType(defaultSourceType.toLowerCase() as string);
         }
-        if (dataSourceToEdit && mode === "edit") {
-          if (
-            ["gmail", "o365"].includes(dataSourceToEdit.source_type) &&
-            dataSourceToEdit.id
-          ) {
+        if (dataSourceToEdit && mode === 'edit') {
+          if (['gmail', 'o365'].includes(dataSourceToEdit.source_type) && dataSourceToEdit.id) {
             try {
               const latestData = await getDataSource(dataSourceToEdit.id);
               if (latestData) {
@@ -125,8 +101,8 @@ export function DataSourceDialog({
 
   const resetForm = () => {
     setDataSourceId(undefined);
-    setName("");
-    setSourceType("");
+    setName('');
+    setSourceType('');
     setConnectionData({});
     setIsActive(true);
     setShowAdvanced(false);
@@ -142,9 +118,7 @@ export function DataSourceDialog({
     setTestStatus(dataSource.connection_status ?? null);
   };
 
-  const getSchemaDefaults = (
-    type: string,
-  ): Record<string, string | number | boolean> => {
+  const getSchemaDefaults = (type: string): Record<string, string | number | boolean> => {
     const schema = dataSourceSchemas[type];
     if (!schema) return {};
     const defaults: Record<string, string | number | boolean> = {};
@@ -156,10 +130,7 @@ export function DataSourceDialog({
     return defaults;
   };
 
-  const handleConnectionDataChange = (
-    fieldName: string,
-    value: string | number | boolean,
-  ) => {
+  const handleConnectionDataChange = (fieldName: string, value: string | number | boolean) => {
     setConnectionData((prev) => ({ ...prev, [fieldName]: value }));
   };
 
@@ -167,21 +138,17 @@ export function DataSourceDialog({
     setIsTesting(true);
     setTestStatus(null);
     try {
-      const result = await testConnection(
-        sourceType,
-        connectionData,
-        dataSourceId,
-      );
+      const result = await testConnection(sourceType, connectionData, dataSourceId);
       setTestStatus({
-        status: result.success ? "Connected" : "Error",
+        status: result.success ? 'Connected' : 'Error',
         last_tested_at: new Date().toISOString(),
         message: result.message,
       });
     } catch {
       setTestStatus({
-        status: "Error",
+        status: 'Error',
         last_tested_at: new Date().toISOString(),
-        message: "Test failed.",
+        message: 'Test failed.',
       });
     } finally {
       setIsTesting(false);
@@ -192,54 +159,44 @@ export function DataSourceDialog({
     e.preventDefault();
     const missingFields: string[] = [];
 
-    if (!name) missingFields.push("Name");
-    if (!sourceType) missingFields.push("Source Type");
+    if (!name) missingFields.push('Name');
+    if (!sourceType) missingFields.push('Source Type');
 
     if (missingFields.length > 0) {
       if (missingFields.length === 1) {
         toast.error(`${missingFields[0]} is required.`);
       } else {
-        toast.error(`Please provide: ${missingFields.join(", ")}.`);
+        toast.error(`Please provide: ${missingFields.join(', ')}.`);
       }
       return;
     }
 
-    if (["gmail", "o365"].includes(sourceType)) {
+    if (['gmail', 'o365'].includes(sourceType)) {
       const oauthDataSource =
         currentDataSource ||
         ({
           id: dataSourceId,
-          oauth_status: "disconnected",
+          oauth_status: 'disconnected',
           name,
           source_type: sourceType,
           connection_data: connectionData,
           is_active: 0,
         } as DataSource);
 
-      if (oauthDataSource.oauth_status !== "connected") {
-        toast.error(
-          `Please authorize ${
-            sourceType === "o365" ? "Office 365" : "Gmail"
-          } access before saving.`,
-        );
+      if (oauthDataSource.oauth_status !== 'connected') {
+        toast.error(`Please authorize ${sourceType === 'o365' ? 'Office 365' : 'Gmail'} access before saving.`);
         return;
       }
     } else {
       const schema = dataSourceSchemas?.[sourceType];
       if (!schema) {
-        toast.error(
-          "Schema not loaded yet. Please wait a moment and try again.",
-        );
+        toast.error('Schema not loaded yet. Please wait a moment and try again.');
         return;
       }
 
-      const isFieldVisible = (field: {
-        conditional?: { field: string; value: string | number | boolean };
-      }) => {
+      const isFieldVisible = (field: { conditional?: { field: string; value: string | number | boolean } }) => {
         if (!field.conditional) return true;
-        return (
-          connectionData[field.conditional.field] === field.conditional.value
-        );
+        return connectionData[field.conditional.field] === field.conditional.value;
       };
 
       const schemaMissing = schema.fields
@@ -249,7 +206,7 @@ export function DataSourceDialog({
             isFieldVisible(field) &&
             (connectionData[field.name] === undefined ||
               connectionData[field.name] === null ||
-              connectionData[field.name] === ""),
+              connectionData[field.name] === '')
         )
         .map((field) => field.label);
 
@@ -257,7 +214,7 @@ export function DataSourceDialog({
         if (schemaMissing.length === 1) {
           toast.error(`${schemaMissing[0]} is required.`);
         } else {
-          toast.error(`Please provide: ${schemaMissing.join(", ")}.`);
+          toast.error(`Please provide: ${schemaMissing.join(', ')}.`);
         }
         return;
       }
@@ -273,20 +230,20 @@ export function DataSourceDialog({
         is_active: isActive ? 1 : 0,
       };
 
-      if (mode === "create") {
-        if (["gmail", "o365"].includes(sourceType) && dataSourceId) {
+      if (mode === 'create') {
+        if (['gmail', 'o365'].includes(sourceType) && dataSourceId) {
           const updated = await updateDataSource(dataSourceId, data);
-          toast.success("Data source updated successfully.");
+          toast.success('Data source updated successfully.');
           onDataSourceSaved(updated);
         } else {
           const created = await createDataSource(data as DataSource);
-          toast.success("Data source created successfully.");
+          toast.success('Data source created successfully.');
           onDataSourceSaved(created);
         }
       } else {
-        if (!dataSourceId) throw new Error("Missing data source ID");
+        if (!dataSourceId) throw new Error('Missing data source ID');
         const updated = await updateDataSource(dataSourceId, data);
-        toast.success("Data source updated successfully.");
+        toast.success('Data source updated successfully.');
         onDataSourceSaved(updated);
       }
 
@@ -299,33 +256,23 @@ export function DataSourceDialog({
     }
   };
 
-  const isOAuthType = ["gmail", "o365"].includes(sourceType);
+  const isOAuthType = ['gmail', 'o365'].includes(sourceType);
   const schema = dataSourceSchemas[sourceType];
   const hasAdvancedFields = schema?.fields.some((f) => !f.required) ?? false;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
-        <form
-          onSubmit={handleSubmit}
-          className="max-h-[90vh] overflow-y-auto overflow-x-hidden flex flex-col"
-        >
+        <form onSubmit={handleSubmit} className="max-h-[90vh] overflow-y-auto overflow-x-hidden flex flex-col">
           <DialogHeader className="p-6 pb-4">
-            <DialogTitle>
-              {mode === "create" ? "Create Data Source" : "Edit Data Source"}
-            </DialogTitle>
+            <DialogTitle>{mode === 'create' ? 'Create Data Source' : 'Edit Data Source'}</DialogTitle>
           </DialogHeader>
 
           <div className="px-6 pb-6 space-y-4">
             {/* Name & Source Type */}
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Name"
-              />
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
             </div>
 
             <div className="space-y-2">
@@ -344,10 +291,7 @@ export function DataSourceDialog({
                     setShowAdvanced(false);
                   }}
                 >
-                  <SelectTrigger
-                    className="w-full"
-                    disabled={disableSourceType}
-                  >
+                  <SelectTrigger className="w-full" disabled={disableSourceType}>
                     <SelectValue placeholder="Select Source Type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -363,14 +307,14 @@ export function DataSourceDialog({
 
             {sourceType && (
               <>
-                {sourceType === "gmail" && (
+                {sourceType === 'gmail' && (
                   <GmailConnection
                     dataSource={
                       currentDataSource ||
                       (dataSourceId
                         ? ({
                             id: dataSourceId,
-                            oauth_status: "disconnected",
+                            oauth_status: 'disconnected',
                             name,
                             source_type: sourceType,
                             connection_data: connectionData,
@@ -383,14 +327,14 @@ export function DataSourceDialog({
                   />
                 )}
 
-                {sourceType === "o365" && (
+                {sourceType === 'o365' && (
                   <Office365Connection
                     dataSource={
                       currentDataSource ||
                       (dataSourceId
                         ? ({
                             id: dataSourceId,
-                            oauth_status: "disconnected",
+                            oauth_status: 'disconnected',
                             name,
                             source_type: sourceType,
                             connection_data: connectionData,
@@ -417,21 +361,13 @@ export function DataSourceDialog({
                 <div className="flex items-center gap-2 border-t pt-4">
                   <div className="flex items-center gap-2">
                     <Label htmlFor="is_active">Active</Label>
-                    <Switch
-                      id="is_active"
-                      checked={isActive}
-                      onCheckedChange={setIsActive}
-                    />
+                    <Switch id="is_active" checked={isActive} onCheckedChange={setIsActive} />
                   </div>
                   <div className="flex-1" />
                   {!isOAuthType && hasAdvancedFields && (
                     <div className="flex items-center gap-2">
                       <Label htmlFor="show_advanced">Advanced</Label>
-                      <Switch
-                        id="show_advanced"
-                        checked={showAdvanced}
-                        onCheckedChange={setShowAdvanced}
-                      />
+                      <Switch id="show_advanced" checked={showAdvanced} onCheckedChange={setShowAdvanced} />
                     </div>
                   )}
                 </div>
@@ -449,11 +385,7 @@ export function DataSourceDialog({
 
                 {/* Test connection */}
                 {!isOAuthType && (
-                  <ConnectionTestPanel
-                    isTesting={isTesting}
-                    testStatus={testStatus}
-                    onTest={handleTestConnection}
-                  />
+                  <ConnectionTestPanel isTesting={isTesting} testStatus={testStatus} onTest={handleTestConnection} />
                 )}
               </>
             )}
@@ -461,19 +393,12 @@ export function DataSourceDialog({
 
           <DialogFooter className="px-6 py-4 border-t">
             <div className="flex justify-end gap-3 w-full">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {mode === "create" ? "Create" : "Update"}
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {mode === 'create' ? 'Create' : 'Update'}
               </Button>
             </div>
           </DialogFooter>

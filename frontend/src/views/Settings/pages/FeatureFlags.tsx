@@ -1,19 +1,19 @@
-import { useState } from "react";
-import { FeatureFlag } from "@/interfaces/featureFlag.interface";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { FeatureFlagsCard } from "../components/FeatureFlagsCard";
-import { FeatureFlagDialog } from "../components/FeatureFlagDialog";
+import { useState } from 'react';
+import { FeatureFlag } from '@/interfaces/featureFlag.interface';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { FeatureFlagsCard } from '../components/FeatureFlagsCard';
+import { FeatureFlagDialog } from '../components/FeatureFlagDialog';
 
 export function FeatureFlags() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [featureFlagToEdit, setFeatureFlagToEdit] = useState<FeatureFlag | null>(null);
 
   const handleFeatureFlagSaved = () => {
-    setRefreshKey(prevKey => prevKey + 1);
+    setRefreshKey((prevKey) => prevKey + 1);
   };
 
   const handleCreateFeatureFlag = () => {
@@ -21,7 +21,7 @@ export function FeatureFlags() {
     setFeatureFlagToEdit(null);
     setIsDialogOpen(true);
   };
-  
+
   const handleEditFeatureFlag = (featureFlag: FeatureFlag) => {
     setDialogMode('edit');
     setFeatureFlagToEdit(featureFlag);
@@ -39,14 +39,10 @@ export function FeatureFlags() {
         actionButtonText="Add New Flag"
         onActionClick={handleCreateFeatureFlag}
       />
-      
-      <FeatureFlagsCard 
-        searchQuery={searchQuery} 
-        refreshKey={refreshKey}
-        onEditFeatureFlag={handleEditFeatureFlag}
-      />
 
-      <FeatureFlagDialog 
+      <FeatureFlagsCard searchQuery={searchQuery} refreshKey={refreshKey} onEditFeatureFlag={handleEditFeatureFlag} />
+
+      <FeatureFlagDialog
         isOpen={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onFeatureFlagSaved={handleFeatureFlagSaved}
@@ -55,4 +51,4 @@ export function FeatureFlags() {
       />
     </PageLayout>
   );
-} 
+}

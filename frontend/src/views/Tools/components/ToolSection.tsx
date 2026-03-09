@@ -1,12 +1,11 @@
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/tabs";
-import { Input } from "@/components/input";
-import { Textarea } from "@/components/textarea";
-import { Button } from "@/components/button";
-import { Label } from "@/components/label";
-import { Trash2 } from "lucide-react";
-import { ToolParameter } from "@/interfaces/tool.interface";
-import { v4 as uuidv4 } from "uuid";
-
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/tabs';
+import { Input } from '@/components/input';
+import { Textarea } from '@/components/textarea';
+import { Button } from '@/components/button';
+import { Label } from '@/components/label';
+import { Trash2 } from 'lucide-react';
+import { ToolParameter } from '@/interfaces/tool.interface';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ToolSectionProps {
   title: string;
@@ -50,12 +49,8 @@ export function ToolSection({
         <TabsContent value="form">
           <div className="space-y-2">
             <div className="flex items-center gap-1 px-1 mt-3">
-              <div className="w-2/5 text-sm font-medium">
-                Parameter Name
-              </div>
-              <div className="flex-1 text-sm font-medium">
-                Value
-              </div>
+              <div className="w-2/5 text-sm font-medium">Parameter Name</div>
+              <div className="flex-1 text-sm font-medium">Value</div>
               <div className="w-8" />
             </div>
 
@@ -102,23 +97,23 @@ export function ToolSection({
           <div className="space-y-2">
             <Label className="text-sm font-medium">JSON Body</Label>
             <Textarea
-              value={JSON.stringify(items, ["id","name","value"], 2)}
+              value={JSON.stringify(items, ['id', 'name', 'value'], 2)}
               onChange={(e) => {
                 try {
                   const parsed = JSON.parse(e.target.value);
                   if (Array.isArray(parsed)) {
                     const updated = parsed.map((item) => ({
                       id: item.id ?? uuidv4(),
-                      name: item.name ?? "",
-                      value: item.value ?? "",
+                      name: item.name ?? '',
+                      value: item.value ?? '',
                     }));
-                    
+
                     setItems(updated);
                   }
                 } catch (error) {
                   // ignore
                 }
-              }}              
+              }}
               className="h-60 w-full font-mono text-sm"
               placeholder={`[
                 {

@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -39,9 +40,7 @@ class WorkflowInDB(WorkflowBase):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Workflow(WorkflowInDB):
@@ -61,64 +60,38 @@ def get_base_workflow(name: str) -> WorkflowCreate:
                 "data": {
                     "name": "Start",
                     "label": "Start",
-                    "handlers": [
-                        {
-                            "id": "output",
-                            "type": "source",
-                            "position": "right",
-                            "compatibility": "any"
-                        }
-                    ],
+                    "handlers": [{"id": "output", "type": "source", "position": "right", "compatibility": "any"}],
                     "inputSchema": {
                         "message": {
                             "type": "string",
                             "required": True,
                             "description": "The input received from the user.",
-                            "defaultValue": ""
+                            "defaultValue": "",
                         }
-                    }
+                    },
                 },
                 "type": "chatInputNode",
                 "width": 400,
                 "height": 174,
                 "dragging": False,
-                "position": {
-                    "x": 76.85553797620844,
-                    "y": 144.20172491226504
-                },
+                "position": {"x": 76.85553797620844, "y": 144.20172491226504},
                 "selected": False,
-                "positionAbsolute": {
-                    "x": 76.85553797620844,
-                    "y": 144.20172491226504
-                }
+                "positionAbsolute": {"x": 76.85553797620844, "y": 144.20172491226504},
             },
             {
                 "id": "b36544f8-5de2-44b6-80e2-26ddb99d9a61",
                 "data": {
                     "name": "Finish",
                     "label": "Finish",
-                    "handlers": [
-                        {
-                            "id": "input",
-                            "type": "target",
-                            "position": "left",
-                            "compatibility": "any"
-                        }
-                    ]
+                    "handlers": [{"id": "input", "type": "target", "position": "left", "compatibility": "any"}],
                 },
                 "type": "chatOutputNode",
                 "width": 400,
                 "height": 120,
                 "dragging": False,
-                "position": {
-                    "x": 1130.4305699456777,
-                    "y": 170.34889110027814
-                },
+                "position": {"x": 1130.4305699456777, "y": 170.34889110027814},
                 "selected": False,
-                "positionAbsolute": {
-                    "x": 1130.4305699456777,
-                    "y": 170.34889110027814
-                }
+                "positionAbsolute": {"x": 1130.4305699456777, "y": 170.34889110027814},
             },
             {
                 "id": "71489c81-e5ab-466d-a6ad-ae9bdadfe1c8",
@@ -126,106 +99,68 @@ def get_base_workflow(name: str) -> WorkflowCreate:
                     "name": "Text Template",
                     "label": "Text Template",
                     "handlers": [
-                        {
-                            "id": "input",
-                            "type": "target",
-                            "position": "left",
-                            "compatibility": "any"
-                        },
-                        {
-                            "id": "output",
-                            "type": "source",
-                            "position": "right",
-                            "compatibility": "any"
-                        }
+                        {"id": "input", "type": "target", "position": "left", "compatibility": "any"},
+                        {"id": "output", "type": "source", "position": "right", "compatibility": "any"},
                     ],
-                    "template": "This was the user's input: {{source.message}}"
+                    "template": "This was the user's input: {{source.message}}",
                 },
                 "type": "templateNode",
                 "width": 400,
                 "height": 226,
                 "dragging": False,
-                "position": {
-                    "x": 609.6429982336459,
-                    "y": 117.71733785398649
-                },
+                "position": {"x": 609.6429982336459, "y": 117.71733785398649},
                 "selected": False,
-                "positionAbsolute": {
-                    "x": 609.6429982336459,
-                    "y": 117.71733785398649
-                }
-            }
+                "positionAbsolute": {"x": 609.6429982336459, "y": 117.71733785398649},
+            },
         ],
         edges=[
             {
                 "id": "reactflow__edge-b29e4ffa-3297-4803-9a2f-671cf5d4c257output-71489c81-e5ab-466d-a6ad-ae9bdadfe1c8input",
                 "type": "default",
-                "style": {
-                    "strokeWidth": 2,
-                    "stroke": "#64748b"
-                },
+                "style": {"strokeWidth": 2, "stroke": "#64748b"},
                 "source": "b29e4ffa-3297-4803-9a2f-671cf5d4c257",
                 "target": "71489c81-e5ab-466d-a6ad-ae9bdadfe1c8",
-                "markerEnd": {
-                    "type": "arrowclosed",
-                    "width": 20,
-                    "height": 20,
-                    "color": "#64748b"
-                },
+                "markerEnd": {"type": "arrowclosed", "width": 20, "height": 20, "color": "#64748b"},
                 "sourceHandle": "output",
-                "targetHandle": "input"
+                "targetHandle": "input",
             },
             {
                 "id": "reactflow__edge-71489c81-e5ab-466d-a6ad-ae9bdadfe1c8output-b36544f8-5de2-44b6-80e2-26ddb99d9a61input",
                 "type": "default",
-                "style": {
-                    "strokeWidth": 2,
-                    "stroke": "#64748b"
-                },
+                "style": {"strokeWidth": 2, "stroke": "#64748b"},
                 "source": "71489c81-e5ab-466d-a6ad-ae9bdadfe1c8",
                 "target": "b36544f8-5de2-44b6-80e2-26ddb99d9a61",
-                "markerEnd": {
-                    "type": "arrowclosed",
-                    "width": 20,
-                    "height": 20,
-                    "color": "#64748b"
-                },
+                "markerEnd": {"type": "arrowclosed", "width": 20, "height": 20, "color": "#64748b"},
                 "sourceHandle": "output",
-                "targetHandle": "input"
-            }
+                "targetHandle": "input",
+            },
         ],
         executionState={
-            "source": {
-                "message": "Hello!"
-            },
-            "session": {
-                "message": "Hello!"
-            },
+            "source": {"message": "Hello!"},
+            "session": {"message": "Hello!"},
             "nodeOutputs": {
                 "b29e4ffa-3297-4803-9a2f-671cf5d4c257": {
-                    "output": {
-                        "message": "Hello!"
-                    },
+                    "output": {"message": "Hello!"},
                     "status": "success",
                     "nodeName": "Start",
                     "nodeType": "chatInputNode",
-                    "timestamp": 1763052821945
+                    "timestamp": 1763052821945,
                 },
                 "71489c81-e5ab-466d-a6ad-ae9bdadfe1c8": {
                     "output": "This was the user's input: Hello!",
                     "status": "success",
                     "nodeName": "Text Template",
                     "nodeType": "templateNode",
-                    "timestamp": 1763052865514
+                    "timestamp": 1763052865514,
                 },
                 "b36544f8-5de2-44b6-80e2-26ddb99d9a61": {
                     "output": {},
                     "status": "success",
                     "nodeName": "Finish",
                     "nodeType": "chatOutputNode",
-                    "timestamp": 1763052880098
-                }
-            }
+                    "timestamp": 1763052880098,
+                },
+            },
         },
-        version="1.0"
+        version="1.0",
     )

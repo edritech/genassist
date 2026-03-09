@@ -1,8 +1,8 @@
 import hashlib
 import hmac
-import time
-from typing import Dict, Any, Optional
 import logging
+import time
+from typing import Any, Dict, Optional
 
 from app.core.utils.bi_utils import make_async_web_call
 
@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class SlackConnector:
-
     def __init__(self, token: str, channel: str):
         self.token = token
         self.channel = channel
@@ -18,11 +17,7 @@ class SlackConnector:
 
     async def sanitize_channel(self) -> str:
         """Sanitize the channel name."""
-        if (
-            isinstance(self.channel, str)
-            and "@" in self.channel
-            and "." in self.channel
-        ):
+        if isinstance(self.channel, str) and "@" in self.channel and "." in self.channel:
             user_id = await self.lookup_user_by_email(self.channel)
             if user_id:
                 channel_id = await self.open_conversation(user_id)
@@ -39,9 +34,7 @@ class SlackConnector:
         }
         payload = {"users": user_id}
 
-        response = await make_async_web_call(
-            method="POST", url=url, headers=headers, payload=payload
-        )
+        response = await make_async_web_call(method="POST", url=url, headers=headers, payload=payload)
         if response["status"] != 200:
             logger.error(f"Slack Error opening conversation with user: {user_id}")
             return None
@@ -52,9 +45,7 @@ class SlackConnector:
         url = f"{self.base_url}/users.lookupByEmail?email={email}"
         headers = {"Authorization": f"Bearer {self.token}"}
 
-        response = await make_async_web_call(
-            method="GET", url=url, headers=headers, payload=None
-        )
+        response = await make_async_web_call(method="GET", url=url, headers=headers, payload=None)
         if response["status"] != 200:
             logger.error(f"Slack Error looking up user by email: {email}")
             return None
@@ -69,9 +60,8 @@ class SlackConnector:
         }
         payload = {"channel": self.channel, "text": text}
 
-        return await make_async_web_call(
-            method="POST", url=url, headers=headers, payload=payload
-        )
+        return await make_async_web_call(method="POST", url=url, headers=headers, payload=payload)
+
 
 def verify_slack_request(
     request_body: str,
@@ -87,12 +77,7 @@ def verify_slack_request(
         return False
 
     sig_basestring = f"v0:{slack_timestamp}:{request_body}".encode("utf-8")
-    my_signature = (
-        "v0="
-        + hmac.new(
-            slack_signature_secret.encode("utf-8"), sig_basestring, hashlib.sha256
-        ).hexdigest()
-    )
+    my_signature = "v0=" + hmac.new(slack_signature_secret.encode("utf-8"), sig_basestring, hashlib.sha256).hexdigest()
 
     verified = hmac.compare_digest(my_signature, slack_signature)
     return verified

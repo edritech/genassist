@@ -1,4 +1,4 @@
-import { NodeProps } from "reactflow";
+import { NodeProps } from 'reactflow';
 import {
   NodeData,
   NodeTypeDefinition,
@@ -6,55 +6,53 @@ import {
   LLMModelNodeData,
   ToolBuilderNodeData,
   MCPNodeData,
-} from "../../types/nodes";
-import AgentNode from "./agentNode";
-import LLMModelNode from "./modelNode";
-import ToolBuilderNode from "./toolBuilderNode";
-import MCPNode from "./mcpNode";
+} from '../../types/nodes';
+import AgentNode from './agentNode';
+import LLMModelNode from './modelNode';
+import ToolBuilderNode from './toolBuilderNode';
+import MCPNode from './mcpNode';
 
 export const AGENT_NODE_DEFINITION: NodeTypeDefinition<AgentNodeData> = {
-  type: "agentNode",
-  label: "AI Agent",
-  description:
-    "Runs an AI-powered agent capable of reasoning, taking actions, and calling tools.",
-  shortDescription: "Run an AI agent",
-  configSubtitle:
-    "Configure the AI agent settings, including provider, agent type, prompts, and memory.",
-  category: "ai",
-  icon: "Bot",
+  type: 'agentNode',
+  label: 'AI Agent',
+  description: 'Runs an AI-powered agent capable of reasoning, taking actions, and calling tools.',
+  shortDescription: 'Run an AI agent',
+  configSubtitle: 'Configure the AI agent settings, including provider, agent type, prompts, and memory.',
+  category: 'ai',
+  icon: 'Bot',
   defaultData: {
-    name: "AI Agent",
+    name: 'AI Agent',
     providerId: undefined,
-    type: "ToolSelector",
+    type: 'ToolSelector',
     memory: false,
-    systemPrompt: "",
-    userPrompt: "{{source.message}}",
+    systemPrompt: '',
+    userPrompt: '{{source.message}}',
     maxIterations: 7,
     handlers: [
       {
-        id: "input",
-        type: "target",
-        compatibility: "any",
-        position: "left",
+        id: 'input',
+        type: 'target',
+        compatibility: 'any',
+        position: 'left',
       },
       {
-        id: "input_tools",
-        type: "target",
-        compatibility: "tools",
-        position: "bottom",
+        id: 'input_tools',
+        type: 'target',
+        compatibility: 'tools',
+        position: 'bottom',
       },
       {
-        id: "output",
-        type: "source",
-        compatibility: "any",
-        position: "right",
+        id: 'output',
+        type: 'source',
+        compatibility: 'any',
+        position: 'right',
       },
     ],
   },
   component: AgentNode as React.ComponentType<NodeProps<NodeData>>,
   createNode: (id, position, data) => ({
     id,
-    type: "agentNode",
+    type: 'agentNode',
     position,
     data: {
       ...data,
@@ -63,128 +61,121 @@ export const AGENT_NODE_DEFINITION: NodeTypeDefinition<AgentNodeData> = {
 };
 
 export const MODEL_NODE_DEFINITION: NodeTypeDefinition<LLMModelNodeData> = {
-  type: "llmModelNode",
-  label: "Language Model",
-  description:
-    "Runs a large language model using a prompt and adjustable model settings.",
-  shortDescription: "Run a language model",
-  configSubtitle:
-    "Configure the language model settings, including provider, prompts, and memory options.",
-  category: "ai",
-  icon: "Brain",
+  type: 'llmModelNode',
+  label: 'Language Model',
+  description: 'Runs a large language model using a prompt and adjustable model settings.',
+  shortDescription: 'Run a language model',
+  configSubtitle: 'Configure the language model settings, including provider, prompts, and memory options.',
+  category: 'ai',
+  icon: 'Brain',
   defaultData: {
-    name: "Language Model",
+    name: 'Language Model',
     providerId: undefined,
     memory: false,
-    type: "Base",
-    systemPrompt: "",
-    userPrompt: "{{source.message}}",
+    type: 'Base',
+    systemPrompt: '',
+    userPrompt: '{{source.message}}',
     handlers: [
       {
-        id: "input",
-        type: "target",
-        compatibility: "any",
-        position: "left",
+        id: 'input',
+        type: 'target',
+        compatibility: 'any',
+        position: 'left',
       },
       {
-        id: "output",
-        type: "source",
-        compatibility: "any",
-        position: "right",
+        id: 'output',
+        type: 'source',
+        compatibility: 'any',
+        position: 'right',
       },
     ],
   },
   component: LLMModelNode as React.ComponentType<NodeProps<NodeData>>,
   createNode: (id, position, data) => ({
     id,
-    type: "llmModelNode",
+    type: 'llmModelNode',
     position,
     data: {
       ...data,
     },
   }),
 };
-export const TOOL_BUILDER_NODE_DEFINITION: NodeTypeDefinition<ToolBuilderNodeData> =
-  {
-    type: "toolBuilderNode",
-    label: "Tool Builder",
-    description:
-      "Defines a custom tool that an AI agent can call, including parameters and output templates.",
-    shortDescription: "Define a custom tool",
-    configSubtitle:
-      "Configure the custom tool definition, including description, parameters, and output template.",
-    category: "ai",
-    icon: "Wrench",
-    defaultData: {
-      name: "Tool Builder",
-      description: "Custom tool for parameter forwarding",
-      inputSchema: undefined,
-      forwardTemplate: "{}",
-      handlers: [
-        {
-          id: "output_tool",
-          type: "source",
-          compatibility: "tools",
-          position: "top",
-        },
-        {
-          id: "starter_processor",
-          type: "source",
-          compatibility: "any",
-          position: "right",
-        },
-        // {
-        //   id: "end_processor",
-        //   type: "target",
-        //   compatibility: "any",
-        //   position: "bottom",
-        // },
-      ],
-    },
-    component: ToolBuilderNode as React.ComponentType<NodeProps<NodeData>>,
-    createNode: (id, position, data) => ({
-      id,
-      type: "toolBuilderNode",
-      position,
-      data: {
-        ...data,
+export const TOOL_BUILDER_NODE_DEFINITION: NodeTypeDefinition<ToolBuilderNodeData> = {
+  type: 'toolBuilderNode',
+  label: 'Tool Builder',
+  description: 'Defines a custom tool that an AI agent can call, including parameters and output templates.',
+  shortDescription: 'Define a custom tool',
+  configSubtitle: 'Configure the custom tool definition, including description, parameters, and output template.',
+  category: 'ai',
+  icon: 'Wrench',
+  defaultData: {
+    name: 'Tool Builder',
+    description: 'Custom tool for parameter forwarding',
+    inputSchema: undefined,
+    forwardTemplate: '{}',
+    handlers: [
+      {
+        id: 'output_tool',
+        type: 'source',
+        compatibility: 'tools',
+        position: 'top',
       },
-    }),
-  };
+      {
+        id: 'starter_processor',
+        type: 'source',
+        compatibility: 'any',
+        position: 'right',
+      },
+      // {
+      //   id: "end_processor",
+      //   type: "target",
+      //   compatibility: "any",
+      //   position: "bottom",
+      // },
+    ],
+  },
+  component: ToolBuilderNode as React.ComponentType<NodeProps<NodeData>>,
+  createNode: (id, position, data) => ({
+    id,
+    type: 'toolBuilderNode',
+    position,
+    data: {
+      ...data,
+    },
+  }),
+};
 
 export const MCP_NODE_DEFINITION: NodeTypeDefinition<MCPNodeData> = {
-  type: "mcpNode",
-  label: "MCP Server",
-  description:
-    "Connects to an MCP (Model Context Protocol) server and exposes selected tools to agents.",
-  shortDescription: "Connect to MCP server",
-  configSubtitle:
-    "Configure MCP server connection and select which tools to expose to your agent.",
-  category: "ai",
-  icon: "Server",
+  type: 'mcpNode',
+  label: 'MCP Server',
+  description: 'Connects to an MCP (Model Context Protocol) server and exposes selected tools to agents.',
+  shortDescription: 'Connect to MCP server',
+  configSubtitle: 'Configure MCP server connection and select which tools to expose to your agent.',
+  category: 'ai',
+  icon: 'Server',
   defaultData: {
-    name: "MCP Server",
-    description: "MCP server tool connector",
-    connectionType: "http",
+    name: 'MCP Server',
+    description: 'MCP server tool connector',
+    connectionType: 'http',
     connectionConfig: {
-      url: "",
+      url: '',
     },
     availableTools: [],
     whitelistedTools: [],
     inputSchema: {},
     handlers: [
       {
-        id: "output_tool",
-        type: "source",
-        compatibility: "tools",
-        position: "top",
+        id: 'output_tool',
+        type: 'source',
+        compatibility: 'tools',
+        position: 'top',
       },
     ],
   } as MCPNodeData,
   component: MCPNode as React.ComponentType<NodeProps<NodeData>>,
   createNode: (id, position, data) => ({
     id,
-    type: "mcpNode",
+    type: 'mcpNode',
     position,
     data: {
       ...data,

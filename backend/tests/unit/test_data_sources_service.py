@@ -1,31 +1,35 @@
-import pytest
 from unittest.mock import AsyncMock, create_autospec
-from uuid import UUID, uuid4
-from app.services.datasources import DataSourceService
-from app.repositories.datasources import DataSourcesRepository
-from app.schemas.datasource import DataSourceCreate, DataSourceUpdate
+from uuid import uuid4
+
+import pytest
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.datasource import DataSourceModel
+from app.repositories.datasources import DataSourcesRepository
+from app.schemas.datasource import DataSourceCreate, DataSourceUpdate
+from app.services.datasources import DataSourceService
+
 
 @pytest.fixture
 def mock_repository():
     return AsyncMock(spec=DataSourcesRepository)
 
+
 @pytest.fixture
 def data_source_service(mock_repository):
     return DataSourceService(repository=mock_repository)
+
 
 @pytest.fixture
 def sample_data_source_data():
     return {
         "name": "test_source",
         "source_type": "test_type",
-        "connection_data": {
-            "url": "postgresql://user:pass@localhost:5432/db"
-        },
-        "is_active": 1
+        "connection_data": {"url": "postgresql://user:pass@localhost:5432/db"},
+        "is_active": 1,
     }
+
 
 @pytest.mark.asyncio
 async def test_create_data_source_success(data_source_service, mock_repository, sample_data_source_data):
@@ -49,6 +53,7 @@ async def test_create_data_source_success(data_source_service, mock_repository, 
     assert result.connection_data == sample_data_source_data["connection_data"]
     assert result.is_active == sample_data_source_data["is_active"]
 
+
 @pytest.mark.asyncio
 async def test_get_data_source_by_id_success(data_source_service, mock_repository, sample_data_source_data):
     # Setup
@@ -68,6 +73,7 @@ async def test_get_data_source_by_id_success(data_source_service, mock_repositor
     mock_repository.get_by_id.assert_called_once_with(source_id)
     assert result == mock_source
 
+
 @pytest.mark.asyncio
 async def test_get_data_source_by_id_not_found(data_source_service, mock_repository):
     # Setup
@@ -77,9 +83,10 @@ async def test_get_data_source_by_id_not_found(data_source_service, mock_reposit
     # Execute and Assert
     with pytest.raises(AppException) as exc_info:
         await data_source_service.get_by_id(source_id)
-    
+
     assert exc_info.value.error_key == ErrorKey.DATASOURCE_NOT_FOUND
     mock_repository.get_by_id.assert_called_once_with(source_id)
+
 
 @pytest.mark.asyncio
 async def test_get_data_sources_by_type(data_source_service, mock_repository, sample_data_source_data):
@@ -102,6 +109,7 @@ async def test_get_data_sources_by_type(data_source_service, mock_repository, sa
     mock_repository.get_by_type.assert_called_once_with(sample_data_source_data["source_type"])
     assert result == mock_sources
 
+
 @pytest.mark.asyncio
 async def test_get_all_data_sources(data_source_service, mock_repository, sample_data_source_data):
     # Setup
@@ -123,6 +131,7 @@ async def test_get_all_data_sources(data_source_service, mock_repository, sample
     mock_repository.get_all.assert_called_once()
     assert result == mock_sources
 
+
 @pytest.mark.asyncio
 async def test_delete_data_source_success(data_source_service, mock_repository):
     # Setup
@@ -133,6 +142,7 @@ async def test_delete_data_source_success(data_source_service, mock_repository):
 
     # Assert
     mock_repository.delete.assert_called_once_with(source_id)
+
 
 @pytest.mark.asyncio
 async def test_get_active_data_sources(data_source_service, mock_repository, sample_data_source_data):
@@ -155,6 +165,7 @@ async def test_get_active_data_sources(data_source_service, mock_repository, sam
     mock_repository.get_active.assert_called_once()
     assert result == mock_sources
 
+
 @pytest.mark.asyncio
 async def test_update_data_source_success(data_source_service, mock_repository):
     # Setup
@@ -162,10 +173,8 @@ async def test_update_data_source_success(data_source_service, mock_repository):
     update_data = DataSourceUpdate(
         name="updated_source",
         source_type="updated_type",
-        connection_data={
-            "url": "postgresql://updated:pass@localhost:5432/db"
-        },
-        is_active=0
+        connection_data={"url": "postgresql://updated:pass@localhost:5432/db"},
+        is_active=0,
     )
     mock_updated_source = create_autospec(DataSourceModel, instance=True)
     mock_updated_source.id = source_id
@@ -180,4 +189,4 @@ async def test_update_data_source_success(data_source_service, mock_repository):
 
     # Assert
     mock_repository.update.assert_called_once_with(source_id, update_data.model_dump(exclude_unset=True))
-    assert result == mock_updated_source 
+    assert result == mock_updated_source

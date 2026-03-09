@@ -7,16 +7,16 @@ This script applies migrations to all tenant databases in a multi-tenant setup.
 
 import asyncio
 import logging
+import os
 import subprocess
 import sys
-import os
 
 # Add the project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.repositories.tenant import TenantRepository
 from app.core.config.settings import settings
 from app.db.multi_tenant_session import multi_tenant_manager
+from app.repositories.tenant import TenantRepository
 from app.services.tenant import TenantService
 
 logging.basicConfig(level=logging.INFO)
@@ -38,9 +38,7 @@ async def apply_migrations_to_tenant(tenant_slug: str):
             logger.info(f"Successfully applied migrations to tenant: {tenant_slug}")
             return True
         else:
-            logger.error(
-                f"Failed to apply migrations to tenant {tenant_slug}: {result.stderr}"
-            )
+            logger.error(f"Failed to apply migrations to tenant {tenant_slug}: {result.stderr}")
             return False
 
     except Exception as e:
@@ -71,9 +69,7 @@ async def apply_migrations_to_all_tenants():
                 if success:
                     success_count += 1
 
-            logger.info(
-                f"Migration completed: {success_count}/{len(tenants)} tenants migrated successfully"
-            )
+            logger.info(f"Migration completed: {success_count}/{len(tenants)} tenants migrated successfully")
 
     except Exception as e:
         logger.error(f"Error applying migrations to all tenants: {e}")
@@ -94,9 +90,7 @@ async def apply_migrations_to_master():
             logger.info("Successfully applied migrations to master database")
             return True
         else:
-            logger.error(
-                f"Failed to apply migrations to master database: {result.stderr}"
-            )
+            logger.error(f"Failed to apply migrations to master database: {result.stderr}")
             return False
 
     except Exception as e:

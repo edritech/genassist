@@ -4,11 +4,7 @@ type TranscriptAudioPlayerProps = {
   className?: string;
 };
 
-export function TranscriptAudioPlayer({
-  isLoading,
-  audioSrc,
-  className = "",
-}: TranscriptAudioPlayerProps) {
+export function TranscriptAudioPlayer({ isLoading, audioSrc, className = '' }: TranscriptAudioPlayerProps) {
   return (
     <div className={`bg-primary/5 p-4 rounded-lg ${className}`}>
       {isLoading ? (
@@ -24,9 +20,7 @@ export function TranscriptAudioPlayer({
           Your browser does not support the audio element.
         </audio>
       ) : (
-        <div className="text-center text-sm text-muted-foreground py-2">
-          No audio available for this call
-        </div>
+        <div className="text-center text-sm text-muted-foreground py-2">No audio available for this call</div>
       )}
     </div>
   );

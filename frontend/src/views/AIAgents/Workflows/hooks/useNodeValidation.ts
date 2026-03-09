@@ -1,12 +1,12 @@
-import { useMemo } from "react";
-import { getEmptyRequiredFields } from "../utils/nodeValidation";
-import { NodeData } from "../types/nodes";
-import { useQuery } from "@tanstack/react-query";
-import { getAllNodeSchemas } from "@/services/workflows";
+import { useMemo } from 'react';
+import { getEmptyRequiredFields } from '../utils/nodeValidation';
+import { NodeData } from '../types/nodes';
+import { useQuery } from '@tanstack/react-query';
+import { getAllNodeSchemas } from '@/services/workflows';
 
 export function useNodeValidation(nodeType: string, nodeData: NodeData) {
   const { data, isLoading } = useQuery({
-    queryKey: ["nodeSchemas"],
+    queryKey: ['nodeSchemas'],
     queryFn: getAllNodeSchemas,
   });
 

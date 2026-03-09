@@ -1,4 +1,4 @@
-import { apiRequest } from "@/config/api";
+import { apiRequest } from '@/config/api';
 
 export interface FileManagerSettings {
   id?: string;
@@ -17,7 +17,7 @@ export interface FileManagerSettings {
 
 export const getFileManagerSettings = async (): Promise<FileManagerSettings | null> => {
   try {
-    return await apiRequest<FileManagerSettings>("GET", "file-manager/settings");
+    return await apiRequest<FileManagerSettings>('GET', 'file-manager/settings');
   } catch {
     return null;
   }

@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import toast from "react-hot-toast";
-import { LoginForm } from "../components/LoginForm";
-import { useAuth } from "../hooks/useAuth";
-import { ForcePasswordUpdateDialog } from "../components/ForcePasswordUpdateDialog";
-import { fetchUserPermissions } from "@/services/auth";
-import { TermsAndPolicyNotice } from "@/components/TermsAndPolicyNotice";
-import { AuthMockupPanel } from "@/components/AuthMockupPanel";
-import { useFeatureFlag } from "@/context/FeatureFlagContext";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { LoginForm } from '../components/LoginForm';
+import { useAuth } from '../hooks/useAuth';
+import { ForcePasswordUpdateDialog } from '../components/ForcePasswordUpdateDialog';
+import { fetchUserPermissions } from '@/services/auth';
+import { TermsAndPolicyNotice } from '@/components/TermsAndPolicyNotice';
+import { AuthMockupPanel } from '@/components/AuthMockupPanel';
+import { useFeatureFlag } from '@/context/FeatureFlagContext';
 
 interface ForceUpdateInfo {
   username: string;
@@ -21,8 +21,7 @@ const LoginPage = () => {
   const { refreshFlags } = useFeatureFlag();
   const navigate = useNavigate();
   const location = useLocation();
-  const [forceUpdateInfo, setForceUpdateInfo] =
-    useState<ForceUpdateInfo | null>(null);
+  const [forceUpdateInfo, setForceUpdateInfo] = useState<ForceUpdateInfo | null>(null);
   const [isForceUpdateDialogOpen, setIsForceUpdateDialogOpen] = useState(false);
   const [key, setKey] = useState(Date.now());
 
@@ -50,43 +49,30 @@ const LoginPage = () => {
     }
   };
 
-  const handleLogin = async (
-    username: string,
-    password: string,
-    tenant: string,
-    keepSignedIn: boolean
-  ) => {
+  const handleLogin = async (username: string, password: string, tenant: string, keepSignedIn: boolean) => {
     setIsLoading(true);
 
     try {
       // Store tenant in localStorage
-      localStorage.setItem("tenant_id", tenant);
-      
+      localStorage.setItem('tenant_id', tenant);
+
       const response = await login(username, password, tenant);
 
       if (response?.access_token) {
         // Login was successful, store tokens
-        localStorage.setItem("access_token", response.access_token);
-        localStorage.setItem("refresh_token", response.refresh_token ?? "");
-        const tokenType = response.token_type || "bearer";
-        localStorage.setItem(
-          "token_type",
-          tokenType.toLowerCase() === "bearer" ? "Bearer" : tokenType
-        );
-        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('refresh_token', response.refresh_token ?? '');
+        const tokenType = response.token_type || 'bearer';
+        localStorage.setItem('token_type', tokenType.toLowerCase() === 'bearer' ? 'Bearer' : tokenType);
+        localStorage.setItem('isAuthenticated', 'true');
 
         // Store force_upd_pass_date if provided
         if (response.force_upd_pass_date) {
-          localStorage.setItem(
-            "force_upd_pass_date",
-            response.force_upd_pass_date
-          );
+          localStorage.setItem('force_upd_pass_date', response.force_upd_pass_date);
         }
 
         // Check if password update is required
-        const needsUpdate =
-          response.force_upd_pass_date &&
-          isPasswordUpdateRequired(response.force_upd_pass_date);
+        const needsUpdate = response.force_upd_pass_date && isPasswordUpdateRequired(response.force_upd_pass_date);
 
         if (needsUpdate) {
           // Password update is required - show the dialog
@@ -113,14 +99,14 @@ const LoginPage = () => {
           // ignore
         }
 
-        toast.success("Logged in successfully.");
-        const from = location.state?.from?.pathname || "/dashboard";
+        toast.success('Logged in successfully.');
+        const from = location.state?.from?.pathname || '/dashboard';
         window.location.href = from;
       } else {
-        toast.error("Failed to log in.");
+        toast.error('Failed to log in.');
       }
     } catch (error) {
-      toast.error("Failed to log in.");
+      toast.error('Failed to log in.');
     } finally {
       setIsLoading(false);
     }
@@ -130,13 +116,12 @@ const LoginPage = () => {
     setForceUpdateInfo(null);
     setIsForceUpdateDialogOpen(false);
     // Clear the stored force_upd_pass_date since password was updated
-    localStorage.removeItem("force_upd_pass_date");
+    localStorage.removeItem('force_upd_pass_date');
     const from = location.state?.from;
-    navigate("/login", {
+    navigate('/login', {
       replace: true,
       state: {
-        message:
-          "Password updated successfully. Please log in with your new password.",
+        message: 'Password updated successfully. Please log in with your new password.',
         from,
       },
     });
@@ -148,13 +133,7 @@ const LoginPage = () => {
         <div className="flex items-center justify-center p-4 bg-white">
           <div className="w-full max-w-md space-y-6">
             <div className="space-y-2">
-              <svg
-                width="200"
-                height="52"
-                viewBox="0 0 449 80"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+              <svg width="200" height="52" viewBox="0 0 449 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M80 39.9985H63.301H40.0015V63.3039L16.699 40.0015L40.0015 16.6961L59.1801 35.8776H75.8791L40.0015 0L0 40.0015L40.0015 80L80.0029 40.0015L80 39.9985Z"
                   fill="#2100B1"
@@ -183,10 +162,7 @@ const LoginPage = () => {
                   d="M321.356 32.0755C321.356 33.0467 322.014 33.6164 323.327 33.7788C324.641 33.9411 325.984 34.1035 327.354 34.2659C328.724 34.4282 330.244 34.6083 331.92 34.8061C333.594 35.0038 335.153 35.2105 336.593 35.4289C338.034 35.6444 339.501 35.9248 340.998 36.2673C342.491 36.6097 343.781 37.1853 344.862 37.9971C345.942 38.8089 346.733 39.9247 347.238 41.3475C347.743 42.7703 347.994 44.4175 347.994 46.292C347.994 49.7133 347.265 52.3346 345.806 54.1529C344.348 55.9713 342.329 57.1787 339.755 57.772C337.178 58.3653 333.963 58.6635 330.111 58.6635C326.259 58.6635 322.817 58.3653 320.116 57.772C317.415 57.1787 315.118 56.0156 313.226 54.2887C311.334 52.5619 310.389 49.5332 310.389 45.2116H320.278C320.278 46.6875 321.096 47.8506 322.737 48.6948C324.375 49.542 326.725 49.9642 329.789 49.9642C333.066 49.9642 335.247 49.604 336.328 48.8838C337.408 48.1635 337.948 47.3547 337.948 46.4514C337.948 45.6957 337.399 45.1732 336.301 44.8839C335.203 44.5946 333.816 44.2994 332.142 43.9924C330.468 43.6854 328.809 43.4434 327.171 43.2633C325.533 43.0832 323.965 42.912 322.471 42.7497C320.978 42.5873 319.472 42.2892 317.961 41.8582C316.449 41.4272 315.133 40.8398 314.017 40.1018C312.901 39.3638 312.019 38.2657 311.369 36.8045C310.72 35.3463 310.398 33.7345 310.398 31.9693C310.398 29.0173 311.047 26.6824 312.343 24.9732C313.639 23.264 315.72 22.0656 318.584 21.3807C321.447 20.6959 324.951 20.3535 329.093 20.3535C333.234 20.3535 336.694 20.6959 339.141 21.3807C341.591 22.0656 343.66 23.3172 345.355 25.1356C347.046 26.954 347.893 29.6284 347.893 33.1589H338.276C338.276 32.0431 337.482 31.125 335.9 30.4018C334.314 29.6815 332.136 29.3214 329.361 29.3214C325.975 29.3214 323.797 29.5634 322.823 30.0505C321.851 30.5376 321.364 31.2136 321.364 32.0755H321.356Z"
                   fill="#231F20"
                 />
-                <path
-                  d="M352.315 57.7956V21.056H363.337V57.7956H352.315Z"
-                  fill="#231F20"
-                />
+                <path d="M352.315 57.7956V21.056H363.337V57.7956H352.315Z" fill="#231F20" />
                 <path
                   d="M378.629 32.0755C378.629 33.0467 379.287 33.6164 380.6 33.7788C381.914 33.9411 383.257 34.1035 384.627 34.2659C385.996 34.4282 387.517 34.6083 389.193 34.8061C390.867 35.0038 392.426 35.2105 393.866 35.4289C395.307 35.6444 396.774 35.9248 398.271 36.2673C399.764 36.6097 401.054 37.1853 402.135 37.9971C403.215 38.8089 404.006 39.9247 404.511 41.3475C405.016 42.7703 405.267 44.4175 405.267 46.292C405.267 49.7133 404.537 52.3346 403.079 54.1529C401.621 55.9713 399.602 57.1787 397.028 57.772C394.451 58.3653 391.236 58.6635 387.384 58.6635C383.532 58.6635 380.09 58.3653 377.389 57.772C374.688 57.1787 372.391 56.0156 370.499 54.2887C368.607 52.5619 367.662 49.5332 367.662 45.2116H377.551C377.551 46.6875 378.369 47.8506 380.01 48.6948C381.648 49.542 383.998 49.9642 387.062 49.9642C390.339 49.9642 392.52 49.604 393.601 48.8838C394.681 48.1635 395.221 47.3547 395.221 46.4514C395.221 45.6957 394.672 45.1732 393.574 44.8839C392.476 44.5946 391.089 44.2994 389.415 43.9924C387.741 43.6854 386.082 43.4434 384.444 43.2633C382.805 43.0832 381.238 42.912 379.744 42.7497C378.251 42.5873 376.745 42.2892 375.234 41.8582C373.722 41.4272 372.406 40.8398 371.29 40.1018C370.174 39.3638 369.292 38.2657 368.642 36.8045C367.993 35.3463 367.671 33.7345 367.671 31.9693C367.671 29.0173 368.32 26.6824 369.616 24.9732C370.912 23.264 372.993 22.0656 375.857 21.3807C378.72 20.6959 382.224 20.3535 386.365 20.3535C390.507 20.3535 393.967 20.6959 396.414 21.3807C398.864 22.0656 400.933 23.3172 402.628 25.1356C404.319 26.954 405.166 29.6284 405.166 33.1589H395.549C395.549 32.0431 394.755 31.125 393.173 30.4018C391.587 29.6815 389.409 29.3214 386.634 29.3214C383.248 29.3214 381.07 29.5634 380.096 30.0505C379.124 30.5376 378.637 31.2136 378.637 32.0755H378.629Z"
                   fill="#231F20"
@@ -198,20 +174,14 @@ const LoginPage = () => {
               </svg>
 
               <h1 className="text-3xl font-bold tracking-tight">Sign in</h1>
-              <p className="text-zinc-500">
-                Log in to unlock tailored content and stay connected with your
-                community.
-              </p>
+              <p className="text-zinc-500">Log in to unlock tailored content and stay connected with your community.</p>
             </div>
 
             <LoginForm key={key} onSubmit={handleLogin} isLoading={isLoading} />
 
             <div className="text-center text-sm mt-8">
               <span className="text-zinc-500">Don't have an account? </span>
-              <Link
-                to="/register"
-                className="text-black hover:underline font-medium"
-              >
+              <Link to="/register" className="text-black hover:underline font-medium">
                 Sign up
               </Link>
             </div>

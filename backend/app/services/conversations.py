@@ -4,8 +4,10 @@ import os
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Sequence, Tuple
 from uuid import UUID
-from app.core.config.settings import settings
+
 from fastapi import Depends
+from fastapi_cache.coder import PickleCoder
+from fastapi_cache.decorator import cache
 from fastapi_injector import Injected
 from injector import inject
 
@@ -13,16 +15,15 @@ from app.auth.utils import (
     get_current_operator_id,
     get_current_user_id,
     is_current_user_supervisor_or_admin,
-    )
+)
+from app.cache.redis_cache import invalidate_conversation_cache, make_key_builder
+from app.core.config.settings import settings
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.core.utils.bi_utils import (
     calculate_duration_from_transcript,
     calculate_incremental_word_counts,
 )
-from app.cache.redis_cache import make_key_builder, invalidate_conversation_cache
-from fastapi_cache.coder import PickleCoder
-from fastapi_cache.decorator import cache
 from app.core.utils.enums.conversation_status_enum import ConversationStatus
 from app.core.utils.enums.conversation_type_enum import ConversationType
 from app.core.utils.enums.message_feedback_enum import Feedback
@@ -30,7 +31,7 @@ from app.core.utils.enums.transcript_message_type import TranscriptMessageType
 from app.core.utils.transcript_utils import (
     schema_to_transcript_message,
     transcript_messages_to_json,
-    )
+)
 from app.db.models.conversation import ConversationAnalysisModel, ConversationModel
 from app.db.models.message_model import TranscriptMessageModel
 from app.db.seed.seed_data_config import seed_test_data
@@ -41,13 +42,13 @@ from app.schemas.conversation import (
     ConversationCreate,
     ConversationWithOperatorAgentRead,
     InProgressPollResponse,
-    )
+)
 from app.schemas.conversation_analysis import ConversationAnalysisRead
 from app.schemas.conversation_transcript import (
     ConversationTranscriptCreate,
     InProgConvTranscrUpdate,
     TranscriptSegmentInput,
-    )
+)
 from app.schemas.filter import ConversationFilter
 from app.schemas.transcript_message import TranscriptMessageRead
 from app.services.conversation_analysis import ConversationAnalysisService
@@ -55,7 +56,6 @@ from app.services.gpt_kpi_analyzer import GptKpiAnalyzer
 from app.services.llm_analysts import LlmAnalystService
 from app.services.operator_statistics import OperatorStatisticsService
 from app.services.zendesk import ZendeskClient
-
 
 logger = logging.getLogger(__name__)
 
@@ -107,9 +107,7 @@ class ConversationService:
         key_builder=make_key_builder("conversation_id"),
         coder=PickleCoder,
     )
-    async def get_in_progress_poll_data(
-        self, conversation_id: UUID
-    ) -> InProgressPollResponse:
+    async def get_in_progress_poll_data(self, conversation_id: UUID) -> InProgressPollResponse:
         """
         Lightweight poll data for heartbeat when WebSocket is disabled.
         Cached 2s to avoid DB hammering; invalidate on conversation update/finalize.
@@ -120,42 +118,29 @@ class ConversationService:
         )
         if not conversation:
             raise AppException(ErrorKey.CONVERSATION_NOT_FOUND, status_code=404)
-        messages_raw = [
-            TranscriptMessageRead.model_validate(m)
-            for m in (conversation.messages or [])
-        ]
+        messages_raw = [TranscriptMessageRead.model_validate(m) for m in (conversation.messages or [])]
 
         # filter out messages with speaker 'customer'
-        messages = [m for m in messages_raw if m.speaker != 'customer']
+        messages = [m for m in messages_raw if m.speaker != "customer"]
 
         return InProgressPollResponse(
             status=conversation.status or "in_progress",
             messages=messages,
         )
 
-    async def get_conversation_by_id_full(
-        self, conversation_id: UUID, conversation_filter: ConversationFilter
-    ):
-        conversation = await self.conversation_repo.fetch_conversation_by_id_full(
-            conversation_id, conversation_filter
-        )
+    async def get_conversation_by_id_full(self, conversation_id: UUID, conversation_filter: ConversationFilter):
+        conversation = await self.conversation_repo.fetch_conversation_by_id_full(conversation_id, conversation_filter)
         if not conversation:
             raise AppException(ErrorKey.CONVERSATION_NOT_FOUND, status_code=404)
         return conversation
 
-    async def get_conversations_by_customer_id(
-        self, customer_id: UUID, raise_not_found: bool = True
-    ):
-        conversations = await self.conversation_repo.fetch_conversations_by_customer_id(
-            customer_id
-        )
+    async def get_conversations_by_customer_id(self, customer_id: UUID, raise_not_found: bool = True):
+        conversations = await self.conversation_repo.fetch_conversations_by_customer_id(customer_id)
         if not conversations and raise_not_found:
             raise AppException(ErrorKey.CONVERSATIONS_NOT_FOUND, status_code=404)
         return conversations
 
-    async def start_in_progress_conversation(
-        self, model: ConversationTranscriptCreate
-    ) -> ConversationModel:
+    async def start_in_progress_conversation(self, model: ConversationTranscriptCreate) -> ConversationModel:
         """
         Creates a new conversation with 'status=in_progress' and saves messages to separate table
         """
@@ -188,9 +173,7 @@ class ConversationService:
         """
         Appends new transcript segments to an existing conversation
         """
-        conversation = await self.conversation_repo.fetch_conversation_by_id(
-            conversation_id
-        )
+        conversation = await self.conversation_repo.fetch_conversation_by_id(conversation_id)
         if not conversation:
             raise AppException(ErrorKey.CONVERSATION_NOT_FOUND, status_code=404)
 
@@ -198,14 +181,10 @@ class ConversationService:
             raise AppException(ErrorKey.CONVERSATION_FINALIZED)
 
         # Get only the count for sequence numbering
-        next_sequence = await self.transcript_message_repo.get_message_count(
-            conversation_id
-        )
+        next_sequence = await self.transcript_message_repo.get_message_count(conversation_id)
 
         # Save new messages
-        new_messages = await self.save_new_messages(
-            conversation_id, in_progress_conv_update.messages, next_sequence
-        )
+        new_messages = await self.save_new_messages(conversation_id, in_progress_conv_update.messages, next_sequence)
 
         # Convert new messages to schema format (filter MESSAGE type only)
         new_segment_inputs = [
@@ -222,13 +201,11 @@ class ConversationService:
         ]
 
         # Calculate updated word counts and ratios
-        agent_ratio, customer_ratio, total_word_count = (
-            calculate_incremental_word_counts(
-                new_segment_inputs,
-                conversation.word_count,
-                conversation.agent_ratio,
-                conversation.customer_ratio,
-            )
+        agent_ratio, customer_ratio, total_word_count = calculate_incremental_word_counts(
+            new_segment_inputs,
+            conversation.word_count,
+            conversation.agent_ratio,
+            conversation.customer_ratio,
         )
 
         conversation.agent_ratio = agent_ratio
@@ -240,10 +217,8 @@ class ConversationService:
         conversation.duration = conversation.duration + incremental_duration
 
         # Get all messages for transcript JSON (if needed for tone analysis)
-        all_messages = (
-            await self.transcript_message_repo.get_messages_by_conversation_id(
-                conversation_id,
-            )
+        all_messages = await self.transcript_message_repo.get_messages_by_conversation_id(
+            conversation_id,
         )
         hostility_limit = settings.HOSTILITY_SCORE_MESSAGE_COUNT
         tone_messages = all_messages[-hostility_limit:]
@@ -297,9 +272,7 @@ class ConversationService:
         """
         Finalize conversation and run GPT analysis
         """
-        conversation = await self.conversation_repo.fetch_conversation_by_id(
-            conversation_id
-        )
+        conversation = await self.conversation_repo.fetch_conversation_by_id(conversation_id)
         if not conversation:
             raise AppException(ErrorKey.CONVERSATION_NOT_FOUND)
 
@@ -308,9 +281,7 @@ class ConversationService:
 
         # Mark as finalized
         conversation.status = ConversationStatus.FINALIZED.value
-        saved_conversation = await self.conversation_repo.update_conversation(
-            conversation
-        )
+        saved_conversation = await self.conversation_repo.update_conversation(conversation)
 
         # Get messages for analysis
         messages = await self.transcript_message_repo.get_messages_by_type(
@@ -334,10 +305,8 @@ class ConversationService:
             message_type_segments, llm_analyst=llm_analyst
         )
 
-        conversation_analysis = (
-            await self.conversation_analysis_service.create_conversation_analysis(
-                gpt_analysis, llm_analyst_id, saved_conversation.id
-            )
+        conversation_analysis = await self.conversation_analysis_service.create_conversation_analysis(
+            gpt_analysis, llm_analyst_id, saved_conversation.id
         )
 
         # Update operator statistics
@@ -346,9 +315,7 @@ class ConversationService:
         )
 
         # Store in Zendesk if enabled
-        store_in_zendesk = (
-            os.getenv("STORE_CONVERSATIONS_IN_ZENDESK", "false").lower() == "true"
-        )
+        store_in_zendesk = os.getenv("STORE_CONVERSATIONS_IN_ZENDESK", "false").lower() == "true"
         if store_in_zendesk:
             await self.store_zendesk_analysis(saved_conversation, conversation_analysis)
 
@@ -380,10 +347,8 @@ class ConversationService:
         gpt_analysis = await self.gpt_kpi_analyzer_service.analyze_transcript(
             message_type_segments, llm_analyst=llm_analyst
         )
-        conversation_analysis = (
-            await self.conversation_analysis_service.create_conversation_analysis(
-                gpt_analysis, llm_analyst_id, conversation_id
-            )
+        conversation_analysis = await self.conversation_analysis_service.create_conversation_analysis(
+            gpt_analysis, llm_analyst_id, conversation_id
         )
         await self.operator_statistics_service.update_from_analysis(
             conversation_analysis, conversation.operator_id, conversation.duration
@@ -419,9 +384,7 @@ class ConversationService:
                 "For any follow‐up, please contact the customer by email "
                 "and ask about any remaining concerns."
             )
-            await zendesk.update_ticket(
-                ticket_id=saved_conversation.zendesk_ticket_id, comment=comment_body
-            )
+            await zendesk.update_ticket(ticket_id=saved_conversation.zendesk_ticket_id, comment=comment_body)
         else:
             subject = f"GenAssist Conversation {saved_conversation.id} – Needs review"
             description = (
@@ -453,20 +416,15 @@ class ConversationService:
         transcript: str,
         llm_analyst_id: Optional[UUID] = None,
     ) -> ConversationModel:
-
         #  Run GPT analysis
         if not llm_analyst_id:
             llm_analyst_id = seed_test_data.llm_analyst_in_progress_hostility_id
 
-        llm_analyst = await self.llm_analyst_service.get_by_id(
-            llm_analyst_id, throw_not_found=False
-        )
+        llm_analyst = await self.llm_analyst_service.get_by_id(llm_analyst_id, throw_not_found=False)
 
         if llm_analyst and llm_analyst.is_active:
-            analysis_result = (
-                await self.gpt_kpi_analyzer_service.partial_hostility_analysis(
-                    transcript, llm_analyst=llm_analyst
-                )
+            analysis_result = await self.gpt_kpi_analyzer_service.partial_hostility_analysis(
+                transcript, llm_analyst=llm_analyst
             )
         else:
             # TODO remove after fixing seed
@@ -481,15 +439,11 @@ class ConversationService:
         conversation.topic = analysis_result["topic"]
         conversation.negative_reason = analysis_result["negative_reason"]
 
-        upd_conversation = await self.conversation_repo.update_conversation(
-            conversation
-        )
+        upd_conversation = await self.conversation_repo.update_conversation(conversation)
         return upd_conversation
 
     async def supervisor_takeover_conversation(self, conversation_id: UUID):
-        conversation = await self.conversation_repo.fetch_conversation_by_id(
-            conversation_id
-        )
+        conversation = await self.conversation_repo.fetch_conversation_by_id(conversation_id)
         self._validate_in_progress(conversation)
         segments = [
             TranscriptSegmentInput(
@@ -504,12 +458,8 @@ class ConversationService:
         transcript_update = InProgConvTranscrUpdate(messages=segments)
 
         # Get only the count for sequence numbering
-        next_sequence = await self.transcript_message_repo.get_message_count(
-            conversation_id
-        )
-        await self.save_new_messages(
-            conversation_id, transcript_update.messages, next_sequence
-        )
+        next_sequence = await self.transcript_message_repo.get_message_count(conversation_id)
+        await self.save_new_messages(conversation_id, transcript_update.messages, next_sequence)
         conversation.supervisor_id = get_current_user_id()
         conversation.status = ConversationStatus.TAKE_OVER.value
         conversation = await self.conversation_repo.update_conversation(conversation)
@@ -517,7 +467,6 @@ class ConversationService:
         return conversation
 
     async def get_conversations(self, conversation_filter: ConversationFilter):
-
         # If not supervisor or admin, you can see only your conversations
         if not is_current_user_supervisor_or_admin():
             # if not admin/super and not operator, can't see any conversations
@@ -541,9 +490,7 @@ class ConversationService:
         return models
 
     async def delete_conversation(self, conversation_id: UUID):
-        conversation = await self.conversation_repo.fetch_conversation_by_id(
-            conversation_id
-        )
+        conversation = await self.conversation_repo.fetch_conversation_by_id(conversation_id)
         if not conversation:
             raise AppException(ErrorKey.CONVERSATION_NOT_FOUND)
         await self.conversation_repo.delete_conversation(conversation)
@@ -551,9 +498,7 @@ class ConversationService:
 
     async def cleanup_stale_conversations(self, cutoff_time: datetime):
         stale_conversations = await self.get_stale_conversations(cutoff_time)
-        print(
-            f"Got {len(stale_conversations)} stale conversations for cutoff time {cutoff_time}"
-        )
+        print(f"Got {len(stale_conversations)} stale conversations for cutoff time {cutoff_time}")
 
         deleted_count = 0
         finalized_count = 0
@@ -566,24 +511,18 @@ class ConversationService:
                 conversation.is_deleted = True
                 await self.update_conversation(conversation)
                 deleted_count += 1
-                logger.info(
-                    f"Deleted stale conversation {conversation.id} (last updated: {conversation.updated_at})"
-                )
+                logger.info(f"Deleted stale conversation {conversation.id} (last updated: {conversation.updated_at})")
             else:
                 try:
                     # Use the default KPI analyzer for finalization
                     await self.finalize_in_progress_conversation(
-                            conversation_id=conversation.id,
+                        conversation_id=conversation.id,
                         llm_analyst_id=seed_test_data.llm_analyst_kpi_analyzer_id,
                     )
                     finalized_count += 1
-                    logger.info(
-                        f"Finalized conversation {conversation.id} (last updated: {conversation.updated_at})"
-                    )
+                    logger.info(f"Finalized conversation {conversation.id} (last updated: {conversation.updated_at})")
                 except Exception as e:
-                    logger.error(
-                        f"Failed to finalize conversation {conversation.id}: {str(e)}"
-                    )
+                    logger.error(f"Failed to finalize conversation {conversation.id}: {str(e)}")
                     failed_count += 1
 
             await invalidate_conversation_cache(conversation.id)
@@ -610,9 +549,7 @@ class ConversationService:
     async def add_conversation_feedback(
         self, conversation_id: UUID, feedback: Feedback, feedback_message: str
     ) -> ConversationModel:
-        conversation = await self.conversation_repo.fetch_conversation_by_id(
-            conversation_id
-        )
+        conversation = await self.conversation_repo.fetch_conversation_by_id(conversation_id)
         if not conversation:
             raise AppException(ErrorKey.CONVERSATION_NOT_FOUND, status_code=404)
 
@@ -627,9 +564,7 @@ class ConversationService:
         }
 
         # Get existing feedback array or create new one
-        existing_feedback = (
-            json.loads(conversation.feedback) if conversation.feedback else []
-        )
+        existing_feedback = json.loads(conversation.feedback) if conversation.feedback else []
 
         # Ensure it's a list (for backwards compatibility)
         if not isinstance(existing_feedback, list):
@@ -649,23 +584,19 @@ class ConversationService:
             existing_feedback.append(feedback_object)
 
         conversation.feedback = json.dumps(existing_feedback)
-        updated_conversation = await self.conversation_repo.update_conversation(
-            conversation
-        )
+        updated_conversation = await self.conversation_repo.update_conversation(conversation)
         return updated_conversation
 
     @cache(
         expire=300,
         namespace="conversations:get_conversation_by_id_with_operator_agent",
         key_builder=conversation_id_key_builder_full,
-        coder=PickleCoder
+        coder=PickleCoder,
     )
     async def get_conversation_by_id_with_operator_agent(
         self, conversation_id: UUID
     ) -> Optional[ConversationWithOperatorAgentRead]:
-        model = await self.conversation_repo.fetch_conversation_by_id_with_operator_agent(
-            conversation_id
-        )
+        model = await self.conversation_repo.fetch_conversation_by_id_with_operator_agent(conversation_id)
         if model is None:
             return None
         return ConversationWithOperatorAgentRead.model_validate(model)

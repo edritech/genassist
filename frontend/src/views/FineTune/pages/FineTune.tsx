@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { FineTuneJobsCard } from "@/views/FineTune/components/FineTuneJobsCard";
-import { FineTuneJobDialog } from "@/views/FineTune/components/FineTuneJobDialog";
+import { useState } from 'react';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { FineTuneJobsCard } from '@/views/FineTune/components/FineTuneJobsCard';
+import { FineTuneJobDialog } from '@/views/FineTune/components/FineTuneJobDialog';
 
 export default function FineTune() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -27,11 +27,7 @@ export default function FineTune() {
 
       <FineTuneJobsCard searchQuery={searchQuery} refreshKey={refreshKey} />
 
-      <FineTuneJobDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onJobCreated={handleJobCreated}
-      />
+      <FineTuneJobDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} onJobCreated={handleJobCreated} />
     </PageLayout>
   );
 }

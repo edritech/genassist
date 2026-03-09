@@ -1,27 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { NodeProps } from "reactflow";
-import { OpenApiNodeData } from "../../types/nodes";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { LLMProvider } from "@/interfaces/llmProvider.interface";
-import { getNodeColor } from "../../utils/nodeColors";
-import { getAllLLMProviders } from "@/services/llmProviders";
-import { NodeContentRow } from "../nodeContent";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { OpenApiDialog } from "../../nodeDialogs/OpenApiDialog";
+import React, { useEffect, useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { OpenApiNodeData } from '../../types/nodes';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { LLMProvider } from '@/interfaces/llmProvider.interface';
+import { getNodeColor } from '../../utils/nodeColors';
+import { getAllLLMProviders } from '@/services/llmProviders';
+import { NodeContentRow } from '../nodeContent';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { OpenApiDialog } from '../../nodeDialogs/OpenApiDialog';
 
-export const OPEN_API_NODE_TYPE = "openApiNode";
+export const OPEN_API_NODE_TYPE = 'openApiNode';
 
-const OpenApiNode: React.FC<NodeProps<OpenApiNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const OpenApiNode: React.FC<NodeProps<OpenApiNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(OPEN_API_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [availableProviders, setAvailableProviders] = useState<LLMProvider[]>(
-    []
-  );
+  const [availableProviders, setAvailableProviders] = useState<LLMProvider[]>([]);
 
   useEffect(() => {
     const loadProviders = async () => {
@@ -46,22 +40,20 @@ const OpenApiNode: React.FC<NodeProps<OpenApiNodeData>> = ({
     }
   };
 
-  const selectedProvider = availableProviders.find(
-    (p) => p.id === data.providerId
-  );
+  const selectedProvider = availableProviders.find((p) => p.id === data.providerId);
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "LLM Provider",
+      label: 'LLM Provider',
       value: selectedProvider?.name,
-      placeholder: "None selected",
+      placeholder: 'None selected',
     },
     {
-      label: "Specification File",
+      label: 'Specification File',
       value: data.originalFileName,
-      placeholder: "None uploaded",
+      placeholder: 'None uploaded',
     },
-    { label: "Query", value: data.query },
+    { label: 'Query', value: data.query },
   ];
 
   return (

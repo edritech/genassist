@@ -1,4 +1,4 @@
-import { apiRequest } from "@/config/api";
+import { apiRequest } from '@/config/api';
 import {
   TrainingPipelineConfig,
   PipelineRun,
@@ -6,27 +6,27 @@ import {
   PipelineRunCreatePayload,
   TrainingPipelineConfigCreatePayload,
   TrainingPipelineConfigUpdatePayload,
-} from "@/interfaces/ml-model-pipeline.interface";
+} from '@/interfaces/ml-model-pipeline.interface';
 
-const BASE = "ml-models";
+const BASE = 'ml-models';
 
 // Training Pipeline Configuration
 export const getModelPipelineConfigs = async (modelId: string): Promise<TrainingPipelineConfig[]> => {
   try {
-    const data = await apiRequest<TrainingPipelineConfig[]>("GET", `${BASE}/${modelId}/pipeline-configs`);
+    const data = await apiRequest<TrainingPipelineConfig[]>('GET', `${BASE}/${modelId}/pipeline-configs`);
     return data || [];
   } catch (error) {
-    console.error("Error fetching pipeline configs:", error);
+    console.error('Error fetching pipeline configs:', error);
     throw error;
   }
 };
 
 export const getPipelineConfig = async (modelId: string, configId: string): Promise<TrainingPipelineConfig | null> => {
   try {
-    const data = await apiRequest<TrainingPipelineConfig>("GET", `${BASE}/${modelId}/pipeline-configs/${configId}`);
+    const data = await apiRequest<TrainingPipelineConfig>('GET', `${BASE}/${modelId}/pipeline-configs/${configId}`);
     return data ?? null;
   } catch (error) {
-    console.error("Error fetching pipeline config:", error);
+    console.error('Error fetching pipeline config:', error);
     throw error;
   }
 };
@@ -37,14 +37,14 @@ export const createPipelineConfig = async (
 ): Promise<TrainingPipelineConfig> => {
   try {
     const response = await apiRequest<TrainingPipelineConfig>(
-      "POST",
+      'POST',
       `${BASE}/${modelId}/pipeline-configs`,
       config as unknown as Record<string, unknown>
     );
-    if (!response) throw new Error("Failed to create pipeline config");
+    if (!response) throw new Error('Failed to create pipeline config');
     return response;
   } catch (error) {
-    console.error("Error creating pipeline config:", error);
+    console.error('Error creating pipeline config:', error);
     throw error;
   }
 };
@@ -56,23 +56,23 @@ export const updatePipelineConfig = async (
 ): Promise<TrainingPipelineConfig> => {
   try {
     const response = await apiRequest<TrainingPipelineConfig>(
-      "PUT",
+      'PUT',
       `${BASE}/${modelId}/pipeline-configs/${configId}`,
       config as unknown as Record<string, unknown>
     );
-    if (!response) throw new Error("Failed to update pipeline config");
+    if (!response) throw new Error('Failed to update pipeline config');
     return response;
   } catch (error) {
-    console.error("Error updating pipeline config:", error);
+    console.error('Error updating pipeline config:', error);
     throw error;
   }
 };
 
 export const deletePipelineConfig = async (modelId: string, configId: string): Promise<void> => {
   try {
-    await apiRequest("DELETE", `${BASE}/${modelId}/pipeline-configs/${configId}`);
+    await apiRequest('DELETE', `${BASE}/${modelId}/pipeline-configs/${configId}`);
   } catch (error) {
-    console.error("Error deleting pipeline config:", error);
+    console.error('Error deleting pipeline config:', error);
     throw error;
   }
 };
@@ -80,47 +80,44 @@ export const deletePipelineConfig = async (modelId: string, configId: string): P
 // Pipeline Runs
 export const getModelPipelineRuns = async (modelId: string): Promise<PipelineRun[]> => {
   try {
-    const data = await apiRequest<PipelineRun[]>("GET", `${BASE}/${modelId}/pipeline-runs`);
+    const data = await apiRequest<PipelineRun[]>('GET', `${BASE}/${modelId}/pipeline-runs`);
     return data || [];
   } catch (error) {
-    console.error("Error fetching pipeline runs:", error);
+    console.error('Error fetching pipeline runs:', error);
     throw error;
   }
 };
 
 export const getPipelineRun = async (modelId: string, runId: string): Promise<PipelineRun | null> => {
   try {
-    const data = await apiRequest<PipelineRun>("GET", `${BASE}/${modelId}/pipeline-runs/${runId}`);
+    const data = await apiRequest<PipelineRun>('GET', `${BASE}/${modelId}/pipeline-runs/${runId}`);
     return data ?? null;
   } catch (error) {
-    console.error("Error fetching pipeline run:", error);
+    console.error('Error fetching pipeline run:', error);
     throw error;
   }
 };
 
-export const createPipelineRun = async (
-  modelId: string,
-  run: PipelineRunCreatePayload
-): Promise<PipelineRun> => {
+export const createPipelineRun = async (modelId: string, run: PipelineRunCreatePayload): Promise<PipelineRun> => {
   try {
     const response = await apiRequest<PipelineRun>(
-      "POST",
+      'POST',
       `${BASE}/${modelId}/pipeline-runs`,
       run as unknown as Record<string, unknown>
     );
-    if (!response) throw new Error("Failed to create pipeline run");
+    if (!response) throw new Error('Failed to create pipeline run');
     return response;
   } catch (error) {
-    console.error("Error creating pipeline run:", error);
+    console.error('Error creating pipeline run:', error);
     throw error;
   }
 };
 
 export const promotePipelineRun = async (modelId: string, runId: string): Promise<void> => {
   try {
-    await apiRequest("POST", `${BASE}/${modelId}/pipeline-runs/${runId}/promote`);
+    await apiRequest('POST', `${BASE}/${modelId}/pipeline-runs/${runId}/promote`);
   } catch (error) {
-    console.error("Error promoting pipeline run:", error);
+    console.error('Error promoting pipeline run:', error);
     throw error;
   }
 };
@@ -128,11 +125,10 @@ export const promotePipelineRun = async (modelId: string, runId: string): Promis
 // Pipeline Artifacts
 export const getPipelineRunArtifacts = async (modelId: string, runId: string): Promise<PipelineArtifact[]> => {
   try {
-    const data = await apiRequest<PipelineArtifact[]>("GET", `${BASE}/${modelId}/pipeline-runs/${runId}/artifacts`);
+    const data = await apiRequest<PipelineArtifact[]>('GET', `${BASE}/${modelId}/pipeline-runs/${runId}/artifacts`);
     return data || [];
   } catch (error) {
-    console.error("Error fetching pipeline artifacts:", error);
+    console.error('Error fetching pipeline artifacts:', error);
     throw error;
   }
 };
-

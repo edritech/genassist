@@ -8,13 +8,13 @@ from sentence_transformers import SentenceTransformer
 from .base import Embedder
 
 __all__ = [
-    'OpenAIEmbedder',
-    'SentenceTransformerEmbedder',
+    "OpenAIEmbedder",
+    "SentenceTransformerEmbedder",
 ]
 
 _models = [
-    'sentence-transformers/all-MiniLM-L6-v2',
-    'hkunlp/instructor-xl',
+    "sentence-transformers/all-MiniLM-L6-v2",
+    "hkunlp/instructor-xl",
 ]
 
 

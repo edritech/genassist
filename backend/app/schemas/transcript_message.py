@@ -1,7 +1,9 @@
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict, Field
-from datetime import datetime
+
 from app.schemas.message_feedback import MessageFeedbackRead
 
 
@@ -14,18 +16,15 @@ class TranscriptMessageBase(BaseModel):
     type: str = Field(..., max_length=50)
     sequence_number: Optional[int] = None
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TranscriptMessageCreate(TranscriptMessageBase):
     pass
 
+
 class TranscriptMessageRead(TranscriptMessageBase):
     id: UUID
     feedback: Optional[list[MessageFeedbackRead]] = None
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)

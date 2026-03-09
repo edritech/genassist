@@ -8,18 +8,16 @@ def new_llm_provider_data():
     return {
         "name": "test_provider",
         "llm_model_provider": "openai",
-        "connection_data": {
-            "api_key": settings.OPENAI_API_KEY
-        },
+        "connection_data": {"api_key": settings.OPENAI_API_KEY},
         "is_active": 1,
-        "llm_model": "gpt-3.5-turbo"
+        "llm_model": "gpt-3.5-turbo",
     }
 
 
 @pytest.mark.asyncio
 async def test_create_llm_provider(authorized_client, new_llm_provider_data):
     response = authorized_client.post("/api/llm-providers/", json=new_llm_provider_data)
-    print("test_create_llm_provider - response"+str(response.json()))
+    print("test_create_llm_provider - response" + str(response.json()))
     assert response.status_code == 200
     data = response.json()
     assert "id" in data
@@ -49,10 +47,7 @@ async def test_get_llm_provider_by_id(authorized_client, new_llm_provider_data):
 @pytest.mark.asyncio
 async def test_update_llm_provider(authorized_client, new_llm_provider_data):
     provider_id = new_llm_provider_data["id"]
-    update_payload = {
-        "name": "Updated LLM Provider",
-        "llm_model": "gpt-4o"
-    }
+    update_payload = {"name": "Updated LLM Provider", "llm_model": "gpt-4o"}
     response = authorized_client.patch(f"/api/llm-providers/{provider_id}", json=update_payload)
     assert response.status_code == 200
     data = response.json()

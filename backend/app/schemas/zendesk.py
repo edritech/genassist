@@ -1,5 +1,5 @@
-
 from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -15,5 +15,4 @@ class ZendeskClosedPayload(BaseModel):
     requester: Optional[ZendeskRequester] = None
     status: Optional[str] = None
     custom_fields: Optional[list[dict]] = None
-    tags: Optional[list[str]]  = None
-
+    tags: Optional[list[str]] = None

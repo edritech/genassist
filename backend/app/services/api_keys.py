@@ -1,43 +1,44 @@
 import logging
 from typing import Optional
+from uuid import UUID
+
+from cryptography.fernet import InvalidToken
 from fastapi_cache.coder import PickleCoder
 from fastapi_cache.decorator import cache
 from injector import inject
 from starlette_context import context
-from uuid import UUID
-from fastapi import Depends
-from app.auth.utils import current_user_is_admin, generate_api_key, hash_api_key, is_current_user_supervisor_or_admin
+
+from app.auth.utils import current_user_is_admin, generate_api_key, hash_api_key
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.core.utils.encryption_utils import decrypt_key, encrypt_key
 from app.db.models import ApiKeyModel
+from app.repositories.api_keys import ApiKeysRepository, api_key_key_builder
 from app.repositories.roles import RolesRepository
 from app.schemas.api_key import ApiKeyCreate, ApiKeyInternal, ApiKeyUpdate
-from app.repositories.api_keys import ApiKeysRepository, api_key_key_builder
 from app.schemas.filter import ApiKeysFilter
 from app.schemas.role import RoleRead
-from cryptography.fernet import InvalidToken
-
 
 logger = logging.getLogger(__name__)
 
+
 @inject
 class ApiKeysService:
-    def __init__(self, repository: ApiKeysRepository, roles_repository: RolesRepository,):
+    def __init__(
+        self,
+        repository: ApiKeysRepository,
+        roles_repository: RolesRepository,
+    ):
         self.repository = repository
         self.roles_repository = roles_repository
 
-
     @cache(
-        expire=120,
-        namespace="api_keys:validate_and_get_api_key",
-        key_builder=api_key_key_builder,
-        coder=PickleCoder
+        expire=120, namespace="api_keys:validate_and_get_api_key", key_builder=api_key_key_builder, coder=PickleCoder
     )
     async def validate_and_get_api_key(self, api_key: str) -> ApiKeyInternal:
         hashed_value = hash_api_key(api_key)
-        logger.debug("getting api key for hashed val:"+hashed_value)
-        api_key_model: Optional[ApiKeyModel] =  await self.repository.get_by_hashed_value(hashed_value=hashed_value)
+        logger.debug("getting api key for hashed val:" + hashed_value)
+        api_key_model: Optional[ApiKeyModel] = await self.repository.get_by_hashed_value(hashed_value=hashed_value)
         if not api_key_model:
             raise AppException(status_code=401, error_key=ErrorKey.INVALID_API_KEY)
 
@@ -78,14 +79,13 @@ class ApiKeysService:
         return api_key
 
     async def get_all(self, api_key_filter: ApiKeysFilter):
-        api_keys =  await self.repository.get_all(api_key_filter)
+        api_keys = await self.repository.get_all(api_key_filter)
         for api_key in api_keys:
             try:
                 api_key.key_val = decrypt_key(api_key.key_val)
             except InvalidToken:
                 raise AppException(error_key=ErrorKey.INVALID_API_KEY_ENCRYPTION, status_code=500)
         return api_keys
-
 
     async def delete(self, api_key_id: UUID):
         api_key = await self.repository.get_by_id(api_key_id)
@@ -104,7 +104,6 @@ class ApiKeysService:
 
         model = await self.repository.update(context["user_id"], api_key_id, data)
         return model
-
 
     def _validate_role_ids(self, user_roles: list[RoleRead], requested_role_ids: list[UUID]) -> None:
         """

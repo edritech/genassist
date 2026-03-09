@@ -1,16 +1,14 @@
-import pytest
 import logging
-from app.schemas.user import UserRead, UserCreate, UserUpdate
+
+import pytest
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture(scope="module")
 def new_prm_data():
-    return {
-        "name": "test:prm",
-        "description": "test prm",
-        "is_active": True
-    }
+    return {"name": "test:prm", "description": "test prm", "is_active": True}
+
 
 @pytest.mark.asyncio
 async def test_create_permission(authorized_client, new_prm_data):
@@ -54,6 +52,7 @@ async def test_update_permission(authorized_client, new_prm_data):
     print(data)
     assert data["id"] == id
     assert data["name"] == new_prm_data["name"]
+
 
 @pytest.mark.asyncio
 async def test_delete_permission(authorized_client, new_prm_data):

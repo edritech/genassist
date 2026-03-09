@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { ApiKeysCard } from "@/views/ApiKeys/components/ApiKeysCard";
-import { ApiKey } from "@/interfaces/api-key.interface";
-import { ApiKeyDialog } from "../components/ApiKeyDialog";
+import { useState } from 'react';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { ApiKeysCard } from '@/views/ApiKeys/components/ApiKeysCard';
+import { ApiKey } from '@/interfaces/api-key.interface';
+import { ApiKeyDialog } from '../components/ApiKeyDialog';
 
 export default function ApiKeys() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [apiKeyToEdit, setApiKeyToEdit] = useState<ApiKey | null>(null);
   const [updatedApiKey, setUpdatedApiKey] = useState<ApiKey | null>(null);
 
@@ -22,13 +22,13 @@ export default function ApiKeys() {
   };
 
   const handleCreateApiKey = () => {
-    setDialogMode("create");
+    setDialogMode('create');
     setApiKeyToEdit(null);
     setIsDialogOpen(true);
   };
 
   const handleEditApiKey = (apiKey: ApiKey) => {
-    setDialogMode("edit");
+    setDialogMode('edit');
     setApiKeyToEdit(apiKey);
     setIsDialogOpen(true);
   };

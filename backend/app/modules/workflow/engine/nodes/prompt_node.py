@@ -2,11 +2,10 @@
 Prompt node implementation using the BaseNode class.
 """
 
-from typing import Any, Dict
 import logging
+from typing import Any, Dict
 
 from app.modules.workflow.engine.base_node import BaseNode
-
 
 logger = logging.getLogger(__name__)
 

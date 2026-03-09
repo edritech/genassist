@@ -1,11 +1,12 @@
-from typing import Dict, Any, List, Union, Optional
+import json
 import logging
 from datetime import datetime
-import json
-from redis.asyncio import Redis
-from app.dependencies.dependency_injection import RedisString
-from app.core.config.settings import settings
+from typing import Any, Dict, List, Optional, Union
 
+from redis.asyncio import Redis
+
+from app.core.config.settings import settings
+from app.dependencies.dependency_injection import RedisString
 
 logger = logging.getLogger(__name__)
 
@@ -76,18 +77,12 @@ class BaseConversationMemory:
         """Get metadata for the conversation"""
         raise NotImplementedError
 
-    async def get_chat_history(
-        self, as_string: bool = False, max_messages: int = 10
-    ) -> Union[List[Message], str]:
+    async def get_chat_history(self, as_string: bool = False, max_messages: int = 10) -> Union[List[Message], str]:
         """Get the chat history in a format suitable for LLM context"""
         raise NotImplementedError
 
     async def get_chat_history_within_tokens(
-        self,
-        token_budget: int,
-        provider: str,
-        model: str,
-        as_string: bool = False
+        self, token_budget: int, provider: str, model: str, as_string: bool = False
     ) -> Union[List[dict[str, Any]], str]:
         """
         Get formatted chat history within token budget.
@@ -139,9 +134,7 @@ class BaseConversationMemory:
         """
         raise NotImplementedError
 
-    async def get_messages_for_compaction(
-            self, keep_recent: int
-            ) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    async def get_messages_for_compaction(self, keep_recent: int) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
         Get messages split into compaction candidates and recent messages to keep.
 
@@ -155,8 +148,8 @@ class BaseConversationMemory:
         raise NotImplementedError
 
     async def get_chat_history_with_compaction(
-            self, max_messages: int, as_string: bool = False
-            ) -> Union[List[Dict[str, Any]], str]:
+        self, max_messages: int, as_string: bool = False
+    ) -> Union[List[Dict[str, Any]], str]:
         """
         Get chat history with compacted summary prepended.
 
@@ -256,9 +249,7 @@ class InMemoryConversationMemory(BaseConversationMemory):
         """Get metadata for the conversation"""
         return self.metadata.get(key, default)
 
-    async def get_chat_history(
-        self, as_string: bool = False, max_messages: int = 10
-    ) -> Union[List[Message], str]:
+    async def get_chat_history(self, as_string: bool = False, max_messages: int = 10) -> Union[List[Message], str]:
         """Get the chat history in a format suitable for LLM context"""
         if as_string:
             history_parts = []
@@ -271,11 +262,7 @@ class InMemoryConversationMemory(BaseConversationMemory):
         return self.messages[-max_messages:]
 
     async def get_chat_history_within_tokens(
-        self,
-        token_budget: int,
-        provider: str,
-        model: str,
-        as_string: bool = False
+        self, token_budget: int, provider: str, model: str, as_string: bool = False
     ) -> Union[List[dict[str, Any]], str]:
         """Get formatted chat history within token budget"""
         from app.core.utils.token_utils import get_token_counter
@@ -291,9 +278,7 @@ class InMemoryConversationMemory(BaseConversationMemory):
         for message in reversed(self.messages):
             # Count tokens for this message
             message_dict = message.to_dict()
-            message_tokens = counter.count_tokens(
-                f"{message_dict['role']}: {message_dict['content']}"
-            )
+            message_tokens = counter.count_tokens(f"{message_dict['role']}: {message_dict['content']}")
 
             # Check if adding this message would exceed budget
             if current_tokens + message_tokens > token_budget:
@@ -312,7 +297,7 @@ class InMemoryConversationMemory(BaseConversationMemory):
             history_parts = []
             for msg in selected_messages:
                 prefix = f"{msg['role'].capitalize()}: "
-                content = msg['content']
+                content = msg["content"]
                 history_parts.append(f"{prefix}{content}")
             return "\n".join(history_parts)
 
@@ -343,9 +328,7 @@ class InMemoryConversationMemory(BaseConversationMemory):
         """Store compacted summary in metadata"""
         self.metadata["compacted_summary"] = summary
 
-    async def get_messages_for_compaction(
-        self, keep_recent: int
-    ) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    async def get_messages_for_compaction(self, keep_recent: int) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """Split messages into (to_compact, to_keep) based on what's already compacted"""
         total_messages = len(self.messages)
         summary = await self.get_compacted_summary()
@@ -424,12 +407,14 @@ class InMemoryConversationMemory(BaseConversationMemory):
         # Add compacted summary as synthetic system message
         if summary and (summary.get("prose_summary") or summary.get("entities")):
             summary_content = self._format_compacted_summary(summary)
-            result.append({
-                "role": "system",
-                "content": summary_content,
-                "message_type": "compacted_summary",
-                "timestamp": summary.get("last_compaction_timestamp")
-            })
+            result.append(
+                {
+                    "role": "system",
+                    "content": summary_content,
+                    "message_type": "compacted_summary",
+                    "timestamp": summary.get("last_compaction_timestamp"),
+                }
+            )
 
         # Add all uncompacted messages
         result.extend(recent_messages)
@@ -582,9 +567,7 @@ class RedisConversationMemory(BaseConversationMemory):
             logger.debug(f"Added message to Redis for thread {self.thread_id}")
 
         except Exception as e:
-            logger.error(
-                f"Failed to add message to Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to add message to Redis for thread {self.thread_id}: {e}")
             raise
 
     async def add_user_message(self, content: str) -> None:
@@ -635,9 +618,7 @@ class RedisConversationMemory(BaseConversationMemory):
             return [message.to_dict() for message in messages]
 
         except Exception as e:
-            logger.error(
-                f"Failed to get messages from Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to get messages from Redis for thread {self.thread_id}: {e}")
             return []
 
     async def clear(self) -> None:
@@ -668,9 +649,7 @@ class RedisConversationMemory(BaseConversationMemory):
             logger.debug(f"Cleared conversation data for thread {self.thread_id}")
 
         except Exception as e:
-            logger.error(
-                f"Failed to clear conversation from Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to clear conversation from Redis for thread {self.thread_id}: {e}")
             raise
 
     async def set_metadata(self, key: str, value: Any) -> None:
@@ -688,9 +667,7 @@ class RedisConversationMemory(BaseConversationMemory):
             logger.debug(f"Set metadata {key} for thread {self.thread_id}")
 
         except Exception as e:
-            logger.error(
-                f"Failed to set metadata in Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to set metadata in Redis for thread {self.thread_id}: {e}")
             raise
 
     async def get_metadata(self, key: str, default: Any = None) -> Any:
@@ -706,14 +683,10 @@ class RedisConversationMemory(BaseConversationMemory):
             return json.loads(metadata_json)
 
         except Exception as e:
-            logger.error(
-                f"Failed to get metadata from Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to get metadata from Redis for thread {self.thread_id}: {e}")
             return default
 
-    async def get_chat_history(
-        self, as_string: bool = False, max_messages: int = 10
-    ) -> Union[List[Message], str]:
+    async def get_chat_history(self, as_string: bool = False, max_messages: int = 10) -> Union[List[Message], str]:
         """Get the chat history in a format suitable for LLM context"""
         try:
             messages = await self.get_messages(max_messages=max_messages)
@@ -729,17 +702,11 @@ class RedisConversationMemory(BaseConversationMemory):
             return messages
 
         except Exception as e:
-            logger.error(
-                f"Failed to get chat history from Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to get chat history from Redis for thread {self.thread_id}: {e}")
             return [] if not as_string else ""
 
     async def get_chat_history_within_tokens(
-        self,
-        token_budget: int,
-        provider: str,
-        model: str,
-        as_string: bool = False
+        self, token_budget: int, provider: str, model: str, as_string: bool = False
     ) -> Union[List[dict[str, Any]], str]:
         """Get formatted chat history within token budget"""
         from app.core.utils.token_utils import get_token_counter
@@ -770,9 +737,7 @@ class RedisConversationMemory(BaseConversationMemory):
                 continue
 
             # Count tokens for this message
-            message_tokens = counter.count_tokens(
-                f"{message_data['role']}: {message_data['content']}"
-            )
+            message_tokens = counter.count_tokens(f"{message_data['role']}: {message_data['content']}")
 
             # Check if adding this message would exceed budget
             if current_tokens + message_tokens > token_budget:
@@ -791,7 +756,7 @@ class RedisConversationMemory(BaseConversationMemory):
             history_parts = []
             for msg in selected_messages:
                 prefix = f"{msg['role'].capitalize()}: "
-                content = msg['content']
+                content = msg["content"]
                 history_parts.append(f"{prefix}{content}")
             return "\n".join(history_parts)
 
@@ -829,9 +794,7 @@ class RedisConversationMemory(BaseConversationMemory):
         """Store compacted summary in metadata"""
         await self.set_metadata("compacted_summary", summary)
 
-    async def get_messages_for_compaction(
-        self, keep_recent: int
-    ) -> List[Dict[str, Any]]:
+    async def get_messages_for_compaction(self, keep_recent: int) -> List[Dict[str, Any]]:
         """Split messages into (to_compact, to_keep) based on what's already compacted"""
         redis = await self._get_redis()
         total_messages = await redis.llen(self._message_key)  # type: ignore
@@ -862,9 +825,7 @@ class RedisConversationMemory(BaseConversationMemory):
         redis_start = total_messages - split_index
         redis_end = total_messages - start_index - 1
 
-        to_compact_jsons = await redis.lrange(
-            self._message_key, redis_start, redis_end
-        )  # type: ignore
+        to_compact_jsons = await redis.lrange(self._message_key, redis_start, redis_end)  # type: ignore
 
         to_compact = []
         for message_json in reversed(to_compact_jsons):  # Reverse to get chronological order
@@ -874,7 +835,6 @@ class RedisConversationMemory(BaseConversationMemory):
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse message from Redis: {e}")
                 continue
-
 
         return to_compact
 
@@ -953,12 +913,14 @@ class RedisConversationMemory(BaseConversationMemory):
             # Add compacted summary as synthetic system message
             if summary and (summary.get("prose_summary") or summary.get("entities")):
                 summary_content = self._format_compacted_summary(summary)
-                result.append({
-                    "role": "system",
-                    "content": summary_content,
-                    "message_type": "compacted_summary",
-                    "timestamp": summary.get("last_compaction_timestamp")
-                })
+                result.append(
+                    {
+                        "role": "system",
+                        "content": summary_content,
+                        "message_type": "compacted_summary",
+                        "timestamp": summary.get("last_compaction_timestamp"),
+                    }
+                )
 
             # Add all uncompacted messages
             result.extend(recent_messages)
@@ -1019,9 +981,7 @@ class RedisConversationMemory(BaseConversationMemory):
             return result
 
         except Exception as e:
-            logger.error(
-                f"Failed to get conversation info from Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to get conversation info from Redis for thread {self.thread_id}: {e}")
             return {}
 
     async def increment_executions(self) -> None:
@@ -1031,14 +991,10 @@ class RedisConversationMemory(BaseConversationMemory):
             # type: ignore
             await redis.hincrby(self._conversation_key, "executions_count", 1)
             # type: ignore
-            await redis.hset(
-                self._conversation_key, "last_updated", datetime.now().isoformat()
-            )
+            await redis.hset(self._conversation_key, "last_updated", datetime.now().isoformat())
 
         except Exception as e:
-            logger.error(
-                f"Failed to increment executions in Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to increment executions in Redis for thread {self.thread_id}: {e}")
             raise
 
     async def delete_conversation(self) -> None:
@@ -1055,9 +1011,7 @@ class RedisConversationMemory(BaseConversationMemory):
             logger.info(f"Deleted conversation data for thread {self.thread_id}")
 
         except Exception as e:
-            logger.error(
-                f"Failed to delete conversation from Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to delete conversation from Redis for thread {self.thread_id}: {e}")
             raise
 
     async def get_messages_by_range(self, start: int, end: int) -> List[Dict[str, Any]]:
@@ -1094,9 +1048,7 @@ class RedisConversationMemory(BaseConversationMemory):
             return messages
 
         except Exception as e:
-            logger.error(
-                f"Failed to get messages by range for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to get messages by range for thread {self.thread_id}: {e}")
             return []
 
     async def get_total_message_count(self) -> int:
@@ -1105,9 +1057,7 @@ class RedisConversationMemory(BaseConversationMemory):
             redis = await self._get_redis()
             return int(await redis.llen(self._message_key))  # type: ignore
         except Exception as e:
-            logger.error(
-                f"Failed to get message count for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to get message count for thread {self.thread_id}: {e}")
             return 0
 
     async def get_rag_indexed_count(self) -> int:
@@ -1128,9 +1078,7 @@ class RedisConversationMemory(BaseConversationMemory):
                 return default
             return json.loads(value_json)
         except (json.JSONDecodeError, Exception) as e:
-            logger.error(
-                f"Failed to get stateful value {key} from Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to get stateful value {key} from Redis for thread {self.thread_id}: {e}")
             return default
 
     async def set_stateful_value(self, key: str, value: Any) -> None:
@@ -1146,9 +1094,7 @@ class RedisConversationMemory(BaseConversationMemory):
             await redis.expire(self._stateful_key, 86400 * 30)  # type: ignore
             logger.debug(f"Set stateful value {key} for thread {self.thread_id}")
         except Exception as e:
-            logger.error(
-                f"Failed to set stateful value {key} in Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to set stateful value {key} in Redis for thread {self.thread_id}: {e}")
             raise
 
     async def get_all_stateful_values(self) -> Dict[str, Any]:
@@ -1169,9 +1115,7 @@ class RedisConversationMemory(BaseConversationMemory):
                     continue
             return result
         except Exception as e:
-            logger.error(
-                f"Failed to get all stateful values from Redis for thread {self.thread_id}: {e}"
-            )
+            logger.error(f"Failed to get all stateful values from Redis for thread {self.thread_id}: {e}")
             return {}
 
 
@@ -1184,9 +1128,7 @@ class ConversationMemory:
     def get_instance(cls, thread_id: str) -> "BaseConversationMemory":
         """Get or create a conversation memory instance for a thread ID"""
         if thread_id not in cls._instances:
-            logger.info(
-                f"Creating new conversation memory instance for thread ID: {thread_id}"
-            )
+            logger.info(f"Creating new conversation memory instance for thread ID: {thread_id}")
             if settings.REDIS_FOR_CONVERSATION:
                 cls._instances[thread_id] = RedisConversationMemory(thread_id)
             else:

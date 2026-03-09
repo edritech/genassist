@@ -1,13 +1,13 @@
-import { Operator } from "@/interfaces/operator.interface";
-import { BackendTranscript } from "@/interfaces/transcript.interface";
+import { Operator } from '@/interfaces/operator.interface';
+import { BackendTranscript } from '@/interfaces/transcript.interface';
 
-type LatestConversationAnalysis = NonNullable<Operator["latest_conversation_analysis"]>;
+type LatestConversationAnalysis = NonNullable<Operator['latest_conversation_analysis']>;
 
 export function getLatestTranscript(transcripts: BackendTranscript[]): BackendTranscript | null {
   if (!transcripts.length) return null;
 
-  const sortedTranscripts = [...transcripts].sort((a, b) =>
-    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  const sortedTranscripts = [...transcripts].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
   return sortedTranscripts[0] ?? null;
@@ -22,8 +22,7 @@ export function createConversationAnalysis(
       ? operator.operator_statistics.avg_customer_satisfaction / 10
       : 8.6;
 
-  const customerSatisfaction =
-    transcript.analysis?.customer_satisfaction ?? fallbackSatisfaction;
+  const customerSatisfaction = transcript.analysis?.customer_satisfaction ?? fallbackSatisfaction;
 
   return {
     duration: transcript.duration,

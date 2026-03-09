@@ -1,26 +1,13 @@
-import { useState, useMemo, useEffect } from "react";
-import { Card } from "@/components/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/table";
-import { Loader2, View, Search, XCircle } from "lucide-react";
-import { Button } from "@/components/button";
-import { formatDate, getTimeFromDatetime } from "@/helpers/utils";
-import { AuditLogCardProps } from "@/interfaces/audit-log.interface";
-import Can from "@/hooks/Can";
+import { useState, useMemo, useEffect } from 'react';
+import { Card } from '@/components/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/table';
+import { Loader2, View, Search, XCircle } from 'lucide-react';
+import { Button } from '@/components/button';
+import { formatDate, getTimeFromDatetime } from '@/helpers/utils';
+import { AuditLogCardProps } from '@/interfaces/audit-log.interface';
+import Can from '@/hooks/Can';
 
-export function AuditLogCard({
-  searchQuery,
-  auditLogs,
-  users,
-  selectedUser,
-  onViewDetails,
-}: AuditLogCardProps) {
+export function AuditLogCard({ searchQuery, auditLogs, users, selectedUser, onViewDetails }: AuditLogCardProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error] = useState<string | null>(null);
 
@@ -31,16 +18,13 @@ export function AuditLogCard({
         log.action_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.modified_by?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesUser = selectedUser
-        ? log.modified_by === selectedUser
-        : true;
+      const matchesUser = selectedUser ? log.modified_by === selectedUser : true;
 
       return matchesSearch && matchesUser;
     });
   }, [auditLogs, searchQuery, selectedUser]);
 
-  const getUsername = (id: string) =>
-    users.find((user) => user.id === id)?.username || "Unknown User";
+  const getUsername = (id: string) => users.find((user) => user.id === id)?.username || 'Unknown User';
 
   useEffect(() => {
     setLoading(true);
@@ -69,11 +53,7 @@ export function AuditLogCard({
         ) : filteredAuditLogs.length === 0 ? (
           <>
             <XCircle className="w-5 h-5" />
-            <span>
-              {searchQuery
-                ? "No results found for this search query."
-                : "No audit logs available."}
-            </span>
+            <span>{searchQuery ? 'No results found for this search query.' : 'No audit logs available.'}</span>
           </>
         ) : null}
       </div>
@@ -86,7 +66,7 @@ export function AuditLogCard({
               <TableHead>Table Name</TableHead>
               <TableHead>Action</TableHead>
               <TableHead>User</TableHead>
-              <Can permissions={["read:audit_log"]}>
+              <Can permissions={['read:audit_log']}>
                 <TableHead>Details</TableHead>
               </Can>
             </TableRow>
@@ -95,20 +75,14 @@ export function AuditLogCard({
             {filteredAuditLogs.map((log) => (
               <TableRow key={log.id}>
                 <TableCell>
-                  {formatDate(log.modified_at)} -{" "}
-                  {getTimeFromDatetime(log.modified_at)}
+                  {formatDate(log.modified_at)} - {getTimeFromDatetime(log.modified_at)}
                 </TableCell>
                 <TableCell>{log.table_name}</TableCell>
                 <TableCell>{log.action_name}</TableCell>
                 <TableCell>{getUsername(log.modified_by)}</TableCell>
-                <Can permissions={["read:audit_log"]}>
+                <Can permissions={['read:audit_log']}>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onViewDetails(log.id)}
-                      title="View Details"
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => onViewDetails(log.id)} title="View Details">
                       <View size="24" />
                     </Button>
                   </TableCell>

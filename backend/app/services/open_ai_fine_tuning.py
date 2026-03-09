@@ -2,6 +2,7 @@ import asyncio
 import logging
 from datetime import datetime
 from typing import Any, Optional
+
 from fastapi import UploadFile
 from injector import inject
 from openai import AsyncOpenAI
@@ -17,7 +18,6 @@ from app.repositories.openai_fine_tuning import FineTuningRepository
 from app.schemas.open_ai_fine_tuning import CreateFineTuningJobRequest
 from app.services.fine_tuning_event import FineTuningEventService
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -28,12 +28,11 @@ class OpenAIFineTuningService:
         self.repository = repository
         self.event_service = event_service
 
-
     async def upload_file(
-            self,
-            file: UploadFile,
-            purpose: str,
-            ):
+        self,
+        file: UploadFile,
+        purpose: str,
+    ):
         """
         Upload a file to OpenAI's API and store record in database.
 
@@ -54,20 +53,17 @@ class OpenAIFineTuningService:
             # Upload to OpenAI
             logger.info(f"Uploading file {file.filename} ({len(file_content)} bytes) to OpenAI")
 
-            response = await self.client.files.create(
-                    file=(file.filename, file_content),
-                    purpose=purpose
-                    )
+            response = await self.client.files.create(file=(file.filename, file_content), purpose=purpose)
 
             logger.info(f"Successfully uploaded file to OpenAI. File ID: {response.id}")
 
             # Store in database
             await self.repository.create_file_record(
-                    openai_file_id=response.id,
-                    filename=response.filename,
-                    purpose=response.purpose,
-                    bytes=response.bytes,
-                    )
+                openai_file_id=response.id,
+                filename=response.filename,
+                purpose=response.purpose,
+                bytes=response.bytes,
+            )
 
             return response
 
@@ -75,11 +71,10 @@ class OpenAIFineTuningService:
             logger.error(f"Error uploading file to OpenAI: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_UPLOAD_FILE_OPEN_AI)
 
-
     async def create_fine_tuning_job(
-            self,
-            job_request: CreateFineTuningJobRequest,
-            ):
+        self,
+        job_request: CreateFineTuningJobRequest,
+    ):
         """
         Create a fine-tuning job in OpenAI and store record in database.
 
@@ -94,9 +89,7 @@ class OpenAIFineTuningService:
             training_file = await self.repository.get_file_by_openai_id(job_request.training_file)
             if not training_file:
                 logger.error(f"Training file {job_request.training_file} not found in database")
-                raise AppException(
-                        error_key=ErrorKey.ERROR_CREATE_JOB_OPEN_AI
-                        )
+                raise AppException(error_key=ErrorKey.ERROR_CREATE_JOB_OPEN_AI)
 
             # Verify validation file if provided
             validation_file = None
@@ -104,17 +97,12 @@ class OpenAIFineTuningService:
                 validation_file = await self.repository.get_file_by_openai_id(job_request.validation_file)
                 if not validation_file:
                     logger.error(f"Validation file {job_request.validation_file} not found in database")
-                    raise AppException(
-                            error_key=ErrorKey.ERROR_CREATE_JOB_OPEN_AI
-                            )
+                    raise AppException(error_key=ErrorKey.ERROR_CREATE_JOB_OPEN_AI)
 
             logger.info(f"Creating fine-tuning job with training_file: {job_request.training_file}")
 
             # Prepare the request parameters
-            params = {
-                "training_file": job_request.training_file,
-                "model": job_request.model
-                }
+            params = {"training_file": job_request.training_file, "model": job_request.model}
 
             # Add optional parameters if provided
             if job_request.validation_file:
@@ -131,14 +119,14 @@ class OpenAIFineTuningService:
 
             # Store in database
             job = await self.repository.create_job_record(
-                    openai_job_id=response.id,
-                    training_file_id=training_file.id,
-                    validation_file_id=validation_file.id if validation_file else None,
-                    model=response.model,
-                    status=JobStatus(response.status),
-                    hyperparameters=job_request.hyperparameters,
-                    suffix=job_request.suffix,
-                    )
+                openai_job_id=response.id,
+                training_file_id=training_file.id,
+                validation_file_id=validation_file.id if validation_file else None,
+                model=response.model,
+                status=JobStatus(response.status),
+                hyperparameters=job_request.hyperparameters,
+                suffix=job_request.suffix,
+            )
 
             return job
 
@@ -147,7 +135,6 @@ class OpenAIFineTuningService:
         except Exception as e:
             logger.error(f"Error creating fine-tuning job: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_CREATE_JOB_OPEN_AI)
-
 
     async def get_fine_tuning_job(self, job_id: UUID, sync: bool = False):
         """
@@ -169,11 +156,7 @@ class OpenAIFineTuningService:
                 raise AppException(error_key=ErrorKey.ERROR_EXIST_JOB_OPEN_AI)
 
             # Determine if we should sync with OpenAI
-            should_sync = sync or job_record.status in [
-                JobStatus.VALIDATING_FILES,
-                JobStatus.QUEUED,
-                JobStatus.RUNNING
-                ]
+            should_sync = sync or job_record.status in [JobStatus.VALIDATING_FILES, JobStatus.QUEUED, JobStatus.RUNNING]
 
             if should_sync:
                 # Fetch fresh data from OpenAI
@@ -182,18 +165,17 @@ class OpenAIFineTuningService:
 
                 # Update database with fresh data
                 job_record = await self.repository.update_job_status(
-                        id=job_record.id,
-                        status=JobStatus(response.status),
-                        fine_tuned_model=response.fine_tuned_model,
-                        finished_at=datetime.fromtimestamp(response.finished_at) if response.finished_at else None,
-                        trained_tokens=response.trained_tokens,
-                        error_message=response.error.message if response.error else None,
-                        error_code=response.error.code if response.error else None
-                        )
+                    id=job_record.id,
+                    status=JobStatus(response.status),
+                    fine_tuned_model=response.fine_tuned_model,
+                    finished_at=datetime.fromtimestamp(response.finished_at) if response.finished_at else None,
+                    trained_tokens=response.trained_tokens,
+                    error_message=response.error.message if response.error else None,
+                    error_code=response.error.code if response.error else None,
+                )
 
                 # Sync events for active jobs
                 try:
-
                     await self.event_service.sync_events_for_job(job_record.id)
                     logger.info(f"Synced events for job {job_id}")
 
@@ -212,10 +194,10 @@ class OpenAIFineTuningService:
             # Add progress information
             try:
                 progress = await self.event_service.get_job_progress(job_record)
-                job_dict['progress'] = progress
+                job_dict["progress"] = progress
             except Exception as progress_error:
                 logger.error(f"Error getting progress for job {job_id}: {str(progress_error)}")
-                job_dict['progress'] = None
+                job_dict["progress"] = None
 
             return job_dict
 
@@ -223,9 +205,8 @@ class OpenAIFineTuningService:
             logger.error(f"Error retrieving fine-tuning job {job_id}: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_MONITOR_JOB_OPEN_AI)
 
-
     def attach_job_events(self, job_dict: dict[Any, Any], job_record: FineTuningJobModel):
-        job_dict['events'] = [
+        job_dict["events"] = [
             {
                 "id": str(event.id),
                 "openai_event_id": event.openai_event_id,
@@ -233,20 +214,15 @@ class OpenAIFineTuningService:
                 "message": event.message,
                 "event_created_at": event.event_created_at.isoformat(),
                 "metrics": event.metrics,
-                "created_at": event.created_at.isoformat()
-                }
+                "created_at": event.created_at.isoformat(),
+            }
             for event in job_record.events
-            ]
-
+        ]
 
     async def get_all_by_statuses(self, statuses: Optional[list[JobStatus]] = None) -> list[FineTuningJobModel]:
         return await self.repository.get_jobs_by_status(statuses)
 
-    async def get_jobs(
-            self,
-            status: Optional[JobStatus] = None,
-            sync: bool = False
-            ):
+    async def get_jobs(self, status: Optional[JobStatus] = None, sync: bool = False):
         """
         List all fine-tuning jobs for a user.
 
@@ -272,15 +248,14 @@ class OpenAIFineTuningService:
                         # Sync job status
                         response = await self.client.fine_tuning.jobs.retrieve(job.openai_job_id)
                         updated_job = await self.repository.update_job_status(
-                                job.id,
-                                status=JobStatus(response.status),
-                                fine_tuned_model=response.fine_tuned_model,
-                                finished_at=datetime.fromtimestamp(
-                                        response.finished_at) if response.finished_at else None,
-                                trained_tokens=response.trained_tokens,
-                                error_message=response.error.message if response.error else None,
-                                error_code=response.error.code if response.error else None
-                                )
+                            job.id,
+                            status=JobStatus(response.status),
+                            fine_tuned_model=response.fine_tuned_model,
+                            finished_at=datetime.fromtimestamp(response.finished_at) if response.finished_at else None,
+                            trained_tokens=response.trained_tokens,
+                            error_message=response.error.message if response.error else None,
+                            error_code=response.error.code if response.error else None,
+                        )
                         synced_jobs.append(updated_job)
 
                         try:
@@ -303,10 +278,10 @@ class OpenAIFineTuningService:
                 self.attach_job_events(job_dict, job)
                 try:
                     progress = await self.event_service.get_job_progress(job)
-                    job_dict['progress'] = progress
+                    job_dict["progress"] = progress
                 except Exception as e:
                     logger.error(f"Error getting progress for job {job.id}: {str(e)}")
-                    job_dict['progress'] = None
+                    job_dict["progress"] = None
                 jobs_with_progress.append(job_dict)
 
             return jobs_with_progress
@@ -314,7 +289,6 @@ class OpenAIFineTuningService:
         except Exception as e:
             logger.error(f"Error listing jobs: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_MONITOR_JOB_OPEN_AI)
-
 
     async def get_files(self, sync: bool = False):
         """
@@ -349,8 +323,9 @@ class OpenAIFineTuningService:
                     if file_record.openai_file_id in openai_files:
                         # File exists in OpenAI, update it
                         openai_file = openai_files[file_record.openai_file_id]
-                        file_record.status = openai_file.status if hasattr(openai_file,
-                                                                           'status') else FileStatus.UPLOADED
+                        file_record.status = (
+                            openai_file.status if hasattr(openai_file, "status") else FileStatus.UPLOADED
+                        )
                         file_record.bytes = openai_file.bytes
                         file_record.filename = openai_file.filename
                         synced_count += 1
@@ -365,18 +340,16 @@ class OpenAIFineTuningService:
                     if openai_file_id not in db_files_dict:
                         logger.info(f"Found file {openai_file_id} in OpenAI but not in database, adding it")
                         new_file = await self.repository.create_file_record(
-                                openai_file_id=openai_file.id,
-                                filename=openai_file.filename,
-                                purpose=openai_file.purpose,
-                                bytes=openai_file.bytes,
-                                )
+                            openai_file_id=openai_file.id,
+                            filename=openai_file.filename,
+                            purpose=openai_file.purpose,
+                            bytes=openai_file.bytes,
+                        )
                         db_files.append(new_file)
                         added_count += 1
 
                 await self.repository.db.commit()
-                logger.info(
-                        f"Sync complete: {synced_count} updated, {added_count} added, {deleted_count} deleted"
-                        )
+                logger.info(f"Sync complete: {synced_count} updated, {added_count} added, {deleted_count} deleted")
 
                 # Return fresh list
                 return await self.repository.list_files_by_user()
@@ -389,7 +362,6 @@ class OpenAIFineTuningService:
         except Exception as e:
             logger.error(f"Error listing files: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_FETCH_FILES_OPEN_AI)
-
 
     async def cancel_fine_tuning_job(self, job_id: UUID):
         """
@@ -411,11 +383,8 @@ class OpenAIFineTuningService:
             await self.client.fine_tuning.jobs.cancel(job_record.openai_job_id)
 
             updated_job = await self.repository.update_job_status(
-                    job_record.id,
-                    status=JobStatus.CANCELLED,
-                    finished_at=utc_now(),
-                    error_message="Job cancelled by user"
-                    )
+                job_record.id, status=JobStatus.CANCELLED, finished_at=utc_now(), error_message="Job cancelled by user"
+            )
             logger.info(f"Updated job {job_id} status to CANCELLED in database")
             return updated_job
 
@@ -423,39 +392,30 @@ class OpenAIFineTuningService:
             logger.error(f"Error cancelling fine-tuning job {job_id}: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_CANCEL_JOB_OPEN_AI)
 
-
-    async def upload_file_for_chat(
-        self,
-        file_url: str,
-        filename: str,
-        purpose: str = "user_data"
-    ) -> str:
+    async def upload_file_for_chat(self, file_url: str, filename: str, purpose: str = "user_data") -> str:
         """
         Upload a file to OpenAI for use in chat completions.
-        
+
         Args:
             file_url: URL of the file
             filename: Original filename
             purpose: File purpose (default: "user_data" for chat inputs)
-        
+
         Returns:
             OpenAI file ID (e.g., "file-abc123")
         """
         try:
             logger.info(f"Uploading file {filename} from {file_url} to OpenAI for chat")
-            
+
             # Read file content
             with open(file_url, "rb") as f:
                 file_content = f.read()
-            
+
             # Upload to OpenAI
-            response = await self.client.files.create(
-                file=(filename, file_content),
-                purpose=purpose
-            )
-            
+            response = await self.client.files.create(file=(filename, file_content), purpose=purpose)
+
             logger.info(f"Successfully uploaded file to OpenAI. File ID: {response.id}")
-            
+
             # Optionally store in database for tracking
             try:
                 await self.repository.create_file_record(
@@ -467,9 +427,9 @@ class OpenAIFineTuningService:
             except Exception as db_error:
                 # Log but don't fail if DB storage fails
                 logger.warning(f"Failed to store file record in DB: {str(db_error)}")
-            
+
             return response.id
-            
+
         except Exception as e:
             logger.error(f"Error uploading file to OpenAI: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_UPLOAD_FILE_OPEN_AI)
@@ -492,8 +452,8 @@ class OpenAIFineTuningService:
             if not file_record:
                 logger.warning(f"File {file_id} not found in database")
                 raise AppException(
-                        error_key=ErrorKey.ERROR_DELETE_FILE_JOB_PROG_OPEN_AI,
-                        )
+                    error_key=ErrorKey.ERROR_DELETE_FILE_JOB_PROG_OPEN_AI,
+                )
 
             # Check if file is being used in any active jobs
             active_jobs = await self.repository.get_active_jobs()
@@ -501,8 +461,8 @@ class OpenAIFineTuningService:
                 if job.training_file_id == file_record.id or job.validation_file_id == file_record.id:
                     logger.error(f"File {file_id} is being used in active job {job.openai_job_id}")
                     raise AppException(
-                            error_key=ErrorKey.ERROR_DELETE_FILE_JOB_PROG_OPEN_AI,
-                            )
+                        error_key=ErrorKey.ERROR_DELETE_FILE_JOB_PROG_OPEN_AI,
+                    )
 
             # Delete from OpenAI
             await self.client.files.delete(file_id)
@@ -516,18 +476,13 @@ class OpenAIFineTuningService:
 
             logger.info(f"Updated file {file_id} status to DELETED in database")
 
-            return {
-                "id": file_id,
-                "object": "file",
-                "deleted": True
-                }
+            return {"id": file_id, "object": "file", "deleted": True}
 
         except AppException:
             raise
         except Exception as e:
             logger.error(f"Error deleting file {file_id}: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_DELETE_FILE_OPEN_AI)
-
 
     def get_fine_tunable_models(self):
         """
@@ -546,11 +501,10 @@ class OpenAIFineTuningService:
             "gpt-3.5-turbo-0125",
             "gpt-3.5-turbo-1106",
             "gpt-3.5-turbo-0613",
-            ]
+        ]
 
         logger.info(f"Returning {len(fine_tunable_models)} fine-tunable models")
         return fine_tunable_models
-
 
     async def delete_fine_tuned_model(self, model_id: str):
         """
@@ -563,11 +517,11 @@ class OpenAIFineTuningService:
         """
         try:
             # Validate it's a fine-tuned model
-            if not model_id.startswith('ft'):
+            if not model_id.startswith("ft"):
                 logger.error(f"Attempted to delete non-fine-tuned model: {model_id}")
                 raise AppException(
-                        error_key=ErrorKey.ERROR_NON_FINE_TUNED,
-                        )
+                    error_key=ErrorKey.ERROR_NON_FINE_TUNED,
+                )
 
             logger.info(f"Deleting fine-tuned model: {model_id}")
 
@@ -589,11 +543,7 @@ class OpenAIFineTuningService:
             except Exception as db_error:
                 logger.warning(f"Failed to update database after model deletion: {str(db_error)}")
 
-            return {
-                "id": model_id,
-                "object": "model",
-                "deleted": True
-                }
+            return {"id": model_id, "object": "model", "deleted": True}
         except Exception as e:
             logger.error(f"Error deleting fine-tuned model {model_id}: {str(e)}")
             raise AppException(error_key=ErrorKey.ERROR_DELETE_MODEL)

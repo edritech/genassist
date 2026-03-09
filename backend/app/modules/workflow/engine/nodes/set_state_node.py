@@ -2,8 +2,8 @@
 Set state node implementation using the BaseNode class.
 """
 
-from typing import Dict, Any
 import logging
+from typing import Any, Dict
 
 from ..base_node import BaseNode
 
@@ -66,27 +66,13 @@ class SetStateNode(BaseNode):
                 self.get_state().update_session_value(key, value)
 
                 updated_states[key] = value
-                logger.debug(
-                    "SetStateNode %s updated stateful value: %s = %s",
-                    self.node_id, key, value
-                )
+                logger.debug("SetStateNode %s updated stateful value: %s = %s", self.node_id, key, value)
 
-            logger.info(
-                "SetStateNode %s successfully updated %d stateful values",
-                self.node_id, len(updated_states)
-            )
+            logger.info("SetStateNode %s successfully updated %d stateful values", self.node_id, len(updated_states))
 
-            return {
-                "status": "success",
-                "updated": updated_states,
-                "count": len(updated_states)
-            }
+            return {"status": "success", "updated": updated_states, "count": len(updated_states)}
 
         except Exception as e:  # pylint: disable=broad-except
             error_msg = f"Error updating stateful values: {str(e)}"
             logger.error(f"SetStateNode {self.node_id}: {error_msg}", exc_info=True)
-            return {
-                "status": "error",
-                "error": error_msg,
-                "updated": updated_states
-            }
+            return {"status": "error", "error": error_msg, "updated": updated_states}

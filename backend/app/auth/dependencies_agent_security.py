@@ -4,14 +4,15 @@ Dependencies for agent-specific security (CORS and rate limiting)
 
 import logging
 from uuid import UUID
+
 from fastapi import Request
 from fastapi_injector import Injected
 
 from app.auth.utils import get_current_user_id
+from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
 from app.services.agent_config import AgentConfigService
 from app.services.conversations import ConversationService
-from app.core.exceptions.exception_classes import AppException
-from app.core.exceptions.error_messages import ErrorKey
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +30,11 @@ async def get_agent_for_start(
 
     test_input = None
     if agent.workflow:
-        test_input = agent.workflow.get('testInput', None) 
+        test_input = agent.workflow.get("testInput", None)
 
         # remove message from testInput with pop()
-        if test_input and 'message' in test_input:
-            test_input.pop('message')
+        if test_input and "message" in test_input:
+            test_input.pop("message")
         agent.workflow = test_input
 
     request.state.agent = agent
@@ -65,7 +66,7 @@ async def get_agent_for_update(
 
         operator = conversation.operator
         agent = conversation.operator.agent
-        
+
         # if agent is not set, get it from the operator
         if agent is None:
             agent = await agent_config_service.get_by_operator_id(operator.id)
@@ -76,4 +77,3 @@ async def get_agent_for_update(
         return agent
     except AppException:
         raise AppException(ErrorKey.AGENT_NOT_FOUND, status_code=404)
-    

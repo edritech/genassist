@@ -2,18 +2,25 @@ import decimal
 from datetime import timedelta
 from typing import Optional
 from uuid import UUID, uuid4
-from pydantic import BaseModel, Field, condecimal, field_serializer, field_validator, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field, condecimal, field_serializer, field_validator
 
 
 class OperatorStatisticsBase(BaseModel):
     """Shared attributes for Operator Statistics"""
-    avg_positive_sentiment: int = Field(..., alias="positive", ge=0, le=100, description="Positive sentiment score ("
-                                                                                       "0-100)%")
-    avg_neutral_sentiment: int = Field(..., alias="neutral", ge=0, le=100, description="Neutral sentiment score (0-100)%")
-    avg_negative_sentiment: int = Field(..., ge=0, alias="negative",le=100, description="Negative sentiment score (0-100)%")
+
+    avg_positive_sentiment: int = Field(
+        ..., alias="positive", ge=0, le=100, description="Positive sentiment score (0-100)%"
+    )
+    avg_neutral_sentiment: int = Field(
+        ..., alias="neutral", ge=0, le=100, description="Neutral sentiment score (0-100)%"
+    )
+    avg_negative_sentiment: int = Field(
+        ..., ge=0, alias="negative", le=100, description="Negative sentiment score (0-100)%"
+    )
     total_duration: int = Field(..., alias="totalCallDuration", description="Total call duration")
     score: condecimal(max_digits=5, decimal_places=2) = decimal.Decimal("0.00")
-    call_count: int = Field(..., ge=0, alias="callCount",description="Number of calls made by the agent")
+    call_count: int = Field(..., ge=0, alias="callCount", description="Number of calls made by the agent")
     avg_customer_satisfaction: condecimal(max_digits=5, decimal_places=2) = decimal.Decimal("0.00")
     avg_resolution_rate: condecimal(max_digits=5, decimal_places=2) = decimal.Decimal("0.00")
     avg_response_time: condecimal(max_digits=5, decimal_places=2) = decimal.Decimal("0.00")
@@ -22,6 +29,7 @@ class OperatorStatisticsBase(BaseModel):
 
 class OperatorStatisticsRead(OperatorStatisticsBase):
     """Used for returning OperatorRead Statistics"""
+
     id: UUID = Field(default_factory=uuid4)
 
     @field_serializer("total_duration")
@@ -34,15 +42,15 @@ class OperatorStatisticsRead(OperatorStatisticsBase):
         """Multiply KPI scores by 10 and round to 2 decimals for frontend display"""
         return f"{round(float(value) * 10, 2)}%"
 
-
     model_config = ConfigDict(
-            from_attributes=True,  # Equivalent to `orm_mode = True` in Pydantic v2
-            populate_by_name=True  # When we return a database model it is automatically mapped according to alias
-            )
+        from_attributes=True,  # Equivalent to `orm_mode = True` in Pydantic v2
+        populate_by_name=True,  # When we return a database model it is automatically mapped according to alias
+    )
 
 
 class OperatorStatisticsCreate(OperatorStatisticsBase):
     """Used when creating Operator Statistics"""
+
     id: Optional[UUID] = None
 
     @field_validator("total_duration", mode="before")

@@ -1,22 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Label } from "@/components/label";
-import { Switch } from "@/components/switch";
-import { Input } from "@/components/input";
-import { Button } from "@/components/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  FeatureEngineeringConfig,
-  FeatureEngineeringItem,
-  FeatureEngineeringStrategy,
-} from "../preprocessingConfig";
-import { CSVAnalysisResult } from "@/services/mlModels";
-import { Plus, X } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { Label } from '@/components/label';
+import { Switch } from '@/components/switch';
+import { Input } from '@/components/input';
+import { Button } from '@/components/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FeatureEngineeringConfig, FeatureEngineeringItem, FeatureEngineeringStrategy } from '../preprocessingConfig';
+import { CSVAnalysisResult } from '@/services/mlModels';
+import { Plus, X } from 'lucide-react';
 
 interface FeatureEngineeringHandlerProps {
   config: FeatureEngineeringConfig | undefined;
@@ -24,13 +14,12 @@ interface FeatureEngineeringHandlerProps {
   analysisResult: CSVAnalysisResult | null;
 }
 
-export const FeatureEngineeringHandler: React.FC<
-  FeatureEngineeringHandlerProps
-> = ({ config, onChange, analysisResult }) => {
-  const [features, setFeatures] = useState<FeatureEngineeringItem[]>(
-    config?.features || []
-  );
-
+export const FeatureEngineeringHandler: React.FC<FeatureEngineeringHandlerProps> = ({
+  config,
+  onChange,
+  analysisResult,
+}) => {
+  const [features, setFeatures] = useState<FeatureEngineeringItem[]>(config?.features || []);
 
   useEffect(() => {
     if (config) {
@@ -40,13 +29,12 @@ export const FeatureEngineeringHandler: React.FC<
     }
   }, [config]);
 
-
   const handleAddFeature = () => {
     const newFeature: FeatureEngineeringItem = {
       id: `feature_${Date.now()}`,
-      newColumnName: "",
-      strategy: "custom_expression",
-      expression: "",
+      newColumnName: '',
+      strategy: 'custom_expression',
+      expression: '',
     };
     const newFeatures = [...features, newFeature];
     setFeatures(newFeatures);
@@ -65,13 +53,8 @@ export const FeatureEngineeringHandler: React.FC<
     });
   };
 
-  const handleFeatureChange = (
-    id: string,
-    updates: Partial<FeatureEngineeringItem>
-  ) => {
-    const newFeatures = features.map((f) =>
-      f.id === id ? { ...f, ...updates } : f
-    );
+  const handleFeatureChange = (id: string, updates: Partial<FeatureEngineeringItem>) => {
+    const newFeatures = features.map((f) => (f.id === id ? { ...f, ...updates } : f));
     setFeatures(newFeatures);
     onChange({
       enabled: true,
@@ -85,12 +68,10 @@ export const FeatureEngineeringHandler: React.FC<
     <div className="space-y-4">
       <div className="space-y-0.5">
         <Label>Feature Engineering</Label>
-        <p className="text-xs text-gray-500">
-          Create new features from existing columns
-        </p>
+        <p className="text-xs text-gray-500">Create new features from existing columns</p>
       </div>
 
-      {(
+      {
         <div className="space-y-2">
           {!analysisResult ? (
             <p className="text-sm text-gray-500 italic py-2">
@@ -100,27 +81,16 @@ export const FeatureEngineeringHandler: React.FC<
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-sm">Features</Label>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={handleAddFeature}
-                  className="h-7 text-xs"
-                >
+                <Button type="button" size="sm" variant="outline" onClick={handleAddFeature} className="h-7 text-xs">
                   <Plus className="h-3 w-3 mr-1" />
                   Add Feature
                 </Button>
               </div>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {features.map((feature) => (
-                  <div
-                    key={feature.id}
-                    className="p-3 border rounded hover:bg-gray-50 space-y-2"
-                  >
+                  <div key={feature.id} className="p-3 border rounded hover:bg-gray-50 space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">
-                        Feature #{features.indexOf(feature) + 1}
-                      </Label>
+                      <Label className="text-sm font-medium">Feature #{features.indexOf(feature) + 1}</Label>
                       <Button
                         type="button"
                         size="sm"
@@ -159,9 +129,7 @@ export const FeatureEngineeringHandler: React.FC<
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="custom_expression">
-                              Custom Expression
-                            </SelectItem>
+                            <SelectItem value="custom_expression">Custom Expression</SelectItem>
                             <SelectItem value="bin_numeric">Bin Numeric</SelectItem>
                             <SelectItem value="normalize">Normalize</SelectItem>
                             <SelectItem value="standardize">Standardize</SelectItem>
@@ -169,11 +137,11 @@ export const FeatureEngineeringHandler: React.FC<
                           </SelectContent>
                         </Select>
                       </div>
-                      {feature.strategy === "custom_expression" && (
+                      {feature.strategy === 'custom_expression' && (
                         <div>
                           <Label className="text-xs">Expression</Label>
                           <Input
-                            value={feature.expression || ""}
+                            value={feature.expression || ''}
                             onChange={(e) =>
                               handleFeatureChange(feature.id, {
                                 expression: e.target.value,
@@ -182,17 +150,15 @@ export const FeatureEngineeringHandler: React.FC<
                             placeholder='e.g., df["col1"] + df["col2"]'
                             className="h-8 text-xs font-mono"
                           />
-                          <p className="text-xs text-gray-500 mt-1">
-                            Use df["column_name"] to reference columns
-                          </p>
+                          <p className="text-xs text-gray-500 mt-1">Use df["column_name"] to reference columns</p>
                         </div>
                       )}
-                      {feature.strategy === "bin_numeric" && (
+                      {feature.strategy === 'bin_numeric' && (
                         <>
                           <div>
                             <Label className="text-xs">Column to Bin</Label>
                             <Select
-                              value={feature.binColumn || ""}
+                              value={feature.binColumn || ''}
                               onValueChange={(value) =>
                                 handleFeatureChange(feature.id, {
                                   binColumn: value,
@@ -217,7 +183,7 @@ export const FeatureEngineeringHandler: React.FC<
                               type="number"
                               min="2"
                               max="100"
-                              value={feature.numBins?.toString() || "5"}
+                              value={feature.numBins?.toString() || '5'}
                               onChange={(e) =>
                                 handleFeatureChange(feature.id, {
                                   numBins: parseInt(e.target.value, 10) || 5,
@@ -228,24 +194,16 @@ export const FeatureEngineeringHandler: React.FC<
                           </div>
                         </>
                       )}
-                      {(feature.strategy === "normalize" ||
-                        feature.strategy === "standardize") && (
+                      {(feature.strategy === 'normalize' || feature.strategy === 'standardize') && (
                         <div>
                           <Label className="text-xs">Columns</Label>
-                          <p className="text-xs text-gray-500 mb-1">
-                            Select columns to {feature.strategy}
-                          </p>
+                          <p className="text-xs text-gray-500 mb-1">Select columns to {feature.strategy}</p>
                           <div className="space-y-1 max-h-32 overflow-y-auto border rounded p-2">
                             {availableColumns.map((col) => (
-                              <label
-                                key={col}
-                                className="flex items-center space-x-2 text-xs"
-                              >
+                              <label key={col} className="flex items-center space-x-2 text-xs">
                                 <input
                                   type="checkbox"
-                                  checked={
-                                    feature.sourceColumns?.includes(col) || false
-                                  }
+                                  checked={feature.sourceColumns?.includes(col) || false}
                                   onChange={(e) => {
                                     const current = feature.sourceColumns || [];
                                     const updated = e.target.checked
@@ -263,7 +221,7 @@ export const FeatureEngineeringHandler: React.FC<
                           </div>
                         </div>
                       )}
-                      {feature.strategy === "polynomial" && (
+                      {feature.strategy === 'polynomial' && (
                         <>
                           <div>
                             <Label className="text-xs">Degree</Label>
@@ -271,11 +229,10 @@ export const FeatureEngineeringHandler: React.FC<
                               type="number"
                               min="2"
                               max="5"
-                              value={feature.polynomialDegree?.toString() || "2"}
+                              value={feature.polynomialDegree?.toString() || '2'}
                               onChange={(e) =>
                                 handleFeatureChange(feature.id, {
-                                  polynomialDegree:
-                                    parseInt(e.target.value, 10) || 2,
+                                  polynomialDegree: parseInt(e.target.value, 10) || 2,
                                 })
                               }
                               className="h-8 text-xs"
@@ -283,25 +240,15 @@ export const FeatureEngineeringHandler: React.FC<
                           </div>
                           <div>
                             <Label className="text-xs">Columns</Label>
-                            <p className="text-xs text-gray-500 mb-1">
-                              Select columns for polynomial features
-                            </p>
+                            <p className="text-xs text-gray-500 mb-1">Select columns for polynomial features</p>
                             <div className="space-y-1 max-h-32 overflow-y-auto border rounded p-2">
                               {availableColumns.map((col) => (
-                                <label
-                                  key={col}
-                                  className="flex items-center space-x-2 text-xs"
-                                >
+                                <label key={col} className="flex items-center space-x-2 text-xs">
                                   <input
                                     type="checkbox"
-                                    checked={
-                                      feature.polynomialColumns?.includes(
-                                        col
-                                      ) || false
-                                    }
+                                    checked={feature.polynomialColumns?.includes(col) || false}
                                     onChange={(e) => {
-                                      const current =
-                                        feature.polynomialColumns || [];
+                                      const current = feature.polynomialColumns || [];
                                       const updated = e.target.checked
                                         ? [...current, col]
                                         : current.filter((c) => c !== col);
@@ -328,14 +275,13 @@ export const FeatureEngineeringHandler: React.FC<
                 </p>
               )}
               <p className="text-xs text-gray-500">
-                {features.length} feature{features.length !== 1 ? "s" : ""}{" "}
-                configured. Features are created in the order listed.
+                {features.length} feature{features.length !== 1 ? 's' : ''} configured. Features are created in the
+                order listed.
               </p>
             </div>
           )}
         </div>
-      )}
+      }
     </div>
   );
 };
-

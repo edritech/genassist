@@ -4,7 +4,7 @@ from typing import List
 import igraph as ig
 
 __all__ = [
-    'Clusterer',
+    "Clusterer",
 ]
 
 

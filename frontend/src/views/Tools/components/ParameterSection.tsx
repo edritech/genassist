@@ -1,14 +1,8 @@
-import { FC } from "react";
-import { Button } from "@/components/button";
-import { Trash2, Plus } from "lucide-react";
-import { Input } from "@/components/input";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/select";
+import { FC } from 'react';
+import { Button } from '@/components/button';
+import { Trash2, Plus } from 'lucide-react';
+import { Input } from '@/components/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/select';
 
 export interface Param {
   id: string;
@@ -21,14 +15,8 @@ export interface Param {
 interface ParameterSectionProps {
   dynamicParams: Param[];
   setDynamicParams: React.Dispatch<React.SetStateAction<Param[]>>;
-  addItem: (
-    setter: React.Dispatch<React.SetStateAction<Param[]>>,
-    template: Omit<Param, "id">
-  ) => void;
-  removeItem: (
-    setter: React.Dispatch<React.SetStateAction<Param[]>>,
-    id: string
-  ) => void;
+  addItem: (setter: React.Dispatch<React.SetStateAction<Param[]>>, template: Omit<Param, 'id'>) => void;
+  removeItem: (setter: React.Dispatch<React.SetStateAction<Param[]>>, id: string) => void;
 }
 
 export const ParameterSection: FC<ParameterSectionProps> = ({
@@ -40,12 +28,10 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
   <div className="grid md:grid-cols-3 gap-6">
     <div className="hidden md:block">
       <h2 className="text-lg font-medium">Dynamic Parameters Schema</h2>
-      <p className="text-sm text-muted-foreground mt-1">
-        Define the input schema for your tool
-      </p>
+      <p className="text-sm text-muted-foreground mt-1">Define the input schema for your tool</p>
     </div>
     <div className="col-span-2 space-y-4">
-      {dynamicParams.map(param => (
+      {dynamicParams.map((param) => (
         <div key={param.id} className="flex items-center gap-4">
           <div className="flex-1 space-y-4">
             {/* Name + Type */}
@@ -55,11 +41,9 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
                 <Input
                   placeholder="param_1"
                   value={param.name}
-                  onChange={e =>
-                    setDynamicParams(prev =>
-                      prev.map(x =>
-                        x.id === param.id ? { ...x, name: e.target.value } : x
-                      )
+                  onChange={(e) =>
+                    setDynamicParams((prev) =>
+                      prev.map((x) => (x.id === param.id ? { ...x, name: e.target.value } : x))
                     )
                   }
                 />
@@ -68,17 +52,15 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
                 <label className="text-sm font-medium">Type</label>
                 <Select
                   value={param.type}
-                  onValueChange={v =>
-                    setDynamicParams(prev =>
-                      prev.map(x => (x.id === param.id ? { ...x, type: v } : x))
-                    )
+                  onValueChange={(v) =>
+                    setDynamicParams((prev) => prev.map((x) => (x.id === param.id ? { ...x, type: v } : x)))
                   }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {["String", "Number", "Boolean", "Object", "Array"].map(t => (
+                    {['String', 'Number', 'Boolean', 'Object', 'Array'].map((t) => (
                       <SelectItem key={t} value={t}>
                         {t}
                       </SelectItem>
@@ -94,11 +76,9 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
                 <Input
                   placeholder="Enter default value"
                   value={param.defaultValue}
-                  onChange={e =>
-                    setDynamicParams(prev =>
-                      prev.map(x =>
-                        x.id === param.id ? { ...x, defaultValue: e.target.value } : x
-                      )
+                  onChange={(e) =>
+                    setDynamicParams((prev) =>
+                      prev.map((x) => (x.id === param.id ? { ...x, defaultValue: e.target.value } : x))
                     )
                   }
                 />
@@ -108,11 +88,9 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
                 <Input
                   placeholder="Parameter description"
                   value={param.description}
-                  onChange={e =>
-                    setDynamicParams(prev =>
-                      prev.map(x =>
-                        x.id === param.id ? { ...x, description: e.target.value } : x
-                      )
+                  onChange={(e) =>
+                    setDynamicParams((prev) =>
+                      prev.map((x) => (x.id === param.id ? { ...x, description: e.target.value } : x))
                     )
                   }
                 />
@@ -137,10 +115,10 @@ export const ParameterSection: FC<ParameterSectionProps> = ({
           className="h-8 rounded-lg flex items-center gap-2"
           onClick={() =>
             addItem(setDynamicParams, {
-              name: "",
-              type: "String",
-              defaultValue: "",
-              description: "",
+              name: '',
+              type: 'String',
+              defaultValue: '',
+              description: '',
             })
           }
         >

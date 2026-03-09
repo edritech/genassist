@@ -3,12 +3,13 @@ import base64
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-# Local application imports
-from app.core.utils.encryption_utils import decrypt_key
 from cryptography.hazmat.primitives import serialization
 
 # Third-party imports
 import snowflake.connector
+
+# Local application imports
+from app.core.utils.encryption_utils import decrypt_key
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +53,7 @@ class SnowflakeManager:
     # Private helpers
     # ---------------------------
 
-    def _private_key_der_from_pem(
-        self, pem_str: str, passphrase: Optional[str]
-    ) -> bytes:
+    def _private_key_der_from_pem(self, pem_str: str, passphrase: Optional[str]) -> bytes:
         """
         Convert a PEM (encrypted or not) private key string to *unencrypted* PKCS#8 DER bytes.
         Exactly what the Snowflake connector expects under 'private_key'.
@@ -107,9 +106,7 @@ class SnowflakeManager:
         if auth_method == "private_key":
             private_key = self.config.get("private_key")
             if not private_key:
-                raise ValueError(
-                    "auth_method='private_key' requires 'private_key' in config."
-                )
+                raise ValueError("auth_method='private_key' requires 'private_key' in config.")
 
             encrypted_pem_str = base64.b64decode(private_key).decode("utf-8")
             pem_str = decrypt_key(encrypted_pem_str)
@@ -127,9 +124,7 @@ class SnowflakeManager:
         if auth_method == "password":
             pwd = self.config.get("password")
             if not pwd:
-                raise ValueError(
-                    "auth_method='password' requires 'password' in config."
-                )
+                raise ValueError("auth_method='password' requires 'password' in config.")
             params["password"] = decrypt_key(pwd)
             logger.info("Using password authentication.")
             return params
@@ -144,6 +139,7 @@ class SnowflakeManager:
     @staticmethod
     async def test_connection(cd: dict) -> dict:
         from app.core.utils.encryption_utils import encrypt_key
+
         sf_cd = dict(cd)
         if sf_cd.get("password"):
             sf_cd["password"] = encrypt_key(sf_cd["password"])
@@ -252,20 +248,14 @@ class SnowflakeManager:
             ORDER BY table_name, ordinal_position
             """
 
-            logger.info(
-                f"Executing schema query for {current_database}.{current_schema}"
-            )
+            logger.info(f"Executing schema query for {current_database}.{current_schema}")
             cur.execute(schema_query, [current_database, current_schema])
             rows = cur.fetchall()
             logger.info(f"Retrieved {len(rows)} column definitions")
 
             # Group columns by table
             tables_dict = {}
-            allowed_upper = (
-                [t.upper() for t in self.allowed_tables]
-                if self.allowed_tables
-                else None
-            )
+            allowed_upper = [t.upper() for t in self.allowed_tables] if self.allowed_tables else None
 
             for table_schema, table_name, column_name, data_type, _ in rows:
                 # Filter by allowed tables

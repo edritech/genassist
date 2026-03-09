@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import { TranscriptEntry } from "@/interfaces/transcript.interface";
-import { getWsUrl, isWsEnabled } from "@/config/api";
-import { UseWebSocketTranscriptOptions, StatisticsPayload, TakeoverPayload } from "@/interfaces/websocket.interface";
-import { getTenantId } from "@/services/auth";
+import { useEffect, useRef, useState } from 'react';
+import { TranscriptEntry } from '@/interfaces/transcript.interface';
+import { getWsUrl, isWsEnabled } from '@/config/api';
+import { UseWebSocketTranscriptOptions, StatisticsPayload, TakeoverPayload } from '@/interfaces/websocket.interface';
+import { getTenantId } from '@/services/auth';
 
 function toEpochMs(ct: string | number | undefined | null): number {
   if (ct == null) return 0;
-  if (typeof ct === "number") return ct;
+  if (typeof ct === 'number') return ct;
   const t = new Date(ct).getTime();
   return isNaN(t) ? 0 : t;
 }
@@ -33,10 +33,10 @@ export function useWebSocketTranscript({
     let cancelled = false;
     let socket: WebSocket | null = null;
 
-    const topics = ["message", "statistics", "finalize", "takeover"];
-    const queryString = topics.map((t) => `topics=${t}`).join("&");
+    const topics = ['message', 'statistics', 'finalize', 'takeover'];
+    const queryString = topics.map((t) => `topics=${t}`).join('&');
     const tenant = getTenantId();
-    const tenantParam = tenant ? `&x-tenant-id=${tenant}` : "";
+    const tenantParam = tenant ? `&x-tenant-id=${tenant}` : '';
 
     getWsUrl()
       .then((wsBaseUrl) => {
@@ -58,18 +58,14 @@ export function useWebSocketTranscript({
           try {
             const data = JSON.parse(event.data);
 
-            if ((data.topic === "message" || data.type === "message") && data.payload) {
-              const newEntries = Array.isArray(data.payload)
-                ? data.payload
-                : [data.payload];
+            if ((data.topic === 'message' || data.type === 'message') && data.payload) {
+              const newEntries = Array.isArray(data.payload) ? data.payload : [data.payload];
 
               setMessages((prev) => {
                 const combined = [...prev];
                 for (const entry of newEntries) {
                   const exists = combined.some(
-                    (msg) =>
-                      msg.text === entry.text &&
-                      toEpochMs(msg.create_time) === toEpochMs(entry.create_time)
+                    (msg) => msg.text === entry.text && toEpochMs(msg.create_time) === toEpochMs(entry.create_time)
                   );
                   if (!exists) {
                     combined.push(entry);
@@ -79,14 +75,14 @@ export function useWebSocketTranscript({
               });
             }
 
-            if ((data.topic === "statistics" || data.type === "statistics") && data.payload) {
+            if ((data.topic === 'statistics' || data.type === 'statistics') && data.payload) {
               setStatistics((prev) => ({
                 ...prev,
                 ...data.payload,
               }));
             }
 
-            if (data.topic === "takeover" || data.type === "takeover") {
+            if (data.topic === 'takeover' || data.type === 'takeover') {
               setTakeoverInfo({
                 supervisor_id: data.payload?.supervisor_id,
                 user_id: data.payload?.user_id,
@@ -136,6 +132,6 @@ export function useWebSocketTranscript({
     isConnected,
     sendMessage,
     statistics,
-    takeoverInfo
+    takeoverInfo,
   };
 }

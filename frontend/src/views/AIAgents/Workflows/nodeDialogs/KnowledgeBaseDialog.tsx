@@ -1,42 +1,35 @@
-import React, { useState, useEffect } from "react";
-import { KnowledgeBaseNodeData } from "../types/nodes";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { Checkbox } from "@/components/checkbox";
-import { ScrollArea } from "@/components/scroll-area";
-import { KnowledgeItem } from "@/interfaces/knowledge.interface";
-import { getAllKnowledgeItems } from "@/services/api";
-import { useToast } from "@/components/use-toast";
-import { Save, Plus, ExternalLink } from "lucide-react";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
-import { DraggableTextArea } from "../components/custom/DraggableTextArea";
+import React, { useState, useEffect } from 'react';
+import { KnowledgeBaseNodeData } from '../types/nodes';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Checkbox } from '@/components/checkbox';
+import { ScrollArea } from '@/components/scroll-area';
+import { KnowledgeItem } from '@/interfaces/knowledge.interface';
+import { getAllKnowledgeItems } from '@/services/api';
+import { useToast } from '@/components/use-toast';
+import { Save, Plus, ExternalLink } from 'lucide-react';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
+import { DraggableTextArea } from '../components/custom/DraggableTextArea';
 
-type KnowledgeBaseDialogProps = BaseNodeDialogProps<
-  KnowledgeBaseNodeData,
-  KnowledgeBaseNodeData
->;
+type KnowledgeBaseDialogProps = BaseNodeDialogProps<KnowledgeBaseNodeData, KnowledgeBaseNodeData>;
 
-export const KnowledgeBaseDialog: React.FC<KnowledgeBaseDialogProps> = (
-  props
-) => {
+export const KnowledgeBaseDialog: React.FC<KnowledgeBaseDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
 
-  const [name, setName] = useState(data.name || "");
-  const [query, setQuery] = useState(data.query || "");
+  const [name, setName] = useState(data.name || '');
+  const [query, setQuery] = useState(data.query || '');
   const [limit, setLimit] = useState(data.limit || 5);
   const [force, setForce] = useState(data.force || false);
-  const [selectedBases, setSelectedBases] = useState<string[]>(
-    data.selectedBases || []
-  );
+  const [selectedBases, setSelectedBases] = useState<string[]>(data.selectedBases || []);
   const [availableBases, setAvailableBases] = useState<KnowledgeItem[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setQuery(data.query || "");
+      setName(data.name || '');
+      setQuery(data.query || '');
       setLimit(data.limit || 5);
       setForce(data.force || false);
       setSelectedBases(data.selectedBases || []);
@@ -47,9 +40,9 @@ export const KnowledgeBaseDialog: React.FC<KnowledgeBaseDialogProps> = (
           setAvailableBases(bases);
         } catch (err) {
           toast({
-            title: "Error",
-            description: "Failed to load knowledge bases",
-            variant: "destructive",
+            title: 'Error',
+            description: 'Failed to load knowledge bases',
+            variant: 'destructive',
           });
         }
       };
@@ -70,11 +63,7 @@ export const KnowledgeBaseDialog: React.FC<KnowledgeBaseDialogProps> = (
   };
 
   const toggleBase = (baseId: string) => {
-    setSelectedBases((prev) =>
-      prev.includes(baseId)
-        ? prev.filter((id) => id !== baseId)
-        : [...prev, baseId]
-    );
+    setSelectedBases((prev) => (prev.includes(baseId) ? prev.filter((id) => id !== baseId) : [...prev, baseId]));
   };
 
   return (
@@ -140,15 +129,8 @@ export const KnowledgeBaseDialog: React.FC<KnowledgeBaseDialogProps> = (
         <div className="space-y-2">
           <Label htmlFor="force">Force</Label>
           <div className="flex items-center space-x-2 h-10">
-            <Checkbox
-              id="force"
-              checked={force}
-              onCheckedChange={(checked) => setForce(checked as boolean)}
-            />
-            <Label
-              htmlFor="force"
-              className="text-sm font-normal cursor-pointer"
-            >
+            <Checkbox id="force" checked={force} onCheckedChange={(checked) => setForce(checked as boolean)} />
+            <Label htmlFor="force" className="text-sm font-normal cursor-pointer">
               Force limit
             </Label>
           </div>
@@ -164,8 +146,7 @@ export const KnowledgeBaseDialog: React.FC<KnowledgeBaseDialogProps> = (
             rel="noreferrer"
             className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-700"
           >
-            <Plus className="w-4 h-4" /> Configure new KB{" "}
-            <ExternalLink className="w-3 h-3" />
+            <Plus className="w-4 h-4" /> Configure new KB <ExternalLink className="w-3 h-3" />
           </a>
         </div>
         <ScrollArea className="h-40 border rounded-md p-2 w-full">
@@ -177,19 +158,14 @@ export const KnowledgeBaseDialog: React.FC<KnowledgeBaseDialogProps> = (
                   checked={selectedBases.includes(base.id)}
                   onCheckedChange={() => toggleBase(base.id)}
                 />
-                <Label
-                  htmlFor={`kb-${base.id}`}
-                  className="text-sm font-normal break-words flex-1 cursor-pointer"
-                >
+                <Label htmlFor={`kb-${base.id}`} className="text-sm font-normal break-words flex-1 cursor-pointer">
                   {base.name}
                 </Label>
               </div>
             ))}
           </div>
         </ScrollArea>
-        <p className="text-xs text-gray-500 break-words">
-          Select the knowledge bases you want to query.
-        </p>
+        <p className="text-xs text-gray-500 break-words">Select the knowledge bases you want to query.</p>
       </div>
     </NodeConfigPanel>
   );

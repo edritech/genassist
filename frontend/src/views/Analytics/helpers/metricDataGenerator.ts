@@ -3,14 +3,10 @@ export interface MetricDataPoint {
   value: number;
 }
 
-export const generateMetricData = (
-  timeFrame: string,
-  baseValue: number,
-  volatility: number
-): MetricDataPoint[] => {
+export const generateMetricData = (timeFrame: string, baseValue: number, volatility: number): MetricDataPoint[] => {
   const data: MetricDataPoint[] = [];
   let points = 10;
-  
+
   switch (timeFrame) {
     case 'today':
       points = 24;
@@ -30,26 +26,26 @@ export const generateMetricData = (
     default:
       points = 10;
   }
-  
+
   const formatDate = (i: number): string => {
     if (timeFrame === 'today') {
       return `${i}:00`;
     } else if (timeFrame === '7days' || timeFrame === '30days') {
-      return `Day ${i+1}`;
+      return `Day ${i + 1}`;
     } else {
-      return `Month ${i+1}`;
+      return `Month ${i + 1}`;
     }
   };
-  
+
   for (let i = 0; i < points; i++) {
     const fluctuation = (Math.random() * 2 - 1) * volatility;
     const value = Math.max(0, baseValue + fluctuation);
-    
+
     data.push({
       date: formatDate(i),
-      value: value
+      value: value,
     });
   }
-  
+
   return data;
-}; 
+};

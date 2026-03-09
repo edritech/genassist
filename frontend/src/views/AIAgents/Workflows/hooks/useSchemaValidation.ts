@@ -22,50 +22,51 @@ const areCompatible = (source: NodeCompatibility, target: NodeCompatibility): bo
 
 // Helper function to find handler by id
 const findHandler = (handlers: NodeHandler[], id: string): NodeHandler | undefined => {
-  return handlers.find(handler => handler.id === id);
+  return handlers.find((handler) => handler.id === id);
 };
 
 export const useSchemaValidation = () => {
   const { getNode } = useReactFlow();
 
-  const validateConnection = useCallback((connection: Connection) => {
-    if (!connection.source || !connection.target || !connection.sourceHandle || !connection.targetHandle) return false;
+  const validateConnection = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target || !connection.sourceHandle || !connection.targetHandle)
+        return false;
 
-    const sourceNode = getNode(connection.source);
-    const targetNode = getNode(connection.target);
-    if (!sourceNode || !targetNode) return false;
+      const sourceNode = getNode(connection.source);
+      const targetNode = getNode(connection.target);
+      if (!sourceNode || !targetNode) return false;
 
-    const sourceData = sourceNode.data as BaseNodeData;
-    const targetData = targetNode.data as BaseNodeData;
+      const sourceData = sourceNode.data as BaseNodeData;
+      const targetData = targetNode.data as BaseNodeData;
 
-    // Find the handlers involved in this connection
-    const sourceHandler = findHandler(sourceData.handlers, connection.sourceHandle);
-    const targetHandler = findHandler(targetData.handlers, connection.targetHandle);
+      // Find the handlers involved in this connection
+      const sourceHandler = findHandler(sourceData.handlers, connection.sourceHandle);
+      const targetHandler = findHandler(targetData.handlers, connection.targetHandle);
 
-    if (!sourceHandler || !targetHandler) return false;
+      if (!sourceHandler || !targetHandler) return false;
 
-    // Check compatibility types
-    if (!areCompatible(sourceHandler.compatibility, targetHandler.compatibility)) {
-      return false;
-    }
+      // Check compatibility types
+      if (!areCompatible(sourceHandler.compatibility, targetHandler.compatibility)) {
+        return false;
+      }
 
-    // If either handler doesn't have a schema, allow the connection
-    if (!sourceHandler.schema || !targetHandler.schema) return true;
+      // If either handler doesn't have a schema, allow the connection
+      if (!sourceHandler.schema || !targetHandler.schema) return true;
 
-    // Validate schema compatibility
-    const validation = validateSchemaCompatibility(
-      sourceHandler.schema,
-      targetHandler.schema
-    );
+      // Validate schema compatibility
+      const validation = validateSchemaCompatibility(sourceHandler.schema, targetHandler.schema);
 
-    if (!validation.isValid) {
-      return false;
-    }
+      if (!validation.isValid) {
+        return false;
+      }
 
-    return true;
-  }, [getNode]);
+      return true;
+    },
+    [getNode]
+  );
 
   return {
-    validateConnection
+    validateConnection,
   };
-}; 
+};

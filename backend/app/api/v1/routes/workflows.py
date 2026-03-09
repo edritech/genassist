@@ -1,24 +1,22 @@
-import time
 import logging
+import time
 import uuid
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi_injector import Injected
-from app.modules.workflow.utils import generate_python_function_template
-from app.core.permissions.constants import Permissions as P
-from app.schemas.workflow import Workflow, WorkflowCreate, WorkflowUpdate
+
 from app.auth.dependencies import auth, permissions
-from app.services.llm_providers import LlmProviderService
-
-from app.services.workflow import WorkflowService
+from app.core.permissions.constants import Permissions as P
 from app.dependencies.injector import injector
-from app.modules.workflow.llm.provider import LLMProvider
 from app.modules.workflow.engine.workflow_engine import WorkflowEngine
-
+from app.modules.workflow.llm.provider import LLMProvider
+from app.modules.workflow.utils import generate_python_function_template
 from app.schemas.dynamic_form_schemas.nodes import NODE_DIALOG_SCHEMAS
-
-
+from app.schemas.workflow import Workflow, WorkflowCreate, WorkflowUpdate
+from app.services.llm_providers import LlmProviderService
+from app.services.workflow import WorkflowService
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -55,7 +53,7 @@ SUPPORTED_NODE_TYPES = [
     "mcpNode",
     "workflowExecutorNode",
     "humanInTheLoopNode",
-    "setStateNode"
+    "setStateNode",
 ]
 
 
@@ -88,10 +86,7 @@ async def create_workflow(
     return workflow
 
 
-@router.get(
-    "/node_schemas",
-    dependencies=[Depends(auth)]
-)
+@router.get("/node_schemas", dependencies=[Depends(auth)])
 async def get_node_dialog_schemas():
     return NODE_DIALOG_SCHEMAS
 
@@ -165,9 +160,7 @@ async def delete_workflow(
 
     # Check if the user owns this workflow
     if workflow.user_id != current_user.id:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to delete this workflow"
-        )
+        raise HTTPException(status_code=403, detail="Not authorized to delete this workflow")
 
     await service.delete(workflow_id)
 
@@ -220,9 +213,7 @@ async def execute_workflow(
         thread_id = input_data.get("thread_id", str(uuid.uuid4()))
         workflow_engine = WorkflowEngine(workflow_config)
 
-        state = await workflow_engine.execute_from_node(
-            input_data=input_data, thread_id=thread_id
-        )
+        state = await workflow_engine.execute_from_node(input_data=input_data, thread_id=thread_id)
 
         return state.format_state_as_response()
 
@@ -231,9 +222,7 @@ async def execute_workflow(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post(
-    "/test", dependencies=[Depends(auth), Depends(permissions(P.Workflow.TEST))]
-)
+@router.post("/test", dependencies=[Depends(auth), Depends(permissions(P.Workflow.TEST))])
 async def test_workflow(
     test_data: Dict[str, Any],
     workflow_id: Optional[UUID] = None,
@@ -253,8 +242,7 @@ async def test_workflow(
 
     # Validate input data
     if not input_data:
-        raise HTTPException(
-            status_code=400, detail="Input message is required")
+        raise HTTPException(status_code=400, detail="Input message is required")
 
     try:
         # Determine workflow source
@@ -262,9 +250,7 @@ async def test_workflow(
             # Get workflow from database using workflow_id
             db_workflow = await workflow_service.get_by_id(workflow_id)
             if not db_workflow:
-                raise HTTPException(
-                    status_code=404, detail=f"Workflow with id {workflow_id} not found"
-                )
+                raise HTTPException(status_code=404, detail=f"Workflow with id {workflow_id} not found")
 
             workflow_config = {
                 "id": str(workflow_id),
@@ -310,10 +296,7 @@ async def test_workflow(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get(
-    "/dialog_schema/{node_type}",
-    dependencies=[Depends(auth)]
-)
+@router.get("/dialog_schema/{node_type}", dependencies=[Depends(auth)])
 async def get_node_dialog_schema(node_type: str):
     if node_type not in SUPPORTED_NODE_TYPES:
         raise HTTPException(
@@ -324,9 +307,7 @@ async def get_node_dialog_schema(node_type: str):
     return NODE_DIALOG_SCHEMAS[node_type]
 
 
-@router.post(
-    "/test-node", dependencies=[Depends(auth), Depends(permissions("test:workflow"))]
-)
+@router.post("/test-node", dependencies=[Depends(auth), Depends(permissions("test:workflow"))])
 async def test_individual_node(test_data: Dict[str, Any]):
     """
     Test an individual node with the new engine.
@@ -435,9 +416,7 @@ Return ONLY the modified Python code, nothing else.
             modified_template = await loop.run_in_executor(None, sync_llm_call)
             # Remove code block markers if present
             if modified_template.strip().startswith("```python"):
-                modified_template = modified_template.strip()[
-                    len("```python"):
-                ].lstrip("\n")
+                modified_template = modified_template.strip()[len("```python") :].lstrip("\n")
             if modified_template.strip().endswith("```"):
                 modified_template = modified_template.strip()
                 if modified_template.endswith("```"):
@@ -446,9 +425,7 @@ Return ONLY the modified Python code, nothing else.
 
         return {"template": template}
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error generating Python template: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error generating Python template: {str(e)}")
 
 
 @router.get(
@@ -466,15 +443,14 @@ async def debug_logging_probe():
         "root_handlers": [type(h).__name__ for h in root.handlers],
     }
 
+
 # moved to the end to avoid catching other routes like /node_schemas
 @router.get(
     "/{workflow_id}",
     response_model=Workflow,
     dependencies=[Depends(auth), Depends(permissions(P.Workflow.READ))],
 )
-async def get_workflow(
-    workflow_id: UUID, service: WorkflowService = Injected(WorkflowService)
-):
+async def get_workflow(workflow_id: UUID, service: WorkflowService = Injected(WorkflowService)):
     """
     Get a workflow by ID
     """

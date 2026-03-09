@@ -1,41 +1,31 @@
-import React, { useEffect, useState } from "react";
-import { NodeProps } from "reactflow";
-import { getNodeColor } from "../../utils/nodeColors.ts";
-import { CalendarEventToolNodeData } from "../../types/nodes.ts";
-import { getAllDataSources } from "@/services/dataSources.ts";
-import { DataSource } from "@/interfaces/dataSource.interface.ts";
-import { useQuery } from "@tanstack/react-query";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { CalendarEventDialog } from "@/views/AIAgents/Workflows/nodeDialogs/CalendarEventDialog.tsx";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent.tsx";
+import React, { useEffect, useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { getNodeColor } from '../../utils/nodeColors.ts';
+import { CalendarEventToolNodeData } from '../../types/nodes.ts';
+import { getAllDataSources } from '@/services/dataSources.ts';
+import { DataSource } from '@/interfaces/dataSource.interface.ts';
+import { useQuery } from '@tanstack/react-query';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { CalendarEventDialog } from '@/views/AIAgents/Workflows/nodeDialogs/CalendarEventDialog.tsx';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent.tsx';
 
-export const CALENDAR_EVENT_NODE_TYPE = "calendarEventNode";
+export const CALENDAR_EVENT_NODE_TYPE = 'calendarEventNode';
 
-const CalendarEventNode: React.FC<NodeProps<CalendarEventToolNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const CalendarEventNode: React.FC<NodeProps<CalendarEventToolNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(CALENDAR_EVENT_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const { data: connectors = [] } = useQuery({
-    queryKey: ["dataSources"],
+    queryKey: ['dataSources'],
     queryFn: getAllDataSources,
     select: (data: DataSource[]) =>
-      data.filter(
-        (p) =>
-          (p.is_active === 1 && p.source_type === "gmail") ||
-          p.source_type === "o365"
-      ),
+      data.filter((p) => (p.is_active === 1 && p.source_type === 'gmail') || p.source_type === 'o365'),
   });
 
-  const selectedConnector = connectors.find(
-    (c) => c.id.toString() === data.dataSourceId
-  );
+  const selectedConnector = connectors.find((c) => c.id.toString() === data.dataSourceId);
 
   useEffect(() => {
     if (data.dataSourceId === undefined && connectors.length > 0) {
@@ -56,17 +46,17 @@ const CalendarEventNode: React.FC<NodeProps<CalendarEventToolNodeData>> = ({
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Connector",
+      label: 'Connector',
       value: selectedConnector?.name,
-      placeholder: "None selected",
+      placeholder: 'None selected',
     },
     {
-      label: "Operation",
+      label: 'Operation',
       value: data.operation,
-      placeholder: "None selected",
+      placeholder: 'None selected',
       isSelection: true,
     },
-    { label: "Summary", value: data.summary },
+    { label: 'Summary', value: data.summary },
   ];
 
   return (

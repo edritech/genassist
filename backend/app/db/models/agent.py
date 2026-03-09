@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, Integer, String, LargeBinary, Boolean
+from sqlalchemy import ForeignKey, Integer, LargeBinary, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -25,8 +25,5 @@ class AgentModel(Base):
     operator = relationship("OperatorModel", back_populates="agent", uselist=False)
     workflow = relationship("WorkflowModel", back_populates="agent", uselist=False)
     security_settings = relationship(
-        "AgentSecuritySettingsModel",
-        back_populates="agent",
-        uselist=False,
-        cascade="all, delete-orphan"
+        "AgentSecuritySettingsModel", back_populates="agent", uselist=False, cascade="all, delete-orphan"
     )

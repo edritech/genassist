@@ -7,4 +7,5 @@ class ValidationError(dict):
         error: str
     }
     """
+
     pass

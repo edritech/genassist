@@ -1,16 +1,16 @@
-import { Edge, Node, NodeProps } from "reactflow";
-import { ComponentType } from "react";
-import { NodeSchema } from "./schemas";
-import { CSVAnalysisResult } from "@/services/mlModels";
+import { Edge, Node, NodeProps } from 'reactflow';
+import { ComponentType } from 'react';
+import { NodeSchema } from './schemas';
+import { CSVAnalysisResult } from '@/services/mlModels';
 
 // Define compatibility types
-export type NodeCompatibility = "text" | "tools" | "llm" | "json" | "any";
+export type NodeCompatibility = 'text' | 'tools' | 'llm' | 'json' | 'any';
 
 // Define handler types
 export interface NodeHandler {
   id: string;
-  type: "source" | "target";
-  position: "left" | "right" | "top" | "bottom";
+  type: 'source' | 'target';
+  position: 'left' | 'right' | 'top' | 'bottom';
   compatibility: NodeCompatibility;
   schema?: NodeSchema;
 }
@@ -20,10 +20,7 @@ export interface BaseNodeData {
   name: string;
   handlers?: NodeHandler[];
   unwrap?: boolean;
-  updateNodeData?: <T extends BaseNodeData>(
-    nodeId: string,
-    data: Partial<T>,
-  ) => void;
+  updateNodeData?: <T extends BaseNodeData>(nodeId: string, data: Partial<T>) => void;
 }
 
 export interface ToolBaseNodeData extends BaseNodeData {
@@ -42,7 +39,7 @@ export interface ChatInputNodeData extends BaseNodeData {
 // Human In The Loop node data — collects structured data from the user mid-flow
 export interface HumanInTheLoopFormField {
   name: string;
-  type: "text" | "number" | "select" | "boolean" | "date";
+  type: 'text' | 'number' | 'select' | 'boolean' | 'date';
   label: string;
   required?: boolean;
   placeholder?: string;
@@ -81,20 +78,20 @@ export interface WhatsappNodeData extends BaseNodeData {
 export interface RouterNodeData extends BaseNodeData {
   first_value?: string;
   compare_condition?:
-    | "equal"
-    | "not_equal"
-    | "contains"
-    | "not_contain"
-    | "starts_with"
-    | "not_starts_with"
-    | "ends_with"
-    | "not_ends_with"
-    | "regex";
+    | 'equal'
+    | 'not_equal'
+    | 'contains'
+    | 'not_contain'
+    | 'starts_with'
+    | 'not_starts_with'
+    | 'ends_with'
+    | 'not_ends_with'
+    | 'regex';
   second_value?: string;
 }
 
 export interface AggregatorNodeData extends BaseNodeData {
-  aggregationStrategy?: "list" | "merge" | "first" | "last";
+  aggregationStrategy?: 'list' | 'merge' | 'first' | 'last';
   timeoutSeconds?: number;
   forwardTemplate?: string;
   requireAllInputs?: boolean;
@@ -111,12 +108,12 @@ export interface ZendeskTicketNodeData extends BaseNodeData {
 }
 
 export type GmailOperation =
-  | "send_email"
-  | "get_messages"
-  | "mark_as_read"
-  | "delete_message"
-  | "reply_to_email"
-  | "search_emails";
+  | 'send_email'
+  | 'get_messages'
+  | 'mark_as_read'
+  | 'delete_message'
+  | 'reply_to_email'
+  | 'search_emails';
 
 export interface GmailNodeData extends BaseNodeData {
   to: string; // recipient email address
@@ -163,14 +160,9 @@ export interface BaseLLMNodeData extends BaseNodeData {
   memory: boolean;
   systemPrompt?: string;
   userPrompt?: string;
-  type:
-    | "Base"
-    | "ReActAgent"
-    | "ToolSelector"
-    | "Chain-of-Thought"
-    | "ReActAgentLC";
+  type: 'Base' | 'ReActAgent' | 'ToolSelector' | 'Chain-of-Thought' | 'ReActAgentLC';
   maxIterations?: number;
-  memoryTrimmingMode?: "message_count" | "token_budget" | "message_compacting" | "rag_retrieval";
+  memoryTrimmingMode?: 'message_count' | 'token_budget' | 'message_compacting' | 'rag_retrieval';
   maxMessages?: number;
   tokenBudget?: number;
   conversationHistoryTokens?: number;
@@ -189,10 +181,10 @@ export interface BaseLLMNodeData extends BaseNodeData {
 }
 // Agent Node Data
 export interface AgentNodeData extends BaseLLMNodeData {
-  type: "ReActAgent" | "ToolSelector" | "Chain-of-Thought" | "ReActAgentLC";
+  type: 'ReActAgent' | 'ToolSelector' | 'Chain-of-Thought' | 'ReActAgentLC';
 }
 export interface LLMModelNodeData extends BaseLLMNodeData {
-  type: "Base" | "Chain-of-Thought";
+  type: 'Base' | 'Chain-of-Thought';
 }
 // Knowledge Base Node Data
 export interface KnowledgeBaseNodeData extends BaseNodeData {
@@ -203,7 +195,7 @@ export interface KnowledgeBaseNodeData extends BaseNodeData {
 }
 
 // SQL Node Data
-export type SQLMode = "sqlQuery" | "humanQuery";
+export type SQLMode = 'sqlQuery' | 'humanQuery';
 
 export interface SQLNodeData extends BaseNodeData {
   dataSourceId: string;
@@ -274,7 +266,7 @@ export interface MLModelInferenceNodeData extends BaseNodeData {
 
 // Train Data Source Node Data
 export interface TrainDataSourceNodeData extends BaseNodeData {
-  sourceType: "datasource" | "csv"; // Type of data source
+  sourceType: 'datasource' | 'csv'; // Type of data source
   dataSourceId?: string; // ID of the datasource (for timedb/snowflake)
   dataSourceType?: string; // Type of datasource (timedb/snowflake)
   query?: string; // SQL query to fetch data
@@ -296,13 +288,7 @@ export interface PreprocessingNodeData extends BaseNodeData {
 export interface TrainModelNodeData extends BaseNodeData {
   fileUrl?: string; // URL to the CSV file for training
   analysisResult?: CSVAnalysisResult; // CSV analysis result
-  modelType:
-    | "xgboost"
-    | "random_forest"
-    | "linear_regression"
-    | "logistic_regression"
-    | "neural_network"
-    | "other";
+  modelType: 'xgboost' | 'random_forest' | 'linear_regression' | 'logistic_regression' | 'neural_network' | 'other';
   targetColumn: string; // Target variable column name
   featureColumns: string[]; // Feature column names
   modelParameters: Record<string, any>; // Model-specific parameters
@@ -311,7 +297,7 @@ export interface TrainModelNodeData extends BaseNodeData {
 
 // Per Chat RAG Node Data
 export interface ThreadRAGNodeData extends BaseNodeData {
-  action: "retrieve" | "add";
+  action: 'retrieve' | 'add';
   // For retrieve action
   query?: string;
   top_k?: number;
@@ -329,7 +315,7 @@ export interface MCPTool {
 }
 
 // Connection configuration types
-export type MCPConnectionType = "stdio" | "sse" | "http";
+export type MCPConnectionType = 'stdio' | 'sse' | 'http';
 
 export interface STDIOConnectionConfig {
   command: string; // Required: Command to run
@@ -395,14 +381,7 @@ export interface NodeTypeDefinition<T extends NodeData> {
   description: string;
   shortDescription?: string;
   configSubtitle?: string;
-  category:
-    | "io"
-    | "ai"
-    | "routing"
-    | "integrations"
-    | "formatting"
-    | "tools"
-    | "training";
+  category: 'io' | 'ai' | 'routing' | 'integrations' | 'formatting' | 'tools' | 'training';
   icon: string;
   defaultData: T;
   component: ComponentType<NodeProps<NodeData>>; // React component for the node
@@ -414,7 +393,7 @@ export const createNode = <T extends NodeData>(
   type: string,
   id: string,
   position: { x: number; y: number },
-  data: T,
+  data: T
 ): Node => {
   return {
     id,
@@ -424,11 +403,7 @@ export const createNode = <T extends NodeData>(
   };
 };
 
-export const createEdge = (
-  source: string,
-  target: string,
-  data: Record<string, unknown>,
-): Edge => {
+export const createEdge = (source: string, target: string, data: Record<string, unknown>): Edge => {
   return {
     id: `${source}-${target}`,
     sourceHandle: source,

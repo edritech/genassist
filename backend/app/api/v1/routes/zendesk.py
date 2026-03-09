@@ -1,17 +1,17 @@
 import logging
-from typing import Any, Dict, Optional
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_injector import Injected
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.dependencies import auth
 
+from app.auth.dependencies import auth
 from app.core.config.settings import settings
-from app.repositories.conversations import ConversationRepository
-from app.repositories.conversation_analysis import ConversationAnalysisRepository
 from app.modules.integration.zendesk import ZendeskConnector
+from app.repositories.conversation_analysis import ConversationAnalysisRepository
+from app.repositories.conversations import ConversationRepository
 from app.services.zendesk import analyze_ticket_for_db
 from app.tasks.zendesk_tasks import analyze_zendesk_tickets_async
 
@@ -48,26 +48,20 @@ async def zendesk_ticket_closed(
 
     zendesk_connector = ZendeskConnector()
     ticket = await zendesk_connector.fetch_ticket_details(payload.ticket_id)
-    logger.debug(
-        f"Fetched ticket #{ticket['id']} from Zendesk: subject={ticket.get('subject')}"
-    )
+    logger.debug(f"Fetched ticket #{ticket['id']} from Zendesk: subject={ticket.get('subject')}")
 
     conv_repo = ConversationRepository(db)
     conversation = await conv_repo.get_by_zendesk_ticket_id(ticket["id"])
 
     if not conversation:
-        logger.warning(
-            f"No conversation found by zendesk_ticket_id={ticket['id']}, trying custom_fields..."
-        )
+        logger.warning(f"No conversation found by zendesk_ticket_id={ticket['id']}, trying custom_fields...")
         custom_fields = ticket.get("custom_fields", [])
         conversation_id_str = None
 
         for field in custom_fields:
             if field.get("id") == settings.ZENDESK_CUSTOM_FIELD_CONVERSATION_ID:
                 conversation_id_str = field.get("value")
-                logger.debug(
-                    f"Found custom field conversation_id: {conversation_id_str!r}"
-                )
+                logger.debug(f"Found custom field conversation_id: {conversation_id_str!r}")
                 break
 
         if conversation_id_str:
@@ -75,28 +69,18 @@ async def zendesk_ticket_closed(
                 conversation_id = UUID(str(conversation_id_str).strip())
                 conversation = await conv_repo.get_by_id(conversation_id)
             except (ValueError, TypeError) as e:
-                logger.error(
-                    f"Invalid UUID in custom field: {conversation_id_str} ({e})"
-                )
-                raise HTTPException(
-                    status_code=400, detail="Invalid conversation ID in custom field"
-                ) from e
+                logger.error(f"Invalid UUID in custom field: {conversation_id_str} ({e})")
+                raise HTTPException(status_code=400, detail="Invalid conversation ID in custom field") from e
 
     if not conversation:
         logger.error("❌ Conversation not found (even via custom_fields)")
-        raise HTTPException(
-            status_code=404, detail="No conversation found (even via custom_fields)"
-        )
+        raise HTTPException(status_code=404, detail="No conversation found (even via custom_fields)")
 
-    logger.info(
-        f"✔ Found ConversationModel id={conversation.id} for ticket_id={ticket['id']}"
-    )
+    logger.info(f"✔ Found ConversationModel id={conversation.id} for ticket_id={ticket['id']}")
 
     if conversation.zendesk_ticket_id is None:
         await conv_repo.set_zendesk_ticket_id(UUID(str(conversation.id)), ticket["id"])
-        logger.info(
-            f"Linked Zendesk ticket ID {ticket['id']} to conversation {conversation.id}"
-        )
+        logger.info(f"Linked Zendesk ticket ID {ticket['id']} to conversation {conversation.id}")
 
     try:
         analysis_dict = analyze_ticket_for_db(ticket, UUID(str(conversation.id)))
@@ -112,9 +96,7 @@ async def zendesk_ticket_closed(
     conv_anal_repo = ConversationAnalysisRepository(db)
     new_analysis = await conv_anal_repo.save_conversation_analysis(analysis_payload)
 
-    logger.info(
-        f"✔ Saved ConversationAnalysis id={new_analysis.id} for conversation={conversation.id}"
-    )
+    logger.info(f"✔ Saved ConversationAnalysis id={new_analysis.id} for conversation={conversation.id}")
 
     try:
         comment_text = (
@@ -123,9 +105,7 @@ async def zendesk_ticket_closed(
             f"Message Count: {analysis_dict.get('message_count')}\n"
             f"Other metrics: {analysis_dict}"
         )
-        await zendesk_connector.post_private_comment(
-            ticket_id=ticket["id"], body=comment_text
-        )
+        await zendesk_connector.post_private_comment(ticket_id=ticket["id"], body=comment_text)
     except HTTPException:
         logger.warning("Failed to post comment to Zendesk ticket.")
 

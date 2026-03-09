@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { Card } from "@/components/card";
-import { JsonViewerProps } from "@/interfaces/audit-log.interface";
-import { ScrollArea } from "@/components/scroll-area";
-import { cn } from "@/helpers/utils";
-import { Button } from "@/components/button";
-import { Check, Clipboard, Download, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from 'react';
+import { Card } from '@/components/card';
+import { JsonViewerProps } from '@/interfaces/audit-log.interface';
+import { ScrollArea } from '@/components/scroll-area';
+import { cn } from '@/helpers/utils';
+import { Button } from '@/components/button';
+import { Check, Clipboard, Download, Loader2 } from 'lucide-react';
 
 const CollapsibleJSON = ({
   value,
@@ -19,7 +19,7 @@ const CollapsibleJSON = ({
 }) => {
   const [collapsed, setCollapsed] = useState(!expanded);
 
-  const isObject = typeof value === "object" && value !== null;
+  const isObject = typeof value === 'object' && value !== null;
   const isArray = Array.isArray(value);
 
   if (value === null || value === undefined) {
@@ -32,15 +32,12 @@ const CollapsibleJSON = ({
   }
 
   if (isObject || isArray) {
-    const typeLabel = isArray ? "Array" : "Object";
+    const typeLabel = isArray ? 'Array' : 'Object';
 
     return (
       <div>
-        <div
-          className={`cursor-pointer text-blue-500 pl-${level * 2}`}
-          onClick={() => setCollapsed((prev) => !prev)}
-        >
-          {collapsed ? "▶" : "▼"}{" "}
+        <div className={`cursor-pointer text-blue-500 pl-${level * 2}`} onClick={() => setCollapsed((prev) => !prev)}>
+          {collapsed ? '▶' : '▼'}{' '}
           {label ? (
             <>
               <strong>{label}</strong> ({typeLabel})
@@ -53,22 +50,10 @@ const CollapsibleJSON = ({
           <div className="ml-4">
             {isArray
               ? value.map((item, index) => (
-                  <CollapsibleJSON
-                    key={index}
-                    value={item}
-                    expanded={false}
-                    level={level + 1}
-                    label={String(index)}
-                  />
+                  <CollapsibleJSON key={index} value={item} expanded={false} level={level + 1} label={String(index)} />
                 ))
               : Object.keys(value).map((key) => (
-                  <CollapsibleJSON
-                    key={key}
-                    value={value[key]}
-                    expanded={false}
-                    level={level + 1}
-                    label={key}
-                  />
+                  <CollapsibleJSON key={key} value={value[key]} expanded={false} level={level + 1} label={key} />
                 ))}
           </div>
         )}
@@ -128,12 +113,12 @@ export function JsonViewer({ jsonData, className }: JsonViewerProps) {
     setDownloading(true);
 
     const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
-      type: "application/json",
+      type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
-    link.download = "data.json";
+    link.download = 'data.json';
     link.click();
     URL.revokeObjectURL(url);
 
@@ -147,32 +132,19 @@ export function JsonViewer({ jsonData, className }: JsonViewerProps) {
     downloadTimeoutRef.current = window.setTimeout(() => {
       setDownloading(false);
       setDownloaded(true);
-      resetDownloadedTimeoutRef.current = window.setTimeout(
-        () => setDownloaded(false),
-        2000
-      ); // reset
+      resetDownloadedTimeoutRef.current = window.setTimeout(() => setDownloaded(false), 2000); // reset
     }, 1000);
   };
 
   return (
-    <Card className={cn("p-4", className)}>
+    <Card className={cn('p-4', className)}>
       <div className="flex justify-end gap-2 mb-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleCopy}
-          className="flex gap-2 items-center"
-        >
+        <Button size="sm" variant="outline" onClick={handleCopy} className="flex gap-2 items-center">
           {copied ? <Check size={16} /> : <Clipboard size={16} />}
-          {copied ? "Copied" : "Copy JSON"}
+          {copied ? 'Copied' : 'Copy JSON'}
         </Button>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleDownload}
-          className="flex gap-2 items-center"
-        >
+        <Button size="sm" variant="outline" onClick={handleDownload} className="flex gap-2 items-center">
           {downloading ? (
             <Loader2 size={16} className="animate-spin" />
           ) : downloaded ? (
@@ -180,11 +152,7 @@ export function JsonViewer({ jsonData, className }: JsonViewerProps) {
           ) : (
             <Download size={16} />
           )}
-          {downloading
-            ? "Downloading..."
-            : downloaded
-            ? "Downloaded"
-            : "Download JSON"}
+          {downloading ? 'Downloading...' : downloaded ? 'Downloaded' : 'Download JSON'}
         </Button>
       </div>
 

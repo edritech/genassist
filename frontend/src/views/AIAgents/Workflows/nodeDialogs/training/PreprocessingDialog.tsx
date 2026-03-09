@@ -1,26 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
-import { PreprocessingNodeData } from "../../types/nodes";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { useToast } from "@/components/use-toast";
-import {
-  Save,
-  Sparkles,
-  Code,
-  Settings,
-  Search,
-  Plus,
-  X,
-  GripVertical,
-  Play,
-} from "lucide-react";
-import { toast as hotToast } from "react-hot-toast";
-import "ace-builds/src-noconflict/mode-python";
-import "ace-builds/src-noconflict/theme-twilight";
-import { generatePythonTemplate } from "@/services/workflows";
-import { DraggableAceEditor } from "../../components/custom/DraggableAceEditor";
-import { DraggableInput } from "../../components/custom/DraggableInput";
+import React, { useState, useEffect, useRef } from 'react';
+import { PreprocessingNodeData } from '../../types/nodes';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { useToast } from '@/components/use-toast';
+import { Save, Sparkles, Code, Settings, Search, Plus, X, GripVertical, Play } from 'lucide-react';
+import { toast as hotToast } from 'react-hot-toast';
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/theme-twilight';
+import { generatePythonTemplate } from '@/services/workflows';
+import { DraggableAceEditor } from '../../components/custom/DraggableAceEditor';
+import { DraggableInput } from '../../components/custom/DraggableInput';
 import {
   Dialog,
   DialogContent,
@@ -28,17 +18,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/tabs";
-import { NodeConfigPanel } from "../../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "../base";
+} from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/tabs';
+import { NodeConfigPanel } from '../../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from '../base';
 import {
   PreprocessingConfig,
   PreprocessingStep,
@@ -54,56 +38,49 @@ import {
   OutlierHandlingStepConfig,
   CategoricalEncodingStepConfig,
   FeatureEngineeringStepConfig,
-} from "./preprocessingConfig";
-import { ColumnFilter } from "./components/ColumnFilter";
-import { MissingValueHandler } from "./components/MissingValueHandler";
-import { OutlierHandler } from "./components/OutlierHandler";
-import { CategoricalEncodingHandler } from "./components/CategoricalEncodingHandler";
-import { FeatureEngineeringHandler } from "./components/FeatureEngineeringHandler";
-import { CSVAnalysisDisplay } from "./components/CSVAnalysisDisplay";
-import { analyzeCSV, CSVAnalysisResult } from "@/services/mlModels";
-import { useWorkflowExecution } from "../../context/WorkflowExecutionContext";
-import { extractDynamicVariables, getValueFromPath } from "../../utils/helpers";
-import { Switch } from "@/components/switch";
+} from './preprocessingConfig';
+import { ColumnFilter } from './components/ColumnFilter';
+import { MissingValueHandler } from './components/MissingValueHandler';
+import { OutlierHandler } from './components/OutlierHandler';
+import { CategoricalEncodingHandler } from './components/CategoricalEncodingHandler';
+import { FeatureEngineeringHandler } from './components/FeatureEngineeringHandler';
+import { CSVAnalysisDisplay } from './components/CSVAnalysisDisplay';
+import { analyzeCSV, CSVAnalysisResult } from '@/services/mlModels';
+import { useWorkflowExecution } from '../../context/WorkflowExecutionContext';
+import { extractDynamicVariables, getValueFromPath } from '../../utils/helpers';
+import { Switch } from '@/components/switch';
 
-type PreprocessingDialogProps = BaseNodeDialogProps<
-  PreprocessingNodeData,
-  PreprocessingNodeData
->;
+type PreprocessingDialogProps = BaseNodeDialogProps<PreprocessingNodeData, PreprocessingNodeData>;
 
-export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
-  props
-) => {
+export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate, nodeId } = props;
   const { getAvailableDataForNode } = useWorkflowExecution();
 
-  const [name, setName] = useState(data.name || "Data Preprocessing");
-  const [pythonCode, setPythonCode] = useState(data.pythonCode || "");
-  const [fileUrl, setFileUrl] = useState(data.fileUrl || "");
+  const [name, setName] = useState(data.name || 'Data Preprocessing');
+  const [pythonCode, setPythonCode] = useState(data.pythonCode || '');
+  const [fileUrl, setFileUrl] = useState(data.fileUrl || '');
   const [loading, setLoading] = useState(false);
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
-  const [templatePrompt, setTemplatePrompt] = useState("");
-  const [mode, setMode] = useState<"configure" | "code">("configure");
+  const [templatePrompt, setTemplatePrompt] = useState('');
+  const [mode, setMode] = useState<'configure' | 'code'>('configure');
   const [config, setConfig] = useState<PreprocessingConfig>({ steps: [] });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<
-    Record<string, CSVAnalysisResult>
-  >({});
+  const [analysisResults, setAnalysisResults] = useState<Record<string, CSVAnalysisResult>>({});
   const [runningStepId, setRunningStepId] = useState<string | null>(null);
   const isGeneratingCodeRef = useRef(false);
   const isInitializingRef = useRef(true);
-  const pythonCodeRef = useRef<string>("");
+  const pythonCodeRef = useRef<string>('');
   const { toast } = useToast();
 
   // Parse Python code to config when switching to configure mode
-  const handleModeChange = (newMode: "configure" | "code") => {
-    if (newMode === "configure") {
+  const handleModeChange = (newMode: 'configure' | 'code') => {
+    if (newMode === 'configure') {
       if (pythonCode) {
         try {
           const parsedConfig = parsePythonCodeToConfig(pythonCode);
           setConfig(parsedConfig);
         } catch (error) {
-          console.error("Failed to parse Python code:", error);
+          console.error('Failed to parse Python code:', error);
           setConfig({ steps: [] });
         }
       } else {
@@ -120,7 +97,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
 
   // Generate Python code from config when config changes in configure mode
   useEffect(() => {
-    if (mode === "configure" && !isGeneratingCodeRef.current && !isInitializingRef.current) {
+    if (mode === 'configure' && !isGeneratingCodeRef.current && !isInitializingRef.current) {
       isGeneratingCodeRef.current = true;
       const existingCode = pythonCodeRef.current || BASE_PYTHON_TEMPLATE;
       const generatedCode = generatePythonCodeFromConfig(config, existingCode);
@@ -135,11 +112,11 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
   useEffect(() => {
     if (isOpen) {
       isInitializingRef.current = true;
-      setName(data.name || "Data Preprocessing");
+      setName(data.name || 'Data Preprocessing');
       const initialPythonCode = data.pythonCode || BASE_PYTHON_TEMPLATE;
       setPythonCode(initialPythonCode);
       pythonCodeRef.current = initialPythonCode;
-      const newFileUrl = data.fileUrl || "";
+      const newFileUrl = data.fileUrl || '';
       setFileUrl(newFileUrl);
 
       // Initialize analysis results - restore from persisted data
@@ -182,9 +159,9 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
   const handleSave = () => {
     if (!pythonCode.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Please provide Python preprocessing code",
-        variant: "destructive",
+        title: 'Validation Error',
+        description: 'Please provide Python preprocessing code',
+        variant: 'destructive',
       });
       return;
     }
@@ -197,8 +174,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
       pythonCode,
       fileUrl,
       analysisResult: analysisResults.initial || undefined, // For backward compatibility
-      stepAnalysisResults:
-        Object.keys(analysisResults).length > 0 ? analysisResults : undefined,
+      stepAnalysisResults: Object.keys(analysisResults).length > 0 ? analysisResults : undefined,
     });
     onClose();
   };
@@ -207,12 +183,12 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
     try {
       setLoading(true);
       const result = await generatePythonTemplate({}, prompt);
-      if (result && typeof result === "object" && "template" in result) {
+      if (result && typeof result === 'object' && 'template' in result) {
         setPythonCode(result.template as string);
-        hotToast.success("Template generated successfully.");
+        hotToast.success('Template generated successfully.');
       }
     } catch (err) {
-      hotToast.error("Failed to generate template.");
+      hotToast.error('Failed to generate template.');
     } finally {
       setLoading(false);
     }
@@ -221,9 +197,9 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
   const handleAnalyzeCSV = async () => {
     if (!fileUrl.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Please provide a file URL to analyze",
-        variant: "destructive",
+        title: 'Validation Error',
+        description: 'Please provide a file URL to analyze',
+        variant: 'destructive',
       });
       return;
     }
@@ -242,16 +218,9 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
             const value = getValueFromPath(availableData, variable);
             if (value !== undefined) {
               const stringValue =
-                typeof value === "string"
-                  ? value
-                  : typeof value === "object"
-                  ? JSON.stringify(value)
-                  : String(value);
+                typeof value === 'string' ? value : typeof value === 'object' ? JSON.stringify(value) : String(value);
 
-              resolvedFileUrl = resolvedFileUrl.replace(
-                new RegExp(`{{${variable}}}`, "g"),
-                stringValue
-              );
+              resolvedFileUrl = resolvedFileUrl.replace(new RegExp(`{{${variable}}}`, 'g'), stringValue);
             }
           });
         }
@@ -262,16 +231,15 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
       setAnalysisResults({ initial: result });
 
       toast({
-        title: "Analysis Complete",
+        title: 'Analysis Complete',
         description: `Found ${result.column_count} columns and ${result.row_count} rows`,
       });
     } catch (err) {
       console.error(err);
       toast({
-        title: "Analysis Failed",
-        description:
-          err instanceof Error ? err.message : "Failed to analyze CSV file",
-        variant: "destructive",
+        title: 'Analysis Failed',
+        description: err instanceof Error ? err.message : 'Failed to analyze CSV file',
+        variant: 'destructive',
       });
     } finally {
       setIsAnalyzing(false);
@@ -298,9 +266,9 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
   const handleRunStep = async (stepId: string) => {
     if (!fileUrl.trim()) {
       toast({
-        title: "Validation Error",
-        description: "Please provide a file URL to analyze",
-        variant: "destructive",
+        title: 'Validation Error',
+        description: 'Please provide a file URL to analyze',
+        variant: 'destructive',
       });
       return;
     }
@@ -323,16 +291,9 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
             const value = getValueFromPath(availableData, variable);
             if (value !== undefined) {
               const stringValue =
-                typeof value === "string"
-                  ? value
-                  : typeof value === "object"
-                  ? JSON.stringify(value)
-                  : String(value);
+                typeof value === 'string' ? value : typeof value === 'object' ? JSON.stringify(value) : String(value);
 
-              resolvedFileUrl = resolvedFileUrl.replace(
-                new RegExp(`{{${variable}}}`, "g"),
-                stringValue
-              );
+              resolvedFileUrl = resolvedFileUrl.replace(new RegExp(`{{${variable}}}`, 'g'), stringValue);
             }
           });
         }
@@ -346,16 +307,15 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
       }));
 
       toast({
-        title: "Step Execution Complete",
+        title: 'Step Execution Complete',
         description: `Step executed successfully. Found ${result.column_count} columns and ${result.row_count} rows`,
       });
     } catch (err) {
       console.error(err);
       toast({
-        title: "Step Execution Failed",
-        description:
-          err instanceof Error ? err.message : "Failed to execute step",
-        variant: "destructive",
+        title: 'Step Execution Failed',
+        description: err instanceof Error ? err.message : 'Failed to execute step',
+        variant: 'destructive',
       });
     } finally {
       setRunningStepId(null);
@@ -375,7 +335,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
     setConfig((prevConfig) => {
       const stepIndex = prevConfig.steps.findIndex((step) => step.id === stepId);
       const newSteps = prevConfig.steps.filter((step) => step.id !== stepId);
-      
+
       // Clear analysis results for this step and all subsequent steps
       setAnalysisResults((prev) => {
         const updated = { ...prev };
@@ -389,7 +349,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
         }
         return updated;
       });
-      
+
       return {
         ...prevConfig,
         steps: newSteps,
@@ -400,35 +360,28 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
   const handleToggleStep = (stepId: string, enabled: boolean) => {
     setConfig((prevConfig) => ({
       ...prevConfig,
-      steps: prevConfig.steps.map((step) =>
-        step.id === stepId ? { ...step, enabled } : step
-      ),
+      steps: prevConfig.steps.map((step) => (step.id === stepId ? { ...step, enabled } : step)),
     }));
   };
 
   const handleUpdateStepConfig = (stepId: string, newConfig: StepConfig) => {
     setConfig((prevConfig) => ({
       ...prevConfig,
-      steps: prevConfig.steps.map((step) =>
-        step.id === stepId ? { ...step, config: newConfig } : step
-      ),
+      steps: prevConfig.steps.map((step) => (step.id === stepId ? { ...step, config: newConfig } : step)),
     }));
   };
 
-  const handleMoveStep = (stepId: string, direction: "up" | "down") => {
+  const handleMoveStep = (stepId: string, direction: 'up' | 'down') => {
     setConfig((prevConfig) => {
       const index = prevConfig.steps.findIndex((step) => step.id === stepId);
       if (index === -1) return prevConfig;
 
-      const newIndex = direction === "up" ? index - 1 : index + 1;
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
       if (newIndex < 0 || newIndex >= prevConfig.steps.length) return prevConfig;
 
       const newSteps = [...prevConfig.steps];
-      [newSteps[index], newSteps[newIndex]] = [
-        newSteps[newIndex],
-        newSteps[index],
-      ];
-      
+      [newSteps[index], newSteps[newIndex]] = [newSteps[newIndex], newSteps[index]];
+
       // Clear analysis results for moved step and all subsequent steps (they depend on order)
       setAnalysisResults((prev) => {
         const updated = { ...prev };
@@ -439,15 +392,13 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
         });
         return updated;
       });
-      
+
       return { ...prevConfig, steps: newSteps };
     });
   };
 
   // Get analysis result for a specific step (from previous step or initial)
-  const getAnalysisResultForStep = (
-    stepIndex: number
-  ): CSVAnalysisResult | null => {
+  const getAnalysisResultForStep = (stepIndex: number): CSVAnalysisResult | null => {
     if (stepIndex === 0) {
       // First step uses initial analysis result
       return analysisResults.initial || null;
@@ -469,7 +420,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
     const stepAnalysisResult = getAnalysisResultForStep(stepIndex);
 
     switch (step.type) {
-      case "column_filter":
+      case 'column_filter':
         return (
           <ColumnFilter
             config={{
@@ -484,7 +435,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
             }}
           />
         );
-      case "missing_value_handling":
+      case 'missing_value_handling':
         return (
           <MissingValueHandler
             config={{
@@ -502,7 +453,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
             }}
           />
         );
-      case "outlier_handling":
+      case 'outlier_handling':
         return (
           <OutlierHandler
             config={{
@@ -520,7 +471,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
             }}
           />
         );
-      case "categorical_encoding":
+      case 'categorical_encoding':
         return (
           <CategoricalEncodingHandler
             config={{
@@ -538,7 +489,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
             }}
           />
         );
-      case "feature_engineering":
+      case 'feature_engineering':
         return (
           <FeatureEngineeringHandler
             config={{
@@ -562,11 +513,11 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
   };
 
   const stepTypes: PreprocessingStepType[] = [
-    "column_filter",
-    "missing_value_handling",
-    "outlier_handling",
-    "categorical_encoding",
-    "feature_engineering",
+    'column_filter',
+    'missing_value_handling',
+    'outlier_handling',
+    'categorical_encoding',
+    'feature_engineering',
   ];
 
   return (
@@ -628,26 +579,18 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
                 className="mb-0"
               >
                 <Search className="h-4 w-4 mr-2" />
-                {isAnalyzing ? "Analyzing..." : "Analyze"}
+                {isAnalyzing ? 'Analyzing...' : 'Analyze'}
               </Button>
             </div>
-            {analysisResults.initial && (
-              <CSVAnalysisDisplay analysisResult={analysisResults.initial} />
-            )}
+            {analysisResults.initial && <CSVAnalysisDisplay analysisResult={analysisResults.initial} />}
           </div>
 
           {/* Mode Toggle */}
           <div className="space-y-2">
             <Label>Configuration Mode</Label>
-            <Tabs
-              value={mode}
-              onValueChange={(v) => handleModeChange(v as "configure" | "code")}
-            >
+            <Tabs value={mode} onValueChange={(v) => handleModeChange(v as 'configure' | 'code')}>
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger
-                  value="configure"
-                  className="flex items-center gap-2"
-                >
+                <TabsTrigger value="configure" className="flex items-center gap-2">
                   <Settings className="h-4 w-4" />
                   Configure
                 </TabsTrigger>
@@ -660,7 +603,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
           </div>
 
           {/* Code Mode */}
-          {mode === "code" && (
+          {mode === 'code' && (
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label>Python Code *</Label>
@@ -701,39 +644,29 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
               <div className="text-xs text-gray-500">
                 <ul className="list-disc list-inside space-y-1">
                   <li className="break-words">
-                    Use{" "}
-                    <code className="bg-gray-100 px-1 rounded">
-                      params["df"]
-                    </code>{" "}
-                    to access the input dataframe from previous node
+                    Use <code className="bg-gray-100 px-1 rounded">params["df"]</code> to access the input dataframe
+                    from previous node
                   </li>
                   <li className="break-words">
-                    Store your processed dataframe in{" "}
-                    <code className="bg-gray-100 px-1 rounded">df</code>{" "}
-                    variable and return it
+                    Store your processed dataframe in <code className="bg-gray-100 px-1 rounded">df</code> variable and
+                    return it
                   </li>
-                  <li className="break-words">
-                    Available libraries: pandas, numpy, sklearn, scipy
-                  </li>
-                  <li className="break-words">
-                    Code runs in a sandboxed environment with limited resources
-                  </li>
-                  <li className="break-words">
-                    Maximum execution time: 30 seconds
-                  </li>
+                  <li className="break-words">Available libraries: pandas, numpy, sklearn, scipy</li>
+                  <li className="break-words">Code runs in a sandboxed environment with limited resources</li>
+                  <li className="break-words">Maximum execution time: 30 seconds</li>
                 </ul>
               </div>
             </div>
           )}
 
           {/* Configure Mode */}
-          {mode === "configure" && (
+          {mode === 'configure' && (
             <div className="space-y-4">
               <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
                 <p className="font-medium mb-1">Visual Configuration</p>
                 <p className="text-xs">
-                  Add preprocessing steps below. Steps are executed in order.
-                  You can add multiple steps of the same type.
+                  Add preprocessing steps below. Steps are executed in order. You can add multiple steps of the same
+                  type.
                 </p>
               </div>
 
@@ -742,26 +675,17 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
                 {config.steps.length === 0 ? (
                   <div className="text-center py-8 text-gray-500 border border-dashed rounded-lg">
                     <p className="text-sm">No preprocessing steps added yet.</p>
-                    <p className="text-xs mt-1">
-                      Click the + button below to add your first step.
-                    </p>
+                    <p className="text-xs mt-1">Click the + button below to add your first step.</p>
                   </div>
                 ) : (
                   config.steps.map((step, index) => (
-                    <div
-                      key={step.id}
-                      className="border rounded-lg p-4 space-y-3 bg-white"
-                    >
+                    <div key={step.id} className="border rounded-lg p-4 space-y-3 bg-white">
                       {/* Step Header */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 flex-1">
                           <GripVertical className="h-4 w-4 text-gray-400" />
-                          <span className="text-xs font-medium text-gray-500">
-                            Step {index + 1}
-                          </span>
-                          <span className="text-sm font-semibold">
-                            {getStepTypeDisplayName(step.type)}
-                          </span>
+                          <span className="text-xs font-medium text-gray-500">Step {index + 1}</span>
+                          <span className="text-sm font-semibold">{getStepTypeDisplayName(step.type)}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
@@ -774,7 +698,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
                             title="Run this step"
                           >
                             <Play className="h-3 w-3 mr-1" />
-                            {runningStepId === step.id ? "Running..." : "Run"}
+                            {runningStepId === step.id ? 'Running...' : 'Run'}
                           </Button>
                           {/* Hidden: Enable switch */}
                           <div className="hidden">
@@ -782,9 +706,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
                               <Label className="text-xs">Enabled</Label>
                               <Switch
                                 checked={step.enabled}
-                                onCheckedChange={(checked) =>
-                                  handleToggleStep(step.id, checked)
-                                }
+                                onCheckedChange={(checked) => handleToggleStep(step.id, checked)}
                               />
                             </div>
                           </div>
@@ -796,7 +718,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
                                 size="sm"
                                 variant="ghost"
                                 className="h-7 w-7 p-0"
-                                onClick={() => handleMoveStep(step.id, "up")}
+                                onClick={() => handleMoveStep(step.id, 'up')}
                                 disabled={index === 0}
                               >
                                 ↑
@@ -806,7 +728,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
                                 size="sm"
                                 variant="ghost"
                                 className="h-7 w-7 p-0"
-                                onClick={() => handleMoveStep(step.id, "down")}
+                                onClick={() => handleMoveStep(step.id, 'down')}
                                 disabled={index === config.steps.length - 1}
                               >
                                 ↓
@@ -830,20 +752,14 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
 
                       {/* Step Configuration */}
                       {step.enabled && (
-                        <div className="pl-6 border-l-2 border-gray-200">
-                          {renderStepConfig(step, index)}
-                        </div>
+                        <div className="pl-6 border-l-2 border-gray-200">{renderStepConfig(step, index)}</div>
                       )}
 
                       {/* Show analysis result for this step if available */}
                       {analysisResults[step.id] && (
                         <div className="pl-6 border-l-2 border-gray-200 mt-3">
-                          <div className="text-xs font-medium text-gray-600 mb-2">
-                            Result after this step:
-                          </div>
-                          <CSVAnalysisDisplay
-                            analysisResult={analysisResults[step.id]}
-                          />
+                          <div className="text-xs font-medium text-gray-600 mb-2">Result after this step:</div>
+                          <CSVAnalysisDisplay analysisResult={analysisResults[step.id]} />
                         </div>
                       )}
                     </div>
@@ -889,8 +805,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
           <DialogHeader>
             <DialogTitle>Include a prompt?</DialogTitle>
             <DialogDescription>
-              Would you like to include a prompt for template generation?
-              (Optional)
+              Would you like to include a prompt for template generation? (Optional)
             </DialogDescription>
           </DialogHeader>
           <textarea
@@ -905,7 +820,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
               variant="outline"
               onClick={() => {
                 setIsPromptDialogOpen(false);
-                setTemplatePrompt("");
+                setTemplatePrompt('');
               }}
             >
               Cancel
@@ -914,7 +829,7 @@ export const PreprocessingDialog: React.FC<PreprocessingDialogProps> = (
               onClick={() => {
                 setIsPromptDialogOpen(false);
                 handleGenerateTemplate(templatePrompt);
-                setTemplatePrompt("");
+                setTemplatePrompt('');
               }}
               disabled={loading}
             >

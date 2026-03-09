@@ -1,14 +1,16 @@
+import logging
 from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
+
+from injector import inject
 from pydantic import HttpUrl
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
+
 from app.db.models.agent import AgentModel
 from app.db.models.webhook import WebhookModel
 from app.schemas.webhook import WebhookBase, WebhookUpdate
-from sqlalchemy.future import select
-from injector import inject
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +20,7 @@ class WebhookRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create(
-        self, webhook_data: WebhookBase, webhook_id: Optional[UUID] = None
-    ) -> WebhookModel:
+    async def create(self, webhook_data: WebhookBase, webhook_id: Optional[UUID] = None) -> WebhookModel:
         """Create a new webhook definition."""
         webhook = WebhookModel(
             name=webhook_data.name,
@@ -45,9 +45,7 @@ class WebhookRepository:
 
     async def get_by_id(self, webhook_id: UUID) -> Optional[WebhookModel]:
         """Fetch webhook definition by ID."""
-        query = select(WebhookModel).where(
-            WebhookModel.id == webhook_id and WebhookModel.is_deleted == 0
-        )
+        query = select(WebhookModel).where(WebhookModel.id == webhook_id and WebhookModel.is_deleted == 0)
         result = await self.db.execute(query)
         webhook = result.scalars().first()
 
@@ -60,7 +58,7 @@ class WebhookRepository:
             .options(
                 joinedload(WebhookModel.agent).joinedload(AgentModel.operator),
                 joinedload(WebhookModel.agent).joinedload(AgentModel.workflow),
-                joinedload(WebhookModel.app_settings)
+                joinedload(WebhookModel.app_settings),
             )
             .where(WebhookModel.id == webhook_id)
         )
@@ -68,17 +66,11 @@ class WebhookRepository:
 
     async def get_all(self) -> list[WebhookModel]:
         """Fetch all webhook definitions."""
-        query = (
-            select(WebhookModel)
-            .where(WebhookModel.is_deleted == 0)
-            .order_by(WebhookModel.created_at.asc())
-        )
+        query = select(WebhookModel).where(WebhookModel.is_deleted == 0).order_by(WebhookModel.created_at.asc())
         result = await self.db.execute(query)
         return result.scalars().all()
 
-    async def update(
-        self, webhook_id: UUID, updates: WebhookUpdate
-    ) -> Optional[WebhookModel]:
+    async def update(self, webhook_id: UUID, updates: WebhookUpdate) -> Optional[WebhookModel]:
         webhook = await self.get_by_id(webhook_id)
         if not webhook:
             return None

@@ -1,13 +1,12 @@
 import asyncio
 import logging
-from uuid import UUID
 from typing import Any
+from uuid import UUID
 
+from app.db.models.file import StorageProvider
 from app.modules.data.manager import AgentRAGServiceManager
 from app.schemas.agent_knowledge import KBRead
 from app.services.file_manager import FileManagerService
-from app.db.models.file import StorageProvider
-
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +46,7 @@ def schedule_rag_load(
     This helper is intentionally lightweight so it can be reused by multiple
     routers or services without pulling in FastAPI-specific concepts.
     """
-    task = asyncio.create_task(
-        rag_manager.load_knowledge_items([kb_item], action=action)
-    )
+    task = asyncio.create_task(rag_manager.load_knowledge_items([kb_item], action=action))
 
     def _log_task_result(t: asyncio.Task) -> None:
         try:
@@ -58,4 +55,3 @@ def schedule_rag_load(
             logger.exception("RAG %s task failed", action)
 
     task.add_done_callback(_log_task_result)
-

@@ -1,11 +1,11 @@
-import { FC } from "react";
-import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/mode-python";
-import "ace-builds/src-noconflict/theme-twilight";
-import "ace-builds/src-noconflict/mode-json";
-import { Button } from "@/components/button";
-import { ClipboardList, Maximize2, CodeXml, CirclePlay } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { FC } from 'react';
+import AceEditor from 'react-ace';
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/theme-twilight';
+import 'ace-builds/src-noconflict/mode-json';
+import { Button } from '@/components/button';
+import { ClipboardList, Maximize2, CodeXml, CirclePlay } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface FunctionConfigSectionProps {
   code: string;
@@ -48,7 +48,7 @@ export const FunctionConfigSection: FC<FunctionConfigSectionProps> = ({
             className="editor-button flex justify-center items-center p-1 w-[28px] h-[28px] rounded-full hover:bg-white/10"
             onClick={() => {
               navigator.clipboard.writeText(code);
-              toast.success("Code copied.");
+              toast.success('Code copied.');
             }}
           >
             <ClipboardList className="w-5 h-5 text-white" />
@@ -89,27 +89,21 @@ export const FunctionConfigSection: FC<FunctionConfigSectionProps> = ({
         <Button
           variant="outline"
           //   onClick={handleGenerateTemplate}
-          disabled={
-            dynamicParams.length === 0 || dynamicParams.every((p) => !p.name)
-          }
+          disabled={dynamicParams.length === 0 || dynamicParams.every((p) => !p.name)}
         >
           <CodeXml className="w-4 h-4 mr-2" /> Generate Template from Schema
         </Button>
       </div>
 
       <div className="flex flex-col gap-2">
-        <h3 className="font-semibold text-lg text-[#18181B]">
-          Test Your Python Code
-        </h3>
-        <label className="text-sm text-gray-500 mb-2">
-          Test Parameters (JSON)
-        </label>
+        <h3 className="font-semibold text-lg text-[#18181B]">Test Your Python Code</h3>
+        <label className="text-sm text-gray-500 mb-2">Test Parameters (JSON)</label>
         <div className="relative p-6 h-[303px] bg-[#1C1C1C] rounded-[16px] overflow-hidden">
           <div className="absolute top-4 right-4 flex gap-2 z-10">
             <button
               onClick={() => {
                 navigator.clipboard.writeText(testParameters);
-                toast.success("Params copied.");
+                toast.success('Params copied.');
               }}
             >
               <ClipboardList className="w-5 h-5 text-white" />
@@ -142,7 +136,7 @@ export const FunctionConfigSection: FC<FunctionConfigSectionProps> = ({
             disabled={testingCode}
           >
             <CirclePlay className="w-4 h-4 mr-2" />
-            {testingCode ? "Testing..." : "Test Code"}
+            {testingCode ? 'Testing...' : 'Test Code'}
           </Button>
         </div>
       </div>
@@ -151,7 +145,7 @@ export const FunctionConfigSection: FC<FunctionConfigSectionProps> = ({
           <button
             onClick={() => {
               navigator.clipboard.writeText(testParameters);
-              toast.success("Params copied.");
+              toast.success('Params copied.');
             }}
           >
             <ClipboardList className="w-5 h-5 text-black" />
@@ -179,18 +173,10 @@ export const FunctionConfigSection: FC<FunctionConfigSectionProps> = ({
         </div>
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>
-      )}
-      {success && (
-        <p className="text-sm text-green-600 bg-green-50 p-2 rounded">
-          {success}
-        </p>
-      )}
+      {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
+      {success && <p className="text-sm text-green-600 bg-green-50 p-2 rounded">{success}</p>}
       {testResult && (
-        <pre className="bg-gray-100 p-4 rounded max-h-96 overflow-auto font-mono text-sm">
-          {testResult}
-        </pre>
+        <pre className="bg-gray-100 p-4 rounded max-h-96 overflow-auto font-mono text-sm">{testResult}</pre>
       )}
     </div>
   </div>

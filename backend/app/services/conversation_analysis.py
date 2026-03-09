@@ -1,8 +1,6 @@
-from fastapi import Depends
-from uuid import UUID
 from typing import Optional
+from uuid import UUID
 
-from fastapi_injector import Injected
 from injector import inject
 
 from app.repositories.conversation_analysis import ConversationAnalysisRepository
@@ -39,20 +37,12 @@ class ConversationAnalysisService:
             conversation_id=conversation_id,
             topic=topic,
             summary=summary,
-            customer_satisfaction=gpt_analysis.kpi_metrics.get(
-                "Customer Satisfaction", 0
-            ),
+            customer_satisfaction=gpt_analysis.kpi_metrics.get("Customer Satisfaction", 0),
             operator_knowledge=gpt_analysis.kpi_metrics.get("Operator Knowledge", 0),
             resolution_rate=gpt_analysis.kpi_metrics.get("Resolution Rate", 0),
-            positive_sentiment=gpt_analysis.kpi_metrics.get(
-                "Sentiment", {}
-            ).get("positive", 0),
-            neutral_sentiment=gpt_analysis.kpi_metrics.get(
-                "Sentiment", {}
-            ).get("neutral", 0),
-            negative_sentiment=gpt_analysis.kpi_metrics.get(
-                "Sentiment", {}
-            ).get("negative", 0),
+            positive_sentiment=gpt_analysis.kpi_metrics.get("Sentiment", {}).get("positive", 0),
+            neutral_sentiment=gpt_analysis.kpi_metrics.get("Sentiment", {}).get("neutral", 0),
+            negative_sentiment=gpt_analysis.kpi_metrics.get("Sentiment", {}).get("negative", 0),
             tone=tone,
             llm_analyst_id=llm_analyst_id,
             efficiency=gpt_analysis.kpi_metrics.get("Efficiency", 0),

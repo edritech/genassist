@@ -5,11 +5,14 @@ TODO: Implement full S3 storage operations using boto3.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from app.core.utils.s3_utils import S3Client
+
 from ..base import BaseStorageProvider
 
 logger = logging.getLogger(__name__)
+
 
 class S3StorageProvider(BaseStorageProvider):
     """
@@ -56,10 +59,7 @@ class S3StorageProvider(BaseStorageProvider):
         return self.aws_bucket_name
 
     async def upload_file(
-        self,
-        file_content: bytes,
-        file_path: str,
-        file_metadata: Optional[Dict[str, Any]] = None
+        self, file_content: bytes, file_path: str, file_metadata: Optional[Dict[str, Any]] = None
     ) -> bool:
         """Upload a file to S3."""
         return self.s3_client.upload_content(file_content, self.aws_bucket_name, file_path)
@@ -83,11 +83,7 @@ class S3StorageProvider(BaseStorageProvider):
         except Exception:
             return False
 
-    async def list_files(
-        self,
-        prefix: Optional[str] = None,
-        limit: Optional[int] = None
-    ) -> List[str]:
+    async def list_files(self, prefix: Optional[str] = None, limit: Optional[int] = None) -> List[str]:
         """List files in S3 bucket."""
         result = self.s3_client.list_files(
             prefix=prefix or "",
@@ -100,13 +96,10 @@ class S3StorageProvider(BaseStorageProvider):
         signed_url_expires_in = 3600
 
         # get the presigned url for the file
-        params = {
-            'Bucket': bucket_name,
-            'Key': file_path
-        }
+        params = {"Bucket": bucket_name, "Key": file_path}
 
         # get the presigned url for the file
-        return self.s3_client.generate_presigned_url('get_object', params, signed_url_expires_in)
+        return self.s3_client.generate_presigned_url("get_object", params, signed_url_expires_in)
 
     def get_stats(self) -> Dict[str, Any]:
         """Get provider statistics."""

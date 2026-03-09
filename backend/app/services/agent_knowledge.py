@@ -1,15 +1,17 @@
 # app/services/knowledge_base_service.py
-from typing import List, Optional
+import logging
+from typing import List
 from uuid import UUID
+
 from fastapi import logger
 from injector import inject
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.knowledge_base import KnowledgeBaseModel
 from app.repositories.knowledge_base import KnowledgeBaseRepository
 from app.schemas.agent_knowledge import KBCreate, KBRead
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -31,8 +33,7 @@ class KnowledgeBaseService:
     async def get_by_id(self, kb_id: UUID) -> KBRead:
         obj = await self.repository.get_by_id(kb_id)
         if not obj:
-            raise AppException(
-                status_code=404, error_key=ErrorKey.KB_NOT_FOUND)
+            raise AppException(status_code=404, error_key=ErrorKey.KB_NOT_FOUND)
         return KBRead.model_validate(obj, from_attributes=True)
 
     async def get_by_ids(self, ids: List[UUID]) -> List[KBRead]:
@@ -48,8 +49,7 @@ class KnowledgeBaseService:
     async def update(self, kb_id: UUID, data: KBCreate) -> KBRead:
         orm_obj = await self.repository.get_by_id(kb_id)
         if not orm_obj:
-            raise AppException(
-                status_code=404, error_key=ErrorKey.KB_NOT_FOUND)
+            raise AppException(status_code=404, error_key=ErrorKey.KB_NOT_FOUND)
 
         for field, value in data.model_dump(exclude_none=True).items():
             setattr(orm_obj, field, value)
@@ -60,6 +60,5 @@ class KnowledgeBaseService:
     async def delete(self, kb_id: UUID) -> None:
         orm_obj = await self.repository.get_by_id(kb_id)
         if not orm_obj:
-            raise AppException(
-                status_code=404, error_key=ErrorKey.KB_NOT_FOUND)
+            raise AppException(status_code=404, error_key=ErrorKey.KB_NOT_FOUND)
         await self.repository.delete(orm_obj)

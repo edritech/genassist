@@ -1,7 +1,7 @@
-import React, { useState, useRef, useCallback } from "react";
-import AceEditor from "react-ace";
-import { Label } from "@/components/label";
-import { cn } from "@/lib/utils";
+import React, { useState, useRef, useCallback } from 'react';
+import AceEditor from 'react-ace';
+import { Label } from '@/components/label';
+import { cn } from '@/lib/utils';
 
 interface DraggableAceEditorProps {
   id?: string;
@@ -39,10 +39,10 @@ export const DraggableAceEditor: React.FC<DraggableAceEditorProps> = ({
   onChange,
   placeholder,
   className,
-  mode = "text",
-  theme = "twilight",
-  height = "100%",
-  width = "100%",
+  mode = 'text',
+  theme = 'twilight',
+  height = '100%',
+  width = '100%',
   setOptions = {},
   onVariableDrop,
   name,
@@ -74,7 +74,7 @@ export const DraggableAceEditor: React.FC<DraggableAceEditorProps> = ({
 
     try {
       // Try to get JSON data first
-      const jsonData = e.dataTransfer.getData("application/json");
+      const jsonData = e.dataTransfer.getData('application/json');
 
       if (jsonData) {
         const { path, value: droppedValue } = JSON.parse(jsonData);
@@ -90,7 +90,7 @@ export const DraggableAceEditor: React.FC<DraggableAceEditorProps> = ({
       }
 
       // Fallback to plain text
-      const textData = e.dataTransfer.getData("text/plain");
+      const textData = e.dataTransfer.getData('text/plain');
 
       if (textData) {
         const variableReference = `{{${textData}}}`;
@@ -141,10 +141,7 @@ export const DraggableAceEditor: React.FC<DraggableAceEditorProps> = ({
     <div className="space-y-2 w-full">
       {label && <Label htmlFor={id}>{label}</Label>}
       <div
-        className={cn(
-          "relative w-full",
-          isDragOver && "ring-2 ring-blue-500 ring-opacity-50"
-        )}
+        className={cn('relative w-full', isDragOver && 'ring-2 ring-blue-500 ring-opacity-50')}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -153,18 +150,14 @@ export const DraggableAceEditor: React.FC<DraggableAceEditorProps> = ({
           <AceEditor
             mode={mode}
             theme={theme}
-            name={name || id || "draggable-editor"}
+            name={name || id || 'draggable-editor'}
             value={value}
             onChange={onChange}
             width={width}
             height={height}
             setOptions={defaultSetOptions}
             onLoad={handleEditorLoad}
-            className={cn(
-              "transition-colors",
-              isDragOver && "border-blue-500",
-              className
-            )}
+            className={cn('transition-colors', isDragOver && 'border-blue-500', className)}
           />
         </div>
         {isDragOver && (

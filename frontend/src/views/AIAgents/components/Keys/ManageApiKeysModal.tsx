@@ -1,22 +1,10 @@
-import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/dialog";
-import { Button } from "@/components/button";
-import { getApiKeys, revokeApiKey } from "@/services/apiKeys";
-import ApiKeyForm from "./ApiKeyForm";
-import { ApiKey } from "@/interfaces/api-key.interface";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/table";
+import { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Button } from '@/components/button';
+import { getApiKeys, revokeApiKey } from '@/services/apiKeys';
+import ApiKeyForm from './ApiKeyForm';
+import { ApiKey } from '@/interfaces/api-key.interface';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,12 +15,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/alert-dialog";
-import { PlusCircle, Pencil, Trash2, Copy, Eye, EyeOff } from "lucide-react";
-import { Input } from "@/components/input";
-import { Badge } from "@/components/badge";
-import toast from "react-hot-toast";
-import { SecretInput } from "@/components/SecretInput";
+} from '@/components/alert-dialog';
+import { PlusCircle, Pencil, Trash2, Copy, Eye, EyeOff } from 'lucide-react';
+import { Input } from '@/components/input';
+import { Badge } from '@/components/badge';
+import toast from 'react-hot-toast';
+import { SecretInput } from '@/components/SecretInput';
 
 interface Props {
   agentId: string;
@@ -41,12 +29,7 @@ interface Props {
   onClose(): void;
 }
 
-export default function ManageApiKeysModal({
-  agentId,
-  userId,
-  isOpen,
-  onClose,
-}: Props) {
+export default function ManageApiKeysModal({ agentId, userId, isOpen, onClose }: Props) {
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [editing, setEditing] = useState<ApiKey | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -54,8 +37,7 @@ export default function ManageApiKeysModal({
   const [secrets, setSecrets] = useState<Record<string, string>>({});
 
   const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
-  const toggleVisibility = (id: string) =>
-    setVisibleKeys((v) => ({ ...v, [id]: !v[id] }));
+  const toggleVisibility = (id: string) => setVisibleKeys((v) => ({ ...v, [id]: !v[id] }));
 
   async function load() {
     const data = await getApiKeys(userId);
@@ -75,11 +57,7 @@ export default function ManageApiKeysModal({
   }, [isOpen, userId]);
 
   async function handleSave(saved: ApiKey & { key_val?: string }) {
-    setKeys((keysArr) =>
-      editing
-        ? keysArr.map((x) => (x.id === saved.id ? saved : x))
-        : [saved, ...keysArr]
-    );
+    setKeys((keysArr) => (editing ? keysArr.map((x) => (x.id === saved.id ? saved : x)) : [saved, ...keysArr]));
 
     if (saved.key_val) {
       setSecrets((s) => ({ ...s, [saved.id]: saved.key_val }));
@@ -95,9 +73,9 @@ export default function ManageApiKeysModal({
   }
 
   const copyKey = (keyId: string) => {
-    const txt = secrets[keyId] ?? "";
+    const txt = secrets[keyId] ?? '';
     navigator.clipboard.writeText(txt);
-    toast.success("API key copied to clipboard.");
+    toast.success('API key copied to clipboard.');
   };
 
   return (
@@ -105,9 +83,7 @@ export default function ManageApiKeysModal({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-4xl overflow-hidden">
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-xl font-semibold">
-              Manage API Keys
-            </DialogTitle>
+            <DialogTitle className="text-xl font-semibold">Manage API Keys</DialogTitle>
             <Button
               onClick={() => {
                 setEditing(null);
@@ -139,7 +115,7 @@ export default function ManageApiKeysModal({
 
                 <TableBody>
                   {keys.map((k) => {
-                    const secret = secrets[k.id] || "";
+                    const secret = secrets[k.id] || '';
                     const isVisible = visibleKeys[k.id];
                     return (
                       <TableRow key={k.id}>
@@ -150,12 +126,8 @@ export default function ManageApiKeysModal({
                         </TableCell>
 
                         <TableCell>
-                          <Badge
-                            variant={
-                              k.is_active === 1 ? "default" : "secondary"
-                            }
-                          >
-                            {k.is_active === 1 ? "Active" : "Revoked"}
+                          <Badge variant={k.is_active === 1 ? 'default' : 'secondary'}>
+                            {k.is_active === 1 ? 'Active' : 'Revoked'}
                           </Badge>
                         </TableCell>
 
@@ -174,22 +146,15 @@ export default function ManageApiKeysModal({
 
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 px-2 inline-flex items-center"
-                              >
+                              <Button variant="ghost" size="sm" className="h-8 px-2 inline-flex items-center">
                                 <Trash2 className="h-4 w-4 mr-1 text-red-600" />
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Delete API Key
-                                </AlertDialogTitle>
+                                <AlertDialogTitle>Delete API Key</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Are you sure you want to delete this API key?
-                                  This action cannot be undone.
+                                  Are you sure you want to delete this API key? This action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>

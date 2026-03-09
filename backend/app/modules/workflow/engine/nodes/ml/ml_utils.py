@@ -4,14 +4,15 @@ Utility functions for ML workflow nodes.
 This module contains shared functionality used across ML-related nodes.
 """
 
-from typing import Dict, Any, List, Optional, Tuple
-import logging
 import csv
+import logging
 import math
 import os
-import pandas as pd
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import pandas as pd
 
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
@@ -35,6 +36,7 @@ def sanitize_for_json(obj: Any) -> Any:
     # Handle numpy types (pandas uses numpy internally)
     try:
         import numpy as np
+
         if isinstance(obj, (np.floating, np.integer)):
             obj = float(obj) if isinstance(obj, np.floating) else int(obj)
         elif isinstance(obj, np.ndarray):
@@ -65,10 +67,10 @@ def sanitize_for_json(obj: Any) -> Any:
         # Handle custom objects - try to convert to dict or string
         try:
             # Try to get a dict representation if it has __dict__
-            if hasattr(obj, '__dict__'):
+            if hasattr(obj, "__dict__"):
                 return sanitize_for_json(obj.__dict__)
             # Try to get a string representation
-            elif hasattr(obj, '__str__'):
+            elif hasattr(obj, "__str__"):
                 return str(obj)
             else:
                 # Fallback: return type name
@@ -149,10 +151,7 @@ def optimize_output_for_response(value: Any, array_threshold: int = 2) -> Any:
         return [optimize_output_for_response(item, array_threshold) for item in value]
 
     if isinstance(value, dict):
-        return {
-            key: optimize_output_for_response(val, array_threshold)
-            for key, val in value.items()
-        }
+        return {key: optimize_output_for_response(val, array_threshold) for key, val in value.items()}
 
     return value
 
@@ -278,15 +277,11 @@ def parse_csv_file(file_path: str) -> List[Dict[str, Any]]:
                     sniffer = csv.Sniffer()
                     dialect = sniffer.sniff(sample)
                     delimiter = dialect.delimiter
-                    logger.debug(
-                        f"Detected delimiter: '{delimiter}' for encoding: {encoding}"
-                    )
+                    logger.debug(f"Detected delimiter: '{delimiter}' for encoding: {encoding}")
                 except Exception:
                     # Fall back to comma if detection fails
                     delimiter = ","
-                    logger.debug(
-                        f"Using default delimiter ',' for encoding: {encoding}"
-                    )
+                    logger.debug(f"Using default delimiter ',' for encoding: {encoding}")
 
                 # Parse the CSV
                 reader = csv.DictReader(f, delimiter=delimiter)
@@ -294,9 +289,7 @@ def parse_csv_file(file_path: str) -> List[Dict[str, Any]]:
 
                 for row in reader:
                     # Convert empty strings to None for consistency
-                    cleaned_row = {
-                        k: (v if v != "" else None) for k, v in row.items()
-                    }
+                    cleaned_row = {k: (v if v != "" else None) for k, v in row.items()}
                     results.append(cleaned_row)
 
                 logger.info(f"Successfully parsed CSV with encoding: {encoding}")
@@ -319,9 +312,7 @@ def parse_csv_file(file_path: str) -> List[Dict[str, Any]]:
         ) from e
 
 
-def resolve_csv_file_path(
-    file_url: str, thread_id: Optional[str] = None
-) -> Path:
+def resolve_csv_file_path(file_url: str, thread_id: Optional[str] = None) -> Path:
     """
     Resolve a CSV file path from a file URL/path.
 
@@ -397,9 +388,7 @@ def resolve_csv_file_path(
         ) from e
 
 
-def load_csv_file(
-    file_url: str, thread_id: Optional[str] = None
-) -> Tuple[List[Dict[str, Any]], pd.DataFrame]:
+def load_csv_file(file_url: str, thread_id: Optional[str] = None) -> Tuple[List[Dict[str, Any]], pd.DataFrame]:
     """
     Load data from a CSV file URL/path.
 

@@ -1,19 +1,17 @@
-from uuid import UUID
-from pydantic import BaseModel, EmailStr, Field, constr, ConfigDict
-from typing import Optional
-from typing import Annotated
 from datetime import datetime
+from typing import Annotated, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, constr
+
 from app.schemas.api_key import ApiKeyBase
 from app.schemas.operator_auth import OperatorAuth
 from app.schemas.role import RoleRead
 
 
-
 class UserTypeBase(BaseModel):
     name: str = Field(..., min_length=4, max_length=255, description="User type name")
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserTypeCreate(UserTypeBase):
@@ -25,9 +23,7 @@ class UserTypeRead(UserTypeBase):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserTypeUpdate(BaseModel):
@@ -56,20 +52,19 @@ class UserRead(BaseModel):
     roles: list[RoleRead] = []
     user_type: Optional[UserTypeRead] = None
     api_keys: Optional[list[ApiKeyBase]] = []
-    force_upd_pass_date: Optional[datetime] = Field(None,
-                                                    description="Date when we force updating password date on login")
-
-    model_config = ConfigDict(
-        from_attributes = True
+    force_upd_pass_date: Optional[datetime] = Field(
+        None, description="Date when we force updating password date on login"
     )
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class UserReadAuth(UserRead):
     permissions: Optional[list[str]] = Field([], description="Permissions needed for authorization")
     operator: Optional[OperatorAuth] = Field(None, description="Operator needed for authorization")
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
+
 
 class UserUpdate(BaseModel):
     email: EmailStr | None = None
@@ -78,5 +73,3 @@ class UserUpdate(BaseModel):
     user_type_id: UUID | None = None
     role_ids: list[UUID] | None = None
     notes: str | None = None
-
-

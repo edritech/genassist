@@ -12,10 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 async def bulk_add_documents(
-    service: AgentRAGService,
-    documents: List[Dict[str, Any]],
-    batch_size: int = 10,
-    legra_finalize_at_end: bool = True
+    service: AgentRAGService, documents: List[Dict[str, Any]], batch_size: int = 10, legra_finalize_at_end: bool = True
 ) -> Dict[str, Any]:
     """
     Add multiple documents to a AgentRAGService in batches
@@ -41,7 +38,7 @@ async def bulk_add_documents(
 
     # Process in batches
     for i in range(0, total, batch_size):
-        batch = documents[i:i + batch_size]
+        batch = documents[i : i + batch_size]
 
         # Create tasks for concurrent processing
         tasks = []
@@ -51,8 +48,7 @@ async def bulk_add_documents(
             metadata = doc.get("metadata", {})
 
             # Don't finalize LEGRA for individual documents
-            task = service.add_document(
-                doc_id, content, metadata, legra_finalize=False)
+            task = service.add_document(doc_id, content, metadata, legra_finalize=False)
             tasks.append((doc_id, task))
 
         # Execute batch
@@ -70,8 +66,7 @@ async def bulk_add_documents(
                 failed += 1
                 errors.append(f"Error adding document {doc_id}: {str(e)}")
 
-        logger.info(
-            f"Processed batch {i//batch_size + 1}: {processed}/{total} documents")
+        logger.info(f"Processed batch {i // batch_size + 1}: {processed}/{total} documents")
 
     # Finalize LEGRA if requested and available
     legra_finalized = False
@@ -89,15 +84,11 @@ async def bulk_add_documents(
         "successful": successful,
         "failed": failed,
         "errors": errors,
-        "legra_finalized": legra_finalized
+        "legra_finalized": legra_finalized,
     }
 
 
-async def bulk_delete_documents(
-    service: AgentRAGService,
-    doc_ids: List[str],
-    batch_size: int = 10
-) -> Dict[str, Any]:
+async def bulk_delete_documents(service: AgentRAGService, doc_ids: List[str], batch_size: int = 10) -> Dict[str, Any]:
     """
     Delete multiple documents from a AgentRAGService in batches
 
@@ -121,7 +112,7 @@ async def bulk_delete_documents(
 
     # Process in batches
     for i in range(0, total, batch_size):
-        batch = doc_ids[i:i + batch_size]
+        batch = doc_ids[i : i + batch_size]
 
         # Create tasks for concurrent processing
         tasks = []
@@ -144,22 +135,13 @@ async def bulk_delete_documents(
                 failed += 1
                 errors.append(f"Error deleting document {doc_id}: {str(e)}")
 
-        logger.info(
-            f"Processed batch {i//batch_size + 1}: {processed}/{total} documents")
+        logger.info(f"Processed batch {i // batch_size + 1}: {processed}/{total} documents")
 
-    return {
-        "total": total,
-        "processed": processed,
-        "successful": successful,
-        "failed": failed,
-        "errors": errors
-    }
+    return {"total": total, "processed": processed, "successful": successful, "failed": failed, "errors": errors}
 
 
 def format_search_results(
-    results: List[SearchResult],
-    include_metadata: bool = True,
-    max_content_length: Optional[int] = None
+    results: List[SearchResult], include_metadata: bool = True, max_content_length: Optional[int] = None
 ) -> str:
     """
     Format search results for display or LLM consumption
@@ -199,7 +181,7 @@ async def migrate_documents_between_providers(
     source_service: AgentRAGService,
     target_service: AgentRAGService,
     doc_ids: Optional[List[str]] = None,
-    batch_size: int = 10
+    batch_size: int = 10,
 ) -> Dict[str, Any]:
     """
     Migrate documents from one service to another
@@ -224,13 +206,9 @@ async def migrate_documents_between_providers(
     # This is a simplified implementation - in practice, you might need
     # to store original content separately or extract it from search results
 
-    logger.warning(
-        "Document migration requires original content storage - not fully implemented")
+    logger.warning("Document migration requires original content storage - not fully implemented")
 
-    return {
-        "total": len(doc_ids),
-        "note": "Migration requires original document content to be available"
-    }
+    return {"total": len(doc_ids), "note": "Migration requires original document content to be available"}
 
 
 async def health_check(service: AgentRAGService) -> Dict[str, Any]:
@@ -243,11 +221,7 @@ async def health_check(service: AgentRAGService) -> Dict[str, Any]:
     Returns:
         Health check results
     """
-    health = {
-        "service_initialized": service.is_initialized(),
-        "providers": {},
-        "overall_status": "unknown"
-    }
+    health = {"service_initialized": service.is_initialized(), "providers": {}, "overall_status": "unknown"}
 
     if not service.is_initialized():
         health["overall_status"] = "unhealthy"
@@ -256,27 +230,19 @@ async def health_check(service: AgentRAGService) -> Dict[str, Any]:
 
     # Check vector provider
     if service.has_vector_provider():
-        health["providers"]["vector"] = {
-            "available": True,
-            "initialized": service.vector_provider.is_initialized()
-        }
+        health["providers"]["vector"] = {"available": True, "initialized": service.vector_provider.is_initialized()}
     else:
         health["providers"]["vector"] = {"available": False}
 
     # Check LEGRA provider
     if service.has_legra_provider():
-        health["providers"]["legra"] = {
-            "available": True,
-            "initialized": service.legra_provider.is_initialized()
-        }
+        health["providers"]["legra"] = {"available": True, "initialized": service.legra_provider.is_initialized()}
     else:
         health["providers"]["legra"] = {"available": False}
 
     # Determine overall status
-    available_providers = [
-        p for p in health["providers"].values() if p["available"]]
-    initialized_providers = [
-        p for p in available_providers if p.get("initialized", False)]
+    available_providers = [p for p in health["providers"].values() if p["available"]]
+    initialized_providers = [p for p in available_providers if p.get("initialized", False)]
 
     if len(initialized_providers) == len(available_providers) and len(available_providers) > 0:
         health["overall_status"] = "healthy"

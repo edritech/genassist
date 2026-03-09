@@ -1,8 +1,10 @@
-import pytest
-import logging
 import json
+import logging
+
+import pytest
 
 logger = logging.getLogger(__name__)
+
 
 @pytest.mark.skip("Gives timeout error, needs investigation")
 def test_get_session_openai(client):
@@ -15,11 +17,12 @@ def test_get_session_openai(client):
 
     assert response.status_code == 200
 
+
 @pytest.mark.skip("Gives timeout error, needs investigation")
 def test_tts(authorized_client):
     with authorized_client.websocket_connect("/api/voice/audio/tts?api_key=test123") as websocket:
         websocket.send_text(json.dumps({"text": "Hello"}))
         response = websocket.receive()
-        #logger.info("test_tts - response: %s", response)
+        # logger.info("test_tts - response: %s", response)
         assert response["bytes"] is not None
         assert response["bytes"] != b""

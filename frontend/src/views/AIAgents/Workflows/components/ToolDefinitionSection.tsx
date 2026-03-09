@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { NodeSchema, SchemaField } from "../types/schemas";
-import { Input } from "@/components/input";
-import { Textarea } from "@/components/textarea";
-import { Label } from "@/components/label";
-import { ParameterSection } from "./custom/ParameterSection";
-import { ToolBaseNodeData } from "../types/nodes";
-import { Switch } from "@/components/switch";
-import { generateTemplateFromInputSchema } from "../utils/helpers";
+import React, { useState, useEffect } from 'react';
+import { NodeSchema, SchemaField } from '../types/schemas';
+import { Input } from '@/components/input';
+import { Textarea } from '@/components/textarea';
+import { Label } from '@/components/label';
+import { ParameterSection } from './custom/ParameterSection';
+import { ToolBaseNodeData } from '../types/nodes';
+import { Switch } from '@/components/switch';
+import { generateTemplateFromInputSchema } from '../utils/helpers';
 
 interface ToolDefinitionSectionProps {
   toolDefinition: ToolBaseNodeData;
@@ -19,9 +19,7 @@ export const ToolDefinitionSection: React.FC<ToolDefinitionSectionProps> = ({
 }) => {
   const [name, setName] = useState(toolDefinition.name);
   const [description, setDescription] = useState(toolDefinition.description);
-  const [inputSchema, setInputSchema] = useState<NodeSchema>(
-    toolDefinition.inputSchema
-  );
+  const [inputSchema, setInputSchema] = useState<NodeSchema>(toolDefinition.inputSchema);
   const [returnDirect, setReturnDirect] = useState(toolDefinition.returnDirect);
   // Update local state when props change
   useEffect(() => {
@@ -42,10 +40,7 @@ export const ToolDefinitionSection: React.FC<ToolDefinitionSectionProps> = ({
     });
   }, [name, description, inputSchema, returnDirect, onToolDefinitionChange]);
 
-  const addItem = (
-    setter: React.Dispatch<React.SetStateAction<NodeSchema>>,
-    template: SchemaField
-  ) => {
+  const addItem = (setter: React.Dispatch<React.SetStateAction<NodeSchema>>, template: SchemaField) => {
     const newName = `param_${Object.keys(inputSchema).length + 1}`;
     setter((prev) => {
       const newParams = {
@@ -56,10 +51,7 @@ export const ToolDefinitionSection: React.FC<ToolDefinitionSectionProps> = ({
     });
   };
 
-  const removeItem = (
-    setter: React.Dispatch<React.SetStateAction<NodeSchema>>,
-    name: string
-  ) => {
+  const removeItem = (setter: React.Dispatch<React.SetStateAction<NodeSchema>>, name: string) => {
     setter((prev) => {
       const newParams = { ...prev };
       delete newParams[name];
@@ -94,11 +86,7 @@ export const ToolDefinitionSection: React.FC<ToolDefinitionSectionProps> = ({
         <Label className="w-full" htmlFor="returnDirect">
           Return data directly as agent output
         </Label>
-        <Switch
-          id="returnDirect"
-          checked={returnDirect}
-          onCheckedChange={setReturnDirect}
-        />
+        <Switch id="returnDirect" checked={returnDirect} onCheckedChange={setReturnDirect} />
       </div>
       <ParameterSection
         label="Required Parameters"

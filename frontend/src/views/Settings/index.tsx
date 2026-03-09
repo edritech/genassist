@@ -1,3 +1,3 @@
 import Settings from './pages/Settings';
 
-export default Settings; 
+export default Settings;

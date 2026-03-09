@@ -1,9 +1,11 @@
-from typing import Optional, Dict, Literal
-from uuid import UUID
-from pydantic import BaseModel, Field, HttpUrl, ConfigDict
 from datetime import datetime
+from typing import Dict, Literal, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 WebhookType = Literal["slack", "whatsapp", "generic"]
+
 
 class WebhookBase(BaseModel):
     name: str
@@ -20,6 +22,7 @@ class WebhookBase(BaseModel):
 
 class WebhookCreate(BaseModel):
     """Schema for creating a webhook - URL is auto-generated, not provided by user."""
+
     name: str
     method: Optional[Literal["GET", "POST"]] = "POST"
     headers: Optional[Dict[str, str]] = {}
@@ -30,6 +33,7 @@ class WebhookCreate(BaseModel):
     agent_id: Optional[UUID] = None
     app_settings_id: Optional[UUID] = None
     base_url: Optional[str] = None
+
 
 class WebhookUpdate(BaseModel):
     name: Optional[str] = None

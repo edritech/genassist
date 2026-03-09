@@ -1,5 +1,5 @@
-import React from "react";
-import { Loader2 } from "lucide-react";
+import React from 'react';
+import { Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/alert-dialog";
+} from '@/components/alert-dialog';
 
 interface DeleteConfirmationDialogProps {
   open: boolean;
@@ -29,17 +29,15 @@ export function DeleteConfirmationDialog({
   onOpenChange,
   onConfirm,
   isDeleting,
-  title = "Are you sure?",
-  description = "This action cannot be undone.",
+  title = 'Are you sure?',
+  description = 'This action cannot be undone.',
   itemName,
-  confirmButtonText = "Delete",
-  cancelButtonText = "Cancel",
-  loadingText = "Deleting..."
+  confirmButtonText = 'Delete',
+  cancelButtonText = 'Cancel',
+  loadingText = 'Deleting...',
 }: DeleteConfirmationDialogProps) {
-  const itemText = itemName ? `"${itemName}"` : "this item";
-  const completeDescription = itemName 
-    ? `${description} This will permanently delete ${itemText}.`
-    : description;
+  const itemText = itemName ? `"${itemName}"` : 'this item';
+  const completeDescription = itemName ? `${description} This will permanently delete ${itemText}.` : description;
 
   const handleConfirm = async () => {
     try {
@@ -54,9 +52,7 @@ export function DeleteConfirmationDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {completeDescription}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{completeDescription}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>{cancelButtonText}</AlertDialogCancel>
@@ -78,4 +74,4 @@ export function DeleteConfirmationDialog({
       </AlertDialogContent>
     </AlertDialog>
   );
-} 
+}

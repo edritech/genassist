@@ -1,19 +1,15 @@
-import React, { useState } from "react";
-import { NodeProps } from "reactflow";
-import { ToolBuilderNodeData } from "../../types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { ToolBuilderDialog } from "../../nodeDialogs/ToolBuilderDialog";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
-import { extractDynamicVariablesAsRecord } from "../../utils/helpers";
+import React, { useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { ToolBuilderNodeData } from '../../types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { ToolBuilderDialog } from '../../nodeDialogs/ToolBuilderDialog';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
+import { extractDynamicVariablesAsRecord } from '../../utils/helpers';
 
-export const TOOL_BUILDER_NODE_TYPE = "toolBuilderNode";
-const ToolBuilderNode: React.FC<NodeProps<ToolBuilderNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+export const TOOL_BUILDER_NODE_TYPE = 'toolBuilderNode';
+const ToolBuilderNode: React.FC<NodeProps<ToolBuilderNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(TOOL_BUILDER_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -30,13 +26,13 @@ const ToolBuilderNode: React.FC<NodeProps<ToolBuilderNodeData>> = ({
   };
 
   const nodeContent: NodeContentRow[] = [
-    { label: "Description", value: data.description },
+    { label: 'Description', value: data.description },
     {
-      label: "Return data as agent output",
-      value: data.returnDirect ? "Yes" : "No",
+      label: 'Return data as agent output',
+      value: data.returnDirect ? 'Yes' : 'No',
     },
     {
-      label: "Variables",
+      label: 'Variables',
       value: extractDynamicVariablesAsRecord(JSON.stringify(data)),
       areDynamicVars: true,
     },

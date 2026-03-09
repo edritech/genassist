@@ -1,6 +1,6 @@
-import { Card } from "@/components/card";
+import { Card } from '@/components/card';
 import { Area, AreaChart, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
-import { LucideIcon, InfoIcon } from "lucide-react";
+import { LucideIcon, InfoIcon } from 'lucide-react';
 
 interface MetricCardProps {
   title: string;
@@ -12,15 +12,7 @@ interface MetricCardProps {
   description?: string;
 }
 
-export const MetricCard = ({ 
-  title, 
-  value, 
-  icon: Icon, 
-  data, 
-  color, 
-  format,
-  description
-}: MetricCardProps) => {
+export const MetricCard = ({ title, value, icon: Icon, data, color, format, description }: MetricCardProps) => {
   return (
     <Card className="p-4 sm:p-6 shadow-sm animate-fade-up bg-white">
       <div className="flex items-center justify-between mb-3 sm:mb-4">
@@ -49,8 +41,8 @@ export const MetricCard = ({
           <AreaChart data={data} margin={{ left: 0, right: -8, top: 0, bottom: 0 }}>
             <defs>
               <linearGradient id={`color${title.replace(/\s+/g, '')}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={color} stopOpacity={0.1}/>
-                <stop offset="95%" stopColor={color} stopOpacity={0}/>
+                <stop offset="5%" stopColor={color} stopOpacity={0.1} />
+                <stop offset="95%" stopColor={color} stopOpacity={0} />
               </linearGradient>
             </defs>
             <RechartsTooltip
@@ -58,9 +50,7 @@ export const MetricCard = ({
                 if (active && payload && payload.length) {
                   return (
                     <div className="bg-white p-2 rounded-lg shadow-lg border text-xs sm:text-sm">
-                      <p className="font-medium">
-                        {format(payload[0].value as number)}
-                      </p>
+                      <p className="font-medium">{format(payload[0].value as number)}</p>
                     </div>
                   );
                 }

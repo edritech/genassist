@@ -4,23 +4,21 @@ from typing import List
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from app.core.exceptions.exception_classes import AppException
 from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
+from app.core.utils.bi_utils import clean_gpt_json_response
 from app.core.utils.enums.conversation_topic_enum import ConversationTopic
 from app.core.utils.enums.negative_conversation_reason import NegativeConversationReason
-from app.core.utils.gpt_utils import clean_markdown, check_and_raise_if_non_retryable
+from app.core.utils.gpt_utils import check_and_raise_if_non_retryable, clean_markdown
 from app.modules.workflow.llm.provider import LLMProvider
 from app.schemas.conversation_analysis import AnalysisResult
 from app.schemas.conversation_transcript import TranscriptSegment
 from app.schemas.llm import LlmAnalyst
-from app.core.utils.bi_utils import clean_gpt_json_response
-
 
 logger = logging.getLogger(__name__)
 
 
 class GptKpiAnalyzer:
-
     async def analyze_transcript(
         self,
         transcript: str,
@@ -34,12 +32,7 @@ class GptKpiAnalyzer:
         llm_provider = injector.get(LLMProvider)
         llm = await llm_provider.get_model(llm_analyst.llm_provider_id)
 
-        if (
-            transcript is None
-            or transcript.strip() == ""
-            or len(transcript) == 0
-            or transcript == "[]"
-        ):
+        if transcript is None or transcript.strip() == "" or len(transcript) == 0 or transcript == "[]":
             raise AppException(ErrorKey.TRANSCRIPT_NOT_FOUND)
         else:
             logger.debug(f"analyzing transcript: {transcript}")
@@ -54,9 +47,7 @@ class GptKpiAnalyzer:
                 if attempt == 1:
                     user_prompt = self._create_user_prompt(transcript)
                 else:
-                    user_prompt = self._create_user_prompt(
-                        transcript, error_hint=last_error_msg, attempt=attempt
-                    )
+                    user_prompt = self._create_user_prompt(transcript, error_hint=last_error_msg, attempt=attempt)
 
                 system_msg = SystemMessage(content=llm_analyst.prompt)
                 user_msg = HumanMessage(content=user_prompt)
@@ -70,12 +61,7 @@ class GptKpiAnalyzer:
                 title = summary_data.get("title")
                 metrics = self._extract_metrics(response_text)
 
-                if (
-                    summary
-                    and title
-                    and isinstance(metrics, dict)
-                    and metrics
-                ):
+                if summary and title and isinstance(metrics, dict) and metrics:
                     return AnalysisResult(
                         summary=summary,
                         title=title,
@@ -100,19 +86,16 @@ class GptKpiAnalyzer:
         raise AppException(
             error_key=ErrorKey.GPT_FAILED_JSON_PARSING,
             status_code=500,
-            error_detail=f"Last error: {last_error_msg}. Last response: {last_response}"
+            error_detail=f"Last error: {last_error_msg}. Last response: {last_response}",
         )
 
     def _format_transcript(self, segments: List[TranscriptSegment]) -> str:
         """Format transcript segments into a readable string."""
         return "\n".join(
-            f"Speaker {seg.speaker} ({seg.start_time:.2f}s - {seg.end_time:.2f}s):\n{seg.text}"
-            for seg in segments
+            f"Speaker {seg.speaker} ({seg.start_time:.2f}s - {seg.end_time:.2f}s):\n{seg.text}" for seg in segments
         )
 
-    def _create_user_prompt(
-        self, transcript_text: str, error_hint: str = None, attempt: int = 1
-    ) -> str:
+    def _create_user_prompt(self, transcript_text: str, error_hint: str = None, attempt: int = 1) -> str:
         """Create the analysis prompt for ChatGPT, optionally appending retry hints."""
         retry_instruction = ""
         if error_hint and attempt > 1:
@@ -124,7 +107,7 @@ class GptKpiAnalyzer:
             """
 
         return f"""
-            You are a customer experience expert. Please analyze this call center conversation transcript and provide 
+            You are a customer experience expert. Please analyze this call center conversation transcript and provide
             your response in the following format:
 
             **A) Title:**
@@ -157,7 +140,7 @@ class GptKpiAnalyzer:
             Transcript:
             {transcript_text}
 
-            Remember to maintain the exact format specified above. The JSON metrics should be integers between 0 and 10, 
+            Remember to maintain the exact format specified above. The JSON metrics should be integers between 0 and 10,
             Tone must be one of the listed values, and sentiment percentages must sum up to 100%.
 
             {retry_instruction}
@@ -168,7 +151,6 @@ class GptKpiAnalyzer:
         transcript_segments: str,
         llm_analyst: LlmAnalyst,
     ) -> dict:
-
         from app.dependencies.injector import injector
 
         llm_provider = injector.get(LLMProvider)
@@ -182,7 +164,7 @@ class GptKpiAnalyzer:
         You are an impartial conversation analyst.
 
         Task:
-        Analyse the following partial conversation transcript (a JSON list of messages).  
+        Analyse the following partial conversation transcript (a JSON list of messages).
         Each message has:
         "text": "The content of the partial conversation transcript"
         "speaker": "The speaker, either customer or agent"
@@ -192,14 +174,14 @@ class GptKpiAnalyzer:
         YOU MUST ALWAYS RETURN ONE JSON OBJECT WITH EXACTLY THREE KEYS:
 
          1. "hostile_score" between 0 and 100.
-         2. "topic" string from this specific list: {ConversationTopic.as_csv()} based on the conversation 
-         transcript. Return "Other" if none of the other topics match the conversation or if there isn't enough 
+         2. "topic" string from this specific list: {ConversationTopic.as_csv()} based on the conversation
+         transcript. Return "Other" if none of the other topics match the conversation or if there isn't enough
          context to decide.
-         3. "negative_reason" string from this specific list: {NegativeConversationReason.as_csv()} based on the 
+         3. "negative_reason" string from this specific list: {NegativeConversationReason.as_csv()} based on the
          conversation, if it is not negative, or if there isn't enough context to decide return "Other" for this field.
 
         ### Definition of hostility
-        Hostility includes threats, insults, profanity, aggressive or intimidating tone, harassment, or hateful/discriminatory language.  
+        Hostility includes threats, insults, profanity, aggressive or intimidating tone, harassment, or hateful/discriminatory language.
         Polite disagreement or calm criticism is **not** hostile.
 
         ### Hostile-score rubric
@@ -213,13 +195,13 @@ class GptKpiAnalyzer:
         | 91-100| Violent threats, hate speech (“I’ll ruin your business”, slurs) |
 
         Scoring instructions
-        • Score the conversation as a whole (don’t average per-speaker).  
-        • If hostility is mixed, choose the highest sustained level reached.  
+        • Score the conversation as a whole (don’t average per-speaker).
+        • If hostility is mixed, choose the highest sustained level reached.
         • Use whole numbers only (no decimals).
 
         ### Output rules
-        • Think step-by-step internally but do not reveal your reasoning.  
-        • Respond with JSON only, no prose, no comments, no trailing commas.  
+        • Think step-by-step internally but do not reveal your reasoning.
+        • Respond with JSON only, no prose, no comments, no trailing commas.
         • Example:
         {{
             "topic": "Billing Questions",
@@ -255,15 +237,12 @@ class GptKpiAnalyzer:
                 return analysis_data
 
             # If the JSON doesn't match the expected structure
-            raise ValueError(
-                "partial_hostility_analysis: Missing or invalid fields in JSON output."
-            )
+            raise ValueError("partial_hostility_analysis: Missing or invalid fields in JSON output.")
 
         except Exception as e:
             logger.warning(f"Hostility analysis failed: {e}")
             # Fallback to a safe default or re-raise
             return {"topic": "Other", "hostile_score": 0, "negative_reason": "Other"}
-
 
     def _extract_summary_and_title(self, text: str) -> dict:
         # Try JSON format first (Nova)
@@ -295,12 +274,11 @@ class GptKpiAnalyzer:
         summary_start = text.find("**B) Summary:**")
         kpi_start = text.find("**C) KPI Metrics")
 
-        raw_title = text[title_start + 13: summary_start].strip()
+        raw_title = text[title_start + 13 : summary_start].strip()
         title = clean_markdown(raw_title.lstrip("- "))
-        summary = clean_markdown(text[summary_start + 15: kpi_start])
+        summary = clean_markdown(text[summary_start + 15 : kpi_start])
 
         return {"title": title, "summary": summary}
-
 
     def _extract_metrics(self, text: str) -> dict:
         """Extract KPI metrics — supports both markdown (OpenAI) and JSON (Nova) responses."""
@@ -324,4 +302,3 @@ class GptKpiAnalyzer:
                 logger.warning("_extract_metrics: Failed to parse embedded JSON block.")
 
         return {}
-

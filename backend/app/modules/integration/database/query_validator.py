@@ -1,8 +1,10 @@
-from typing import Dict, Tuple, Optional, Set, List
 import re
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Set, Tuple
+
 import sqlparse
 from sqlparse import tokens as T
-from dataclasses import dataclass
+
 from app.modules.integration.database import DatabaseManager
 
 
@@ -24,9 +26,7 @@ class AdvancedQueryValidator:
     def __init__(self, db_manager: DatabaseManager, schema: Dict = None):
         self.db_manager = db_manager
         self.schema = schema or db_manager.get_schema()
-        self.schema_tables = {
-            table["name"].lower() for table in self.schema.get("tables", [])
-        }
+        self.schema_tables = {table["name"].lower() for table in self.schema.get("tables", [])}
         self.schema_columns = self._build_column_mapping()
 
     def _build_column_mapping(self) -> Dict[str, Set[str]]:
@@ -34,9 +34,7 @@ class AdvancedQueryValidator:
         columns = {}
         for table in self.schema.get("tables", []):
             table_name = table["name"].lower()
-            columns[table_name] = {
-                col["name"].lower() for col in table.get("columns", [])
-            }
+            columns[table_name] = {col["name"].lower() for col in table.get("columns", [])}
         return columns
 
     def validate_query(self, query: str) -> ValidationResult:
@@ -51,9 +49,7 @@ class AdvancedQueryValidator:
         """
         try:
             # Handle dict input
-            query_text = (
-                query.get("formatted_query") if isinstance(query, dict) else query
-            )
+            query_text = query.get("formatted_query") if isinstance(query, dict) else query
 
             # Parse with sqlparse
             parsed = sqlparse.parse(query_text)
@@ -97,9 +93,7 @@ class AdvancedQueryValidator:
                     columns_used,
                 )
 
-            return ValidationResult(
-                True, None, warnings, query_type, tables_used, columns_used
-            )
+            return ValidationResult(True, None, warnings, query_type, tables_used, columns_used)
 
         except Exception as e:
             return ValidationResult(False, f"Validation error: {str(e)}")
@@ -139,11 +133,7 @@ class AdvancedQueryValidator:
         def is_column_context(prev_tokens):
             """Check if we're in a context where columns are expected."""
             keywords = {"SELECT", "WHERE", "ORDER", "GROUP", "HAVING", "ON", "SET"}
-            return any(
-                token.normalized in keywords
-                for token in prev_tokens[-3:]
-                if hasattr(token, "normalized")
-            )
+            return any(token.normalized in keywords for token in prev_tokens[-3:] if hasattr(token, "normalized"))
 
         tokens_list = list(statement.flatten())
         for i, token in enumerate(tokens_list):
@@ -152,9 +142,7 @@ class AdvancedQueryValidator:
                 prev_tokens = tokens_list[max(0, i - 3) : i]
                 if is_column_context(prev_tokens):
                     # Check for qualified column (table.column)
-                    if i + 2 < len(tokens_list) and tokens_list[i + 1].match(
-                        T.Punctuation, "."
-                    ):
+                    if i + 2 < len(tokens_list) and tokens_list[i + 1].match(T.Punctuation, "."):
                         table_part = token.value.lower()
                         column_part = tokens_list[i + 2].value.lower()
                         columns.add(f"{table_part}.{column_part}")
@@ -209,13 +197,9 @@ class AdvancedQueryValidator:
                 actual_table = table_aliases.get(table_part, table_part)
 
                 if actual_table not in self.schema_columns:
-                    errors.append(
-                        f"Table '{table_part}' not found for column '{column_ref}'"
-                    )
+                    errors.append(f"Table '{table_part}' not found for column '{column_ref}'")
                 elif column_part not in self.schema_columns[actual_table]:
-                    errors.append(
-                        f"Column '{column_part}' not found in table '{actual_table}'"
-                    )
+                    errors.append(f"Column '{column_part}' not found in table '{actual_table}'")
             else:
                 # Unqualified column reference
                 found_in_tables = []
@@ -226,13 +210,9 @@ class AdvancedQueryValidator:
                 if not found_in_tables:
                     # Check if it's a function or special keyword
                     if not self._is_sql_function_or_keyword(column_ref):
-                        errors.append(
-                            f"Column '{column_ref}' not found in any referenced table"
-                        )
+                        errors.append(f"Column '{column_ref}' not found in any referenced table")
                 elif len(found_in_tables) > 1:
-                    warnings.append(
-                        f"Ambiguous column '{column_ref}' found in multiple tables: {found_in_tables}"
-                    )
+                    warnings.append(f"Ambiguous column '{column_ref}' found in multiple tables: {found_in_tables}")
 
         if errors:
             return ValidationResult(False, "; ".join(errors), warnings)
@@ -246,25 +226,19 @@ class AdvancedQueryValidator:
             # Check for INSERT without explicit columns
             query_str = str(statement).upper()
             if "INSERT INTO" in query_str and "(" not in query_str.split("VALUES")[0]:
-                warnings.append(
-                    "INSERT without explicit column list - consider specifying columns"
-                )
+                warnings.append("INSERT without explicit column list - consider specifying columns")
 
         elif query_type == "UPDATE":
             # Check for UPDATE without WHERE clause
             query_str = str(statement).upper()
             if "WHERE" not in query_str:
-                warnings.append(
-                    "UPDATE without WHERE clause - this will update all rows"
-                )
+                warnings.append("UPDATE without WHERE clause - this will update all rows")
 
         elif query_type == "DELETE":
             # Check for DELETE without WHERE clause
             query_str = str(statement).upper()
             if "WHERE" not in query_str:
-                return ValidationResult(
-                    False, "DELETE without WHERE clause is not allowed"
-                )
+                return ValidationResult(False, "DELETE without WHERE clause is not allowed")
 
         return ValidationResult(True, warnings=warnings)
 
@@ -304,20 +278,12 @@ class AdvancedQueryValidator:
 
         # Check for missing WHERE clause in SELECT
         query_upper = query_text.upper()
-        if (
-            query_upper.startswith("SELECT")
-            and "WHERE" not in query_upper
-            and "LIMIT" not in query_upper
-        ):
-            warnings.append(
-                "SELECT without WHERE or LIMIT clause may scan entire table"
-            )
+        if query_upper.startswith("SELECT") and "WHERE" not in query_upper and "LIMIT" not in query_upper:
+            warnings.append("SELECT without WHERE or LIMIT clause may scan entire table")
 
         # Check for LIKE patterns starting with wildcard
         if re.search(r"LIKE\s+['\"]%", query_text, re.IGNORECASE):
-            warnings.append(
-                "LIKE pattern starting with % cannot use indexes efficiently"
-            )
+            warnings.append("LIKE pattern starting with % cannot use indexes efficiently")
 
         return ValidationResult(True, warnings=warnings)
 
@@ -371,9 +337,7 @@ class AdvancedQueryValidator:
         return None
 
 
-def validate_with_sqlglot(
-    query: str, schema: Dict, db_type="mysql"
-) -> ValidationResult:
+def validate_with_sqlglot(query: str, schema: Dict, db_type="mysql") -> ValidationResult:
     """
     SQLGlot is much more accurate for parsing and validation.
     """

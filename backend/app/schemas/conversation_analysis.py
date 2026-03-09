@@ -1,7 +1,8 @@
 from dataclasses import dataclass
+from typing import Dict, Optional
 from uuid import UUID, uuid4
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, Dict
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ConversationAnalysisBase(BaseModel):
@@ -28,9 +29,7 @@ class ConversationAnalysisCreate(ConversationAnalysisBase):
 class ConversationAnalysisRead(ConversationAnalysisBase):
     id: Optional[UUID] = None
 
-    model_config = ConfigDict(
-        from_attributes = True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 # class AnalysisResult(BaseModel):
@@ -38,10 +37,10 @@ class ConversationAnalysisRead(ConversationAnalysisBase):
 #     title: str
 #     customer_speaker: str
 #     kpi_metrics: Dict[str, int]  # Example: {"Response Time": 8, "Customer Satisfaction": 9}
-    
+
+
 @dataclass
 class AnalysisResult:
     summary: str
     title: str
     kpi_metrics: Dict[str, int]  # Example: {"Response Time": 8, "Customer Satisfaction": 9}
-

@@ -1,12 +1,14 @@
-import pytest
 from unittest.mock import AsyncMock
 from uuid import uuid4
-from app.services.agent_knowledge import KnowledgeBaseService
-from app.repositories.knowledge_base import KnowledgeBaseRepository
-from app.schemas.agent_knowledge import KBCreate, KBRead
+
+import pytest
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.knowledge_base import KnowledgeBaseModel
+from app.repositories.knowledge_base import KnowledgeBaseRepository
+from app.schemas.agent_knowledge import KBCreate, KBRead
+from app.services.agent_knowledge import KnowledgeBaseService
 
 
 @pytest.fixture
@@ -31,26 +33,16 @@ def sample_kb_data():
         "file_type": "text",
         "files": ["/path/to/file.txt"],
         "vector_store": {"config": "test"},
-        "rag_config": {
-            "enabled": True,
-            "vector_db": {"enabled": True},
-            "light_rag": {"enabled": False}
-        },
+        "rag_config": {"enabled": True, "vector_db": {"enabled": True}, "light_rag": {"enabled": False}},
         "extra_metadata": {},
-        "embeddings_model": "test-model"
+        "embeddings_model": "test-model",
     }
 
 
 @pytest.mark.asyncio
 async def test_get_all_success(knowledge_base_service, mock_repository, sample_kb_data):
     # Setup
-    mock_kbs = [
-        KnowledgeBaseModel(**{
-            **sample_kb_data,
-            "id": uuid4()
-        })
-        for _ in range(3)
-    ]
+    mock_kbs = [KnowledgeBaseModel(**{**sample_kb_data, "id": uuid4()}) for _ in range(3)]
     mock_repository.get_all.return_value = mock_kbs
 
     # Execute
@@ -67,10 +59,7 @@ async def test_get_all_success(knowledge_base_service, mock_repository, sample_k
 async def test_get_by_id_success(knowledge_base_service, mock_repository, sample_kb_data):
     # Setup
     kb_id = uuid4()
-    mock_kb = KnowledgeBaseModel(**{
-        **sample_kb_data,
-        "id": kb_id
-    })
+    mock_kb = KnowledgeBaseModel(**{**sample_kb_data, "id": kb_id})
     mock_repository.get_by_id.return_value = mock_kb
 
     # Execute
@@ -101,13 +90,7 @@ async def test_get_by_id_not_found(knowledge_base_service, mock_repository):
 async def test_get_by_ids_success(knowledge_base_service, mock_repository, sample_kb_data):
     # Setup
     kb_ids = [uuid4() for _ in range(2)]
-    mock_kbs = [
-        KnowledgeBaseModel(**{
-            **sample_kb_data,
-            "id": kb_id
-        })
-        for kb_id in kb_ids
-    ]
+    mock_kbs = [KnowledgeBaseModel(**{**sample_kb_data, "id": kb_id}) for kb_id in kb_ids]
     mock_repository.get_by_ids.return_value = mock_kbs
 
     # Execute
@@ -124,10 +107,7 @@ async def test_get_by_ids_success(knowledge_base_service, mock_repository, sampl
 async def test_create_success(knowledge_base_service, mock_repository, sample_kb_data):
     # Setup
     kb_create = KBCreate(**sample_kb_data)
-    mock_kb = KnowledgeBaseModel(**{
-        **sample_kb_data,
-        "id": uuid4()
-    })
+    mock_kb = KnowledgeBaseModel(**{**sample_kb_data, "id": uuid4()})
     mock_repository.create.return_value = mock_kb
 
     # Execute
@@ -143,20 +123,10 @@ async def test_create_success(knowledge_base_service, mock_repository, sample_kb
 async def test_update_success(knowledge_base_service, mock_repository, sample_kb_data):
     # Setup
     kb_id = uuid4()
-    update_data = KBCreate(**{
-        **sample_kb_data,
-        "name": "updated_kb",
-        "description": "Updated description"
-    })
-    mock_kb = KnowledgeBaseModel(**{
-        **sample_kb_data,
-        "id": kb_id
-    })
+    update_data = KBCreate(**{**sample_kb_data, "name": "updated_kb", "description": "Updated description"})
+    mock_kb = KnowledgeBaseModel(**{**sample_kb_data, "id": kb_id})
     mock_repository.get_by_id.return_value = mock_kb
-    mock_repository.update.return_value = KnowledgeBaseModel(**{
-        **update_data.model_dump(),
-        "id": kb_id
-    })
+    mock_repository.update.return_value = KnowledgeBaseModel(**{**update_data.model_dump(), "id": kb_id})
 
     # Execute
     result = await knowledge_base_service.update(kb_id, update_data)
@@ -189,10 +159,7 @@ async def test_update_not_found(knowledge_base_service, mock_repository, sample_
 async def test_delete_success(knowledge_base_service, mock_repository, sample_kb_data):
     # Setup
     kb_id = uuid4()
-    mock_kb = KnowledgeBaseModel(**{
-        **sample_kb_data,
-        "id": kb_id
-    })
+    mock_kb = KnowledgeBaseModel(**{**sample_kb_data, "id": kb_id})
     mock_repository.get_by_id.return_value = mock_kb
 
     # Execute

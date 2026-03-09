@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { RolesCard } from "@/views/Roles/components/RolesCard";
-import { RoleDialog } from "@/views/Roles/components/RoleDialog";
-import { Role } from "@/interfaces/role.interface";
+import { useState } from 'react';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { RolesCard } from '@/views/Roles/components/RolesCard';
+import { RoleDialog } from '@/views/Roles/components/RoleDialog';
+import { Role } from '@/interfaces/role.interface';
 
 export default function Roles() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
@@ -14,7 +14,7 @@ export default function Roles() {
   const [updatedRole, setUpdatedRole] = useState<Role | null>(null);
 
   const handleRoleSaved = () => {
-    setRefreshKey(prevKey => prevKey + 1);
+    setRefreshKey((prevKey) => prevKey + 1);
   };
 
   const handleRoleUpdated = (role: Role) => {
@@ -26,7 +26,7 @@ export default function Roles() {
     setRoleToEdit(null);
     setIsDialogOpen(true);
   };
-  
+
   const handleEditRole = (role: Role) => {
     setDialogMode('edit');
     setRoleToEdit(role);
@@ -44,7 +44,7 @@ export default function Roles() {
         actionButtonText="Add New Role"
         onActionClick={handleCreateRole}
       />
-      
+
       <RolesCard
         searchQuery={searchQuery}
         refreshKey={refreshKey}
@@ -62,4 +62,4 @@ export default function Roles() {
       />
     </PageLayout>
   );
-} 
+}

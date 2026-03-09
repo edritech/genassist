@@ -6,14 +6,15 @@ chunking, embedding, and vector database components.
 """
 
 import logging
-from typing import List, Dict, Any, Union, cast
-from .db import SearchResult as DBSearchResult
+from typing import Any, Dict, List, Union, cast
+
 from ..base import BaseDataProvider
 from ..models import SearchResult
-from .config import VectorConfig
-from .embedding.base import BaseEmbedder
-from .db.base import BaseVectorDB
 from .chunking.base import BaseChunker
+from .config import VectorConfig
+from .db import SearchResult as DBSearchResult
+from .db.base import BaseVectorDB
+from .embedding.base import BaseEmbedder
 
 logger = logging.getLogger(__name__)
 
@@ -23,16 +24,13 @@ class VectorProvider(BaseDataProvider):
     Orchestrates chunking, embedding, and vector database operations
     based on knowledge base configuration
     """
+
     name = "vector"
     embedder: BaseEmbedder
     vector_db: BaseVectorDB
     chunker: BaseChunker
 
-    def __init__(
-        self,
-        config: VectorConfig,
-        knowledge_base_id: str
-    ):
+    def __init__(self, config: VectorConfig, knowledge_base_id: str):
         super().__init__(knowledge_base_id)
         self.config = config
 
@@ -59,7 +57,7 @@ class VectorProvider(BaseDataProvider):
                 return False
 
             # Set embedding function for ChromaDB if needed
-            if hasattr(self.vector_db, 'set_embedding_function'):
+            if hasattr(self.vector_db, "set_embedding_function"):
                 # Create a wrapper function for LangChain compatibility
                 async def embedding_function(texts):
                     if isinstance(texts, str):
@@ -76,12 +74,7 @@ class VectorProvider(BaseDataProvider):
             logger.error(f"Failed to initialize VectorProvider: {e}")
             return False
 
-    async def add_document(
-        self,
-        doc_id: str,
-        content: str,
-        metadata: Union[Dict[str, Any], None] = None
-    ) -> bool:
+    async def add_document(self, doc_id: str, content: str, metadata: Union[Dict[str, Any], None] = None) -> bool:
         """
         Add a document to the vector store
 
@@ -131,18 +124,13 @@ class VectorProvider(BaseDataProvider):
 
             # Add to vector database
             success = await self.vector_db.add_vectors(
-                ids=chunk_ids,
-                vectors=embeddings,
-                metadatas=chunk_metadatas,
-                contents=chunk_texts
+                ids=chunk_ids, vectors=embeddings, metadatas=chunk_metadatas, contents=chunk_texts
             )
 
             if success:
-                logger.debug(
-                    f"Added document {doc_id} with {len(chunks)} chunks")
+                logger.debug(f"Added document {doc_id} with {len(chunks)} chunks")
             else:
-                logger.error(
-                    f"Failed to add document {doc_id} to vector database")
+                logger.error(f"Failed to add document {doc_id} to vector database")
 
             return success
 
@@ -171,8 +159,7 @@ class VectorProvider(BaseDataProvider):
             if all_ids:
                 success = await self.vector_db.delete_vectors(all_ids)
                 if success:
-                    logger.info(
-                        f"Deleted document {doc_id} with {len(all_ids)} chunks")
+                    logger.info(f"Deleted document {doc_id} with {len(all_ids)} chunks")
                 return success
             else:
                 logger.info(f"No chunks found for document {doc_id}")
@@ -183,11 +170,7 @@ class VectorProvider(BaseDataProvider):
             return False
 
     async def search(
-        self,
-        query: str,
-        limit: int = 5,
-        filter_dict: Union[Dict[str, Any], None] = None,
-        **kwargs
+        self, query: str, limit: int = 5, filter_dict: Union[Dict[str, Any], None] = None, **kwargs
     ) -> List[SearchResult]:
         """
         Search the vector store
@@ -240,7 +223,7 @@ class VectorProvider(BaseDataProvider):
                     metadata=doc_result["metadata"],
                     score=doc_result["score"],
                     source="vector",
-                    chunk_count=doc_result["chunk_count"]
+                    chunk_count=doc_result["chunk_count"],
                 )
                 formatted_results.append(search_result)
 
@@ -310,17 +293,17 @@ class VectorProvider(BaseDataProvider):
                 doc_groups[doc_id] = {
                     "chunks": [],
                     "best_score": result.score,
-                    "metadata": {k: v for k, v in result.metadata.items()
-                                 if k not in ["chunk_index", "chunk_id", "start_char", "end_char"]}
+                    "metadata": {
+                        k: v
+                        for k, v in result.metadata.items()
+                        if k not in ["chunk_index", "chunk_id", "start_char", "end_char"]
+                    },
                 }
 
-            chunks_list = cast(List[Dict[str, Any]],
-                               doc_groups[doc_id]["chunks"])
-            chunks_list.append({
-                "content": result.content,
-                "score": result.score,
-                "chunk_index": result.metadata.get("chunk_index", 0)
-            })
+            chunks_list = cast(List[Dict[str, Any]], doc_groups[doc_id]["chunks"])
+            chunks_list.append(
+                {"content": result.content, "score": result.score, "chunk_index": result.metadata.get("chunk_index", 0)}
+            )
 
             # Update best score
             current_best = cast(float, doc_groups[doc_id]["best_score"])
@@ -335,16 +318,17 @@ class VectorProvider(BaseDataProvider):
             sorted_chunks = sorted(chunks_data, key=lambda x: x["chunk_index"])
 
             # Combine content
-            combined_content = "\n".join(
-                [chunk["content"] for chunk in sorted_chunks])
+            combined_content = "\n".join([chunk["content"] for chunk in sorted_chunks])
 
-            consolidated_results.append({
-                "doc_id": doc_id,
-                "content": combined_content,
-                "metadata": data["metadata"],
-                "score": data["best_score"],
-                "chunk_count": len(sorted_chunks)
-            })
+            consolidated_results.append(
+                {
+                    "doc_id": doc_id,
+                    "content": combined_content,
+                    "metadata": data["metadata"],
+                    "score": data["best_score"],
+                    "chunk_count": len(sorted_chunks),
+                }
+            )
 
         # Sort by score and limit
         consolidated_results.sort(key=lambda x: x["score"], reverse=True)
@@ -360,5 +344,5 @@ class VectorProvider(BaseDataProvider):
         return {
             "provider_type": "vector",
             "knowledge_base_id": self.knowledge_base_id,
-            "initialized": self._initialized
+            "initialized": self._initialized,
         }

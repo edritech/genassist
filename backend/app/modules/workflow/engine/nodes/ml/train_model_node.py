@@ -4,21 +4,21 @@ Train Model node implementation using the BaseNode class.
 This node trains ML models on CSV data and saves them as .pkl files.
 """
 
-from typing import Dict, Any, Optional
 import logging
 import pickle
 import uuid
-from pathlib import Path
+from typing import Any, Dict, Optional
+
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 
-from app.modules.workflow.engine.base_node import BaseNode
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.core.project_path import DATA_VOLUME
+from app.modules.workflow.engine.base_node import BaseNode
 from app.modules.workflow.engine.nodes.ml import ml_utils
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 # Try to import xgboost (optional dependency)
 try:
     import xgboost as xgb
+
     XGBOOST_AVAILABLE = True
 except ImportError:
     XGBOOST_AVAILABLE = False
@@ -51,7 +52,7 @@ class TrainModelNode(BaseNode):
         Args:
             config: The resolved configuration for the node containing:
                 - name: Model name (required)
-                - modelType: Type of model - "xgboost", "random_forest", "linear_regression", 
+                - modelType: Type of model - "xgboost", "random_forest", "linear_regression",
                             "logistic_regression", "neural_network" (required)
                 - fileUrl: Path to CSV file with training data (required)
                 - targetColumn: Name of the target column (required)
@@ -100,7 +101,13 @@ class TrainModelNode(BaseNode):
                 )
 
             # Validate model type
-            valid_model_types = ["xgboost", "random_forest", "linear_regression", "logistic_regression", "neural_network"]
+            valid_model_types = [
+                "xgboost",
+                "random_forest",
+                "linear_regression",
+                "logistic_regression",
+                "neural_network",
+            ]
             if model_type not in valid_model_types:
                 raise AppException(
                     error_key=ErrorKey.INTERNAL_ERROR,
@@ -123,14 +130,14 @@ class TrainModelNode(BaseNode):
             # Validate columns exist
             all_columns = list(df.columns)
             missing_columns = []
-            
+
             if target_column not in all_columns:
                 missing_columns.append(target_column)
-            
+
             for col in feature_columns:
                 if col not in all_columns:
                     missing_columns.append(col)
-            
+
             if missing_columns:
                 logger.error(f"Columns not found in data: {missing_columns}. Available columns: {all_columns}")
                 return {
@@ -148,12 +155,14 @@ class TrainModelNode(BaseNode):
 
             # Handle missing values
             if X.isnull().any().any():
-                logger.warning("Found missing values in features. Filling with median for numeric and mode for categorical.")
+                logger.warning(
+                    "Found missing values in features. Filling with median for numeric and mode for categorical."
+                )
                 for col in X.columns:
-                    if X[col].dtype in ['int64', 'float64']:
+                    if X[col].dtype in ["int64", "float64"]:
                         X[col].fillna(X[col].median(), inplace=True)
                     else:
-                        X[col].fillna(X[col].mode()[0] if not X[col].mode().empty else '', inplace=True)
+                        X[col].fillna(X[col].mode()[0] if not X[col].mode().empty else "", inplace=True)
 
             if y.isnull().any():
                 logger.warning("Found missing values in target. Dropping rows with missing target values.")
@@ -162,13 +171,13 @@ class TrainModelNode(BaseNode):
                 y = y[mask]
 
             # Handle categorical variables by one-hot encoding
-            categorical_columns = X.select_dtypes(include=['object']).columns
+            categorical_columns = X.select_dtypes(include=["object"]).columns
             if len(categorical_columns) > 0:
                 logger.info(f"One-hot encoding categorical columns: {list(categorical_columns)}")
                 X = pd.get_dummies(X, columns=categorical_columns, drop_first=True)
 
             # Handle boolean columns
-            boolean_columns = X.select_dtypes(include=['bool']).columns
+            boolean_columns = X.select_dtypes(include=["bool"]).columns
             if len(boolean_columns) > 0:
                 logger.info(f"Converting boolean columns to int: {list(boolean_columns)}")
                 X[boolean_columns] = X[boolean_columns].astype(int)
@@ -226,9 +235,7 @@ class TrainModelNode(BaseNode):
         except AppException:
             raise
         except Exception as e:
-            logger.error(
-                f"Unexpected error in train model node: {str(e)}", exc_info=True
-            )
+            logger.error(f"Unexpected error in train model node: {str(e)}", exc_info=True)
             raise AppException(
                 error_key=ErrorKey.INTERNAL_ERROR,
                 error_detail=f"Train model processing failed: {str(e)}",
@@ -253,10 +260,10 @@ class TrainModelNode(BaseNode):
 
         # For others, infer from target variable
         # If target is integer with few unique values, likely classification
-        if y.dtype in ['int64', 'int32'] and y.nunique() <= 20:
+        if y.dtype in ["int64", "int32"] and y.nunique() <= 20:
             return True
         # If target is object/string, it's classification
-        if y.dtype == 'object':
+        if y.dtype == "object":
             return True
 
         # Default to regression for continuous numeric values
@@ -329,11 +336,7 @@ class TrainModelNode(BaseNode):
             model = xgb.XGBRegressor(**params)
 
         if X_val is not None and y_val is not None:
-            model.fit(
-                X_train, y_train,
-                eval_set=[(X_val, y_val)],
-                verbose=False
-            )
+            model.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=False)
         else:
             model.fit(X_train, y_train)
 
@@ -429,8 +432,13 @@ class TrainModelNode(BaseNode):
             Dictionary with evaluation metrics
         """
         from sklearn.metrics import (
-            accuracy_score, precision_score, recall_score, f1_score,
-            mean_squared_error, mean_absolute_error, r2_score
+            accuracy_score,
+            f1_score,
+            mean_absolute_error,
+            mean_squared_error,
+            precision_score,
+            r2_score,
+            recall_score,
         )
 
         y_pred = model.predict(X_val)
@@ -438,9 +446,9 @@ class TrainModelNode(BaseNode):
         if is_classification:
             metrics = {
                 "accuracy": float(accuracy_score(y_val, y_pred)),
-                "precision": float(precision_score(y_val, y_pred, average='weighted', zero_division=0)),
-                "recall": float(recall_score(y_val, y_pred, average='weighted', zero_division=0)),
-                "f1_score": float(f1_score(y_val, y_pred, average='weighted', zero_division=0)),
+                "precision": float(precision_score(y_val, y_pred, average="weighted", zero_division=0)),
+                "recall": float(recall_score(y_val, y_pred, average="weighted", zero_division=0)),
+                "f1_score": float(f1_score(y_val, y_pred, average="weighted", zero_division=0)),
             }
         else:
             metrics = {
@@ -470,7 +478,7 @@ class TrainModelNode(BaseNode):
 
             # Generate unique filename
             unique_id = str(uuid.uuid4())
-            safe_name = "".join(c if c.isalnum() or c in ('-', '_') else '_' for c in name)
+            safe_name = "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in name)
             filename = f"{safe_name}_{unique_id}.pkl"
             file_path = models_dir / filename
 
@@ -487,4 +495,3 @@ class TrainModelNode(BaseNode):
                 error_key=ErrorKey.INTERNAL_ERROR,
                 error_detail=f"Failed to save model: {str(e)}",
             ) from e
-

@@ -1,20 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { NodeProps } from "reactflow";
-import { getNodeColor } from "../../utils/nodeColors";
-import { ZendeskTicketNodeData } from "../../types/nodes";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { ZendeskTicketDialog } from "../../nodeDialogs/ZendeskTicketDialog";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { getAllAppSettings } from "@/services/appSettings";
+import React, { useEffect, useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { getNodeColor } from '../../utils/nodeColors';
+import { ZendeskTicketNodeData } from '../../types/nodes';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { ZendeskTicketDialog } from '../../nodeDialogs/ZendeskTicketDialog';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { getAllAppSettings } from '@/services/appSettings';
 
-export const ZENDESK_TICKET_NODE_TYPE = "zendeskTicketNode";
-const ZendeskTicketNode: React.FC<NodeProps<ZendeskTicketNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+export const ZENDESK_TICKET_NODE_TYPE = 'zendeskTicketNode';
+const ZendeskTicketNode: React.FC<NodeProps<ZendeskTicketNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(ZENDESK_TICKET_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
 
@@ -40,18 +36,16 @@ const ZendeskTicketNode: React.FC<NodeProps<ZendeskTicketNodeData>> = ({
     }
   };
 
-  const selectedAppSettingName = appSettings.find(
-    (setting) => setting.id === data.app_settings_id
-  )?.name;
+  const selectedAppSettingName = appSettings.find((setting) => setting.id === data.app_settings_id)?.name;
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Configuration",
+      label: 'Configuration',
       value: selectedAppSettingName,
-      placeholder: "None selected",
+      placeholder: 'None selected',
     },
-    { label: "Subject", value: data.subject },
-    { label: "Requester", value: data.requester_name },
+    { label: 'Subject', value: data.subject },
+    { label: 'Requester', value: data.requester_name },
   ];
 
   return (

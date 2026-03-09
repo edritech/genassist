@@ -63,6 +63,6 @@ export interface AgentListItem {
   is_active: boolean;
 }
 
-export type AgentConfigCreate = Omit<AgentConfig, "id" | "user_id" | "workflow_id">;
+export type AgentConfigCreate = Omit<AgentConfig, 'id' | 'user_id' | 'workflow_id'>;
 
-export type AgentConfigUpdate = Partial<Omit<AgentConfig, "id" | "user_id">>;
+export type AgentConfigUpdate = Partial<Omit<AgentConfig, 'id' | 'user_id'>>;

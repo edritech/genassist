@@ -1,6 +1,4 @@
 import Register from './pages/Register';
 
-export { 
-  Register
-};
-// export { useAuth } from './hooks/useAuth'; 
+export { Register };
+// export { useAuth } from './hooks/useAuth';

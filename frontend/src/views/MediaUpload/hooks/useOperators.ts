@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchOperators } from '@/services/operators';
 import { Operator as BaseOperator } from '@/interfaces/operator.interface';
 
-export interface Operator extends BaseOperator{
+export interface Operator extends BaseOperator {
   id: string;
 }
 
@@ -33,12 +33,12 @@ export const useOperators = () => {
           id: agent.id || agent._id || `agent-${Math.random().toString(36).substr(2, 9)}`,
           firstName: agent.firstName || agent.first_name || 'Unknown',
           lastName: agent.lastName || agent.last_name || 'Operator',
-          avatar: agent.avatar || agent.profile_image || null
+          avatar: agent.avatar || agent.profile_image || null,
         }));
         setOperators(mappedAgents);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error("Failed to fetch agents"));
+        setError(err instanceof Error ? err : new Error('Failed to fetch agents'));
         setOperators([]);
       } finally {
         setLoading(false);
@@ -53,6 +53,6 @@ export const useOperators = () => {
     loading,
     error,
     imageErrors,
-    setImageErrors
+    setImageErrors,
   };
-}; 
+};

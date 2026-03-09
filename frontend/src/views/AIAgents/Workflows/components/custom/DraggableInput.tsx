@@ -1,7 +1,7 @@
-import React, { useState, useRef } from "react";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { cn } from "@/lib/utils";
+import React, { useState, useRef } from 'react';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { cn } from '@/lib/utils';
 
 interface DraggableInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   id?: string;
@@ -58,22 +58,18 @@ export const DraggableInput: React.FC<DraggableInputProps> = ({
 
     try {
       // Try to get JSON data first
-      const jsonData = e.dataTransfer.getData("application/json");
+      const jsonData = e.dataTransfer.getData('application/json');
 
       if (jsonData) {
         const { path, value: droppedValue } = JSON.parse(jsonData);
 
         // Format the raw path as {{path}} for workflow variables
         const variableReference = path;
-        const newValue = insertAtPosition(
-          value,
-          variableReference,
-          cursorPosition
-        );
-        
+        const newValue = insertAtPosition(value, variableReference, cursorPosition);
+
         // Create a synthetic event for the onChange callback
         const syntheticEvent = {
-          target: { value: newValue }
+          target: { value: newValue },
         } as React.ChangeEvent<HTMLInputElement>;
         onChange(syntheticEvent);
 
@@ -85,20 +81,16 @@ export const DraggableInput: React.FC<DraggableInputProps> = ({
       }
 
       // Fallback to plain text
-      const textData = e.dataTransfer.getData("text/plain");
+      const textData = e.dataTransfer.getData('text/plain');
 
       if (textData) {
         // Format the raw path as {{path}} for workflow variables
         const variableReference = textData;
-        const newValue = insertAtPosition(
-          value,
-          variableReference,
-          cursorPosition
-        );
-        
+        const newValue = insertAtPosition(value, variableReference, cursorPosition);
+
         // Create a synthetic event for the onChange callback
         const syntheticEvent = {
-          target: { value: newValue }
+          target: { value: newValue },
         } as React.ChangeEvent<HTMLInputElement>;
         onChange(syntheticEvent);
       }
@@ -108,11 +100,7 @@ export const DraggableInput: React.FC<DraggableInputProps> = ({
   };
 
   // Helper function to insert value at specific position
-  const insertAtPosition = (
-    currentValue: string,
-    newValue: string,
-    position: number
-  ): string => {
+  const insertAtPosition = (currentValue: string, newValue: string, position: number): string => {
     if (!currentValue) return newValue;
 
     // Ensure position is within bounds
@@ -124,17 +112,15 @@ export const DraggableInput: React.FC<DraggableInputProps> = ({
 
     // Add appropriate spacing if needed
     const needsLeadingSpace =
-      safePosition > 0 &&
-      !currentValue[safePosition - 1].match(/\s/) &&
-      !currentValue[safePosition - 1].match(/[,;:]/);
+      safePosition > 0 && !currentValue[safePosition - 1].match(/\s/) && !currentValue[safePosition - 1].match(/[,;:]/);
 
     const needsTrailingSpace =
       safePosition < currentValue.length &&
       !currentValue[safePosition].match(/\s/) &&
       !currentValue[safePosition].match(/[,;:]/);
 
-    const leadingSpace = needsLeadingSpace ? " " : "";
-    const trailingSpace = needsTrailingSpace ? " " : "";
+    const leadingSpace = needsLeadingSpace ? ' ' : '';
+    const trailingSpace = needsTrailingSpace ? ' ' : '';
 
     return before + leadingSpace + newValue + trailingSpace + after;
   };
@@ -165,12 +151,7 @@ export const DraggableInput: React.FC<DraggableInputProps> = ({
   return (
     <div className="space-y-2 w-full">
       {label && <Label htmlFor={id}>{label}</Label>}
-      <div
-        className={cn(
-          "relative w-full",
-          isDragOver && "ring-2 ring-blue-500 ring-opacity-50"
-        )}
-      >
+      <div className={cn('relative w-full', isDragOver && 'ring-2 ring-blue-500 ring-opacity-50')}>
         <Input
           ref={inputRef}
           id={id}
@@ -180,11 +161,7 @@ export const DraggableInput: React.FC<DraggableInputProps> = ({
           onClick={handleInputClick}
           onKeyUp={handleInputKeyUp}
           placeholder={placeholder}
-          className={cn(
-            "w-full transition-colors",
-            isDragOver && "border-blue-500 bg-blue-50",
-            className
-          )}
+          className={cn('w-full transition-colors', isDragOver && 'border-blue-500 bg-blue-50', className)}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}

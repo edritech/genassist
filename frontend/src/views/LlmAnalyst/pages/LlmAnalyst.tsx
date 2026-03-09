@@ -1,20 +1,18 @@
-import { useEffect, useState } from "react";
-import { getAllLLMAnalysts, deleteLLMAnalyst } from "@/services/llmAnalyst";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { LLMAnalystCard } from "@/views/LlmAnalyst/components/LLMAnalystCard";
-import { LLMAnalystDialog } from "../components/LLMAnalystDialog";
-import { LLMAnalyst } from "@/interfaces/llmAnalyst.interface";
-import toast from "react-hot-toast";
+import { useEffect, useState } from 'react';
+import { getAllLLMAnalysts, deleteLLMAnalyst } from '@/services/llmAnalyst';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { LLMAnalystCard } from '@/views/LlmAnalyst/components/LLMAnalystCard';
+import { LLMAnalystDialog } from '../components/LLMAnalystDialog';
+import { LLMAnalyst } from '@/interfaces/llmAnalyst.interface';
+import toast from 'react-hot-toast';
 
 export default function LLMAnalysts() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [llmAnalystToEdit, setLlmAnalystToEdit] = useState<LLMAnalyst | null>(
-    null
-  );
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [llmAnalystToEdit, setLlmAnalystToEdit] = useState<LLMAnalyst | null>(null);
 
   const [llmAnalysts, setLlmAnalysts] = useState<LLMAnalyst[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,13 +38,13 @@ export default function LLMAnalysts() {
   };
 
   const handleCreateLLMAnalyst = () => {
-    setDialogMode("create");
+    setDialogMode('create');
     setLlmAnalystToEdit(null);
     setIsDialogOpen(true);
   };
 
   const handleEditLLMAnalyst = (llmAnalyst: LLMAnalyst) => {
-    setDialogMode("edit");
+    setDialogMode('edit');
     setLlmAnalystToEdit(llmAnalyst);
     setIsDialogOpen(true);
   };
@@ -57,7 +55,7 @@ export default function LLMAnalysts() {
       //toast.success("LLM analyst deleted successfully.");
       setRefreshKey((prev) => prev + 1);
     } catch (error) {
-      toast.error("Failed to delete LLM analyst.");
+      toast.error('Failed to delete LLM analyst.');
     }
   };
 

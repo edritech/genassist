@@ -2,9 +2,11 @@ import logging
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from injector import inject
+
 import jwt
+from injector import inject
 from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+
 from app.auth.utils import verify_password
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
@@ -13,27 +15,21 @@ from app.schemas.user import UserReadAuth
 from app.services.api_keys import ApiKeysService
 from app.services.users import UserService
 
-
 logger = logging.getLogger(__name__)
 
 
 @inject
 class AuthService:
     def __init__(self):
-
         self.secret_key = os.environ.get("JWT_SECRET_KEY")
         self.algorithm = "HS256"
         self.access_token_expire_minutes = 60
         self.refresh_token_expire_days = 2
 
-    def create_access_token(
-        self, data: dict, expires_delta: Optional[timedelta] = None
-    ) -> str:
+    def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> str:
         try:
             to_encode = data.copy()
-            expire = datetime.now() + (
-                expires_delta or timedelta(minutes=self.access_token_expire_minutes)
-            )
+            expire = datetime.now() + (expires_delta or timedelta(minutes=self.access_token_expire_minutes))
             to_encode.update({"exp": expire})
             return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         except Exception as error:
@@ -44,24 +40,18 @@ class AuthService:
                 status_code=401,
             )
 
-    def create_refresh_token(
-        self, data: dict, expires_delta: Optional[timedelta] = None
-    ) -> str:
+    def create_refresh_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> str:
         to_encode = data.copy()
-        expire = datetime.now() + (
-            expires_delta or timedelta(days=self.refresh_token_expire_days)
-        )
+        expire = datetime.now() + (expires_delta or timedelta(days=self.refresh_token_expire_days))
         to_encode.update({"exp": expire})
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
     async def decode_jwt(self, token: str) -> UserReadAuth:
         try:
-            from app.core.tenant_scope import get_tenant_context
-
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             username = payload.get("sub")
             user_id = payload.get("user_id")
-            token_tenant_id = payload.get("tenant_id")  # Get tenant_id from token
+            payload.get("tenant_id")  # Get tenant_id from token
 
             if username is None or user_id is None:
                 raise AppException(
@@ -80,12 +70,8 @@ class AuthService:
                 logger.warning(f"User not found or inactive: user_id={user_id}")
                 raise AppException(error_key=ErrorKey.INVALID_USER, status_code=401)
             # I not set there is no expiry
-            if user.force_upd_pass_date and user.force_upd_pass_date < datetime.now(
-                timezone.utc
-            ):
-                raise AppException(
-                    error_key=ErrorKey.FORCE_PASSWORD_UPDATE, status_code=401
-                )
+            if user.force_upd_pass_date and user.force_upd_pass_date < datetime.now(timezone.utc):
+                raise AppException(error_key=ErrorKey.FORCE_PASSWORD_UPDATE, status_code=401)
 
             return user
         except ExpiredSignatureError as error:
@@ -108,13 +94,8 @@ class AuthService:
 
         api_keys_service = injector.get(ApiKeysService)
         api_key = await api_keys_service.validate_and_get_api_key(api_key)
-        if (
-            api_key.user.force_upd_pass_date
-            and api_key.user.force_upd_pass_date < datetime.now(timezone.utc)
-        ):
-            raise AppException(
-                error_key=ErrorKey.FORCE_PASSWORD_UPDATE, status_code=401
-            )
+        if api_key.user.force_upd_pass_date and api_key.user.force_upd_pass_date < datetime.now(timezone.utc):
+            raise AppException(error_key=ErrorKey.FORCE_PASSWORD_UPDATE, status_code=401)
         return api_key
 
     async def authenticate_user(self, username_or_email: str, password: str):
@@ -122,14 +103,10 @@ class AuthService:
         from app.dependencies.injector import injector
 
         user_service = injector.get(UserService)
-        user = await user_service.get_by_username(
-            username_or_email, throw_not_found=False
-        )
+        user = await user_service.get_by_username(username_or_email, throw_not_found=False)
         # Check by email if not found by username
         if not user:
-            user = await user_service.get_user_by_email(
-                username_or_email, throw_not_found=False
-            )
+            user = await user_service.get_user_by_email(username_or_email, throw_not_found=False)
 
         if not user:
             raise AppException(
@@ -176,13 +153,9 @@ class AuthService:
                 "tenant_id": tenant_id,
                 "agent_id": agent_id,
                 "conversation_id": conversation_id,
-                "permissions": [
-                    P.Conversation.UPDATE_IN_PROGRESS
-                ],  # Limited permission
+                "permissions": [P.Conversation.UPDATE_IN_PROGRESS],  # Limited permission
             }
-            expire = datetime.now() + (
-                expires_delta or timedelta(hours=24)
-            )  # Default 24 hours for guest tokens
+            expire = datetime.now() + (expires_delta or timedelta(hours=24))  # Default 24 hours for guest tokens
             to_encode.update({"exp": expire})
             return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
         except Exception as error:

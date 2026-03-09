@@ -1,11 +1,14 @@
 from uuid import UUID
+
 from injector import inject
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models import PermissionModel
 from app.repositories.permissions import PermissionsRepository
 from app.schemas.filter import BaseFilterModel
 from app.schemas.permission import PermissionCreate, PermissionUpdate
+
 
 @inject
 class PermissionsService:
@@ -16,7 +19,7 @@ class PermissionsService:
     def __init__(self, repository: PermissionsRepository):
         self.repository = repository
 
-    async def create(self,data: PermissionCreate):
+    async def create(self, data: PermissionCreate):
         model = await self.repository.create_permission(data)
         return model
 

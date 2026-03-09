@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
 import { Switch } from '@/components/switch';
 import { Lightbulb } from 'lucide-react';
 
@@ -24,7 +18,7 @@ const LightRagConfigForm: React.FC<LightRagConfigFormProps> = ({ lightRagConfig,
   const handleLightRagChange = (name: string, value: unknown) => {
     onChange({
       ...lightRagConfig,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -35,9 +29,7 @@ const LightRagConfigForm: React.FC<LightRagConfigFormProps> = ({ lightRagConfig,
           <Lightbulb className="h-5 w-5 text-gray-500" />
           <div>
             <div className="font-medium">LightRAG</div>
-            <p className="text-sm text-gray-500">
-              Enable LightRAG for advanced retrieval capabilities
-            </p>
+            <p className="text-sm text-gray-500">Enable LightRAG for advanced retrieval capabilities</p>
           </div>
         </div>
         <Switch
@@ -49,9 +41,7 @@ const LightRagConfigForm: React.FC<LightRagConfigFormProps> = ({ lightRagConfig,
       {lightRagConfig.enabled && (
         <div className="p-4 pt-0 space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Search Mode
-            </label>
+            <label className="block text-sm font-medium mb-2">Search Mode</label>
             <Select
               value={lightRagConfig.search_mode || 'mix'}
               onValueChange={(value) => handleLightRagChange('search_mode', value)}

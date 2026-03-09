@@ -1,7 +1,7 @@
 import logging
 import os
-from sqlalchemy import engine_from_config, inspect
 
+from sqlalchemy import engine_from_config, inspect
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +54,7 @@ def run_migrations(url) -> bool:
     """
 
     all_table_names = get_table_names(url)
-    if (
-        os.getenv("AUTO_MIGRATE", "true").lower() == "false"
-        or "users" not in all_table_names
-    ):
+    if os.getenv("AUTO_MIGRATE", "true").lower() == "false" or "users" not in all_table_names:
         logger.info("AUTO_MIGRATE is disabled – skipping Alembic.")
         from alembic.config import Config
 
@@ -115,9 +112,10 @@ def run_migrations_for_all_tenants() -> bool:
     Programmatically executes `alembic upgrade head` for all active tenant databases.
     This function is similar to run_migrations but runs migrations for each tenant.
     """
-    from app.core.config.settings import settings
     from sqlalchemy import create_engine, text
     from sqlalchemy.orm import sessionmaker
+
+    from app.core.config.settings import settings
 
     """Async helper to get all tenants and run migrations"""
     try:
@@ -147,9 +145,7 @@ def run_migrations_for_all_tenants() -> bool:
         # Run migrations for each tenant
         for tenant in tenants:
             try:
-                logger.info(
-                    f"Starting migrations for tenant:({tenant})"
-                )
+                logger.info(f"Starting migrations for tenant:({tenant})")
 
                 # Get tenant database URL (sync version for Alembic)
                 tenant_url = settings.get_tenant_database_url_sync(tenant)
@@ -157,28 +153,19 @@ def run_migrations_for_all_tenants() -> bool:
                 # Run migrations for this tenant
                 success = run_migrations(tenant_url)
                 if success:
-                    logger.info(
-                        f"✓ Migrations completed for tenant: ({tenant})"
-                    )
+                    logger.info(f"✓ Migrations completed for tenant: ({tenant})")
                     success_count += 1
                 else:
-                    logger.warning(
-                        f"✗ Migrations failed for tenant: ({tenant})"
-                    )
+                    logger.warning(f"✗ Migrations failed for tenant: ({tenant})")
                     failed_count += 1
             except Exception as e:
-                logger.error(
-                    f"Failed to run migrations for tenant ({tenant}): {e}"
-                )
+                logger.error(f"Failed to run migrations for tenant ({tenant}): {e}")
                 failed_count += 1
 
-        logger.info(
-            f"Tenant migrations complete: {success_count} successful, {failed_count} failed"
-        )
+        logger.info(f"Tenant migrations complete: {success_count} successful, {failed_count} failed")
 
         return failed_count == 0
 
     except Exception as e:
         logger.error(f"Error running migrations for all tenants: {e}")
         return False
-

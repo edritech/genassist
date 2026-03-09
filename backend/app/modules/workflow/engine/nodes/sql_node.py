@@ -72,9 +72,7 @@ class SQLNode(BaseNode):
             }
 
         if not db_manager:
-            logger.error(
-                "Database manager not found for datasource_id: %s", datasource_id
-            )
+            logger.error("Database manager not found for datasource_id: %s", datasource_id)
             return {
                 "status": 500,
                 "data": {
@@ -124,17 +122,13 @@ class SQLNode(BaseNode):
                     "formatted_query": sql_query,
                 }
 
-            results, error_msg = await db_manager.execute_query(
-                db_query["formatted_query"]
-            )
+            results, error_msg = await db_manager.execute_query(db_query["formatted_query"])
 
             if error_msg:
                 logger.error("Database query execution failed: %s", error_msg)
                 return {
                     "status": 500,
-                    "data": {
-                        "error": (f"Database query execution failed: {error_msg}")
-                    },
+                    "data": {"error": (f"Database query execution failed: {error_msg}")},
                     "query": db_query,
                     "parameters": {
                         "node_parameters": node_parameters,
@@ -158,8 +152,7 @@ class SQLNode(BaseNode):
                 "status": 500,
                 "data": {
                     "error": (
-                        f"SQL node execution failed: {str(e)}. Please check query syntax "
-                        "and database connectivity."
+                        f"SQL node execution failed: {str(e)}. Please check query syntax and database connectivity."
                     )
                 },
                 "parameters": {

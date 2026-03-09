@@ -1,8 +1,8 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/dialog";
-import { Label } from "@/components/label";
-import { Input } from "@/components/input";
-import { Button } from "@/components/button";
-import { SecretInput } from "@/components/SecretInput";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/dialog';
+import { Label } from '@/components/label';
+import { Input } from '@/components/input';
+import { Button } from '@/components/button';
+import { SecretInput } from '@/components/SecretInput';
 
 interface OperatorCredentials {
   username: string;
@@ -50,4 +50,4 @@ export function OperatorCredentialsDialog({ isOpen, onOpenChange, credentials }:
       </DialogContent>
     </Dialog>
   );
-} 
+}

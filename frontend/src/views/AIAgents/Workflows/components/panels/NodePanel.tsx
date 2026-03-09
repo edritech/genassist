@@ -1,19 +1,13 @@
-import React, { useState, useRef, useMemo } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/tabs";
-import { HelpCircle, Search } from "lucide-react";
-import { Input } from "@/components/input";
-import nodeRegistry from "@/views/AIAgents/Workflows/registry/nodeRegistry";
-import { getNodeColor, getNodeBgColor, getNodeIconColor } from "@/views/AIAgents/Workflows/utils/nodeColors";
-import { renderIcon } from "@/views/AIAgents/Workflows/utils/iconUtils";
-import { useFeatureFlagVisible } from "@/components/featureFlag";
-import { FeatureFlags } from "@/config/featureFlags";
+import React, { useState, useRef, useMemo } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/tabs';
+import { HelpCircle, Search } from 'lucide-react';
+import { Input } from '@/components/input';
+import nodeRegistry from '@/views/AIAgents/Workflows/registry/nodeRegistry';
+import { getNodeColor, getNodeBgColor, getNodeIconColor } from '@/views/AIAgents/Workflows/utils/nodeColors';
+import { renderIcon } from '@/views/AIAgents/Workflows/utils/iconUtils';
+import { useFeatureFlagVisible } from '@/components/featureFlag';
+import { FeatureFlags } from '@/config/featureFlags';
 
 interface NodePanelProps {
   isOpen: boolean;
@@ -21,23 +15,19 @@ interface NodePanelProps {
   onAddNode: (nodeType: string) => void;
 }
 
-const NodePanel: React.FC<NodePanelProps> = ({
-  isOpen,
-  onClose,
-  onAddNode,
-}) => {
+const NodePanel: React.FC<NodePanelProps> = ({ isOpen, onClose, onAddNode }) => {
   const nodeCategories = nodeRegistry.getAllCategories();
   const [draggingNodeType, setDraggingNodeType] = useState<string | null>(null);
   const dragPreviewContainerRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<string>("available");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>('available');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const showConversationalTab = useFeatureFlagVisible(FeatureFlags.WORKFLOW.CONVERSATIONAL_TAB);
 
   // Handle drag start
   const onDragStart = (event: React.DragEvent, nodeType: string) => {
-    event.dataTransfer.setData("application/reactflow", nodeType);
-    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.effectAllowed = 'move';
 
     setDraggingNodeType(nodeType);
 
@@ -49,7 +39,7 @@ const NodePanel: React.FC<NodePanelProps> = ({
       if (dragPreview) {
         // Clone the element for the drag operation
         const dragImage = dragPreview.cloneNode(true) as HTMLElement;
-        dragImage.style.position = "absolute";
+        dragImage.style.position = 'absolute';
         document.body.appendChild(dragImage);
 
         // Clean up after a short delay
@@ -68,13 +58,13 @@ const NodePanel: React.FC<NodePanelProps> = ({
   };
 
   const categoryLabel = {
-    io: "I/O",
-    ai: "AI",
-    routing: "Routing",
-    integrations: "Integrations",
-    formatting: "Formatting",
-    tools: "Tools",
-    training: "Training",
+    io: 'I/O',
+    ai: 'AI',
+    routing: 'Routing',
+    integrations: 'Integrations',
+    formatting: 'Formatting',
+    tools: 'Tools',
+    training: 'Training',
   };
 
   // Filter nodes based on search query
@@ -89,9 +79,7 @@ const NodePanel: React.FC<NodePanelProps> = ({
     nodeCategories.forEach((category) => {
       const nodesInCategory = nodeRegistry.getNodeTypesByCategory(category);
       const matchingNodes = nodesInCategory.filter(
-        (node) =>
-          node.label.toLowerCase().includes(query) ||
-          node.description.toLowerCase().includes(query)
+        (node) => node.label.toLowerCase().includes(query) || node.description.toLowerCase().includes(query)
       );
 
       if (matchingNodes.length > 0) {
@@ -105,22 +93,16 @@ const NodePanel: React.FC<NodePanelProps> = ({
   // Render node categories
   const renderNodeCategories = () => {
     if (nodeCategories.length === 0) {
-      return (
-        <div className="text-sm text-muted-foreground p-4">
-          Loading node categories...
-        </div>
-      );
+      return <div className="text-sm text-muted-foreground p-4">Loading node categories...</div>;
     }
 
     // If searching, use filtered results
     if (searchQuery.trim() && filteredNodesByCategory) {
       const categories = Object.keys(filteredNodesByCategory);
-      
+
       if (categories.length === 0) {
         return (
-          <div className="text-sm text-muted-foreground p-4 text-center">
-            No nodes found matching "{searchQuery}"
-          </div>
+          <div className="text-sm text-muted-foreground p-4 text-center">No nodes found matching "{searchQuery}"</div>
         );
       }
 
@@ -159,8 +141,8 @@ const NodePanel: React.FC<NodePanelProps> = ({
                 key={nodeType.type}
                 className={`${bgColor} border border-border rounded-lg p-[2px] cursor-pointer transition-all duration-200 select-none ${
                   isDragging
-                    ? "opacity-50 scale-95 border-2 border-dashed border-blue-400 bg-blue-50"
-                    : "hover:shadow-sm"
+                    ? 'opacity-50 scale-95 border-2 border-dashed border-blue-400 bg-blue-50'
+                    : 'hover:shadow-sm'
                 }`}
                 onClick={() => onAddNode(nodeType.type)}
                 draggable={true}
@@ -168,18 +150,12 @@ const NodePanel: React.FC<NodePanelProps> = ({
                 onDragEnd={onDragEnd}
               >
                 <div className="flex gap-2 items-center px-4 pr-2 py-2">
-                  <div className="shrink-0 w-4 h-4">
-                    {renderIcon(nodeType.icon, `h-4 w-4 ${iconColor}`)}
-                  </div>
-                  <p className="flex-1 text-sm font-semibold text-accent-foreground min-w-0">
-                    {nodeType.label}
-                  </p>
+                  <div className="shrink-0 w-4 h-4">{renderIcon(nodeType.icon, `h-4 w-4 ${iconColor}`)}</div>
+                  <p className="flex-1 text-sm font-semibold text-accent-foreground min-w-0">{nodeType.label}</p>
                   <HelpCircle className="shrink-0 h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="bg-background rounded-md px-4 py-2">
-                  <p className="text-sm text-muted-foreground">
-                    {nodeType.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{nodeType.description}</p>
                 </div>
               </div>
             );
@@ -191,37 +167,23 @@ const NodePanel: React.FC<NodePanelProps> = ({
 
   return (
     <>
-      <div
-        ref={dragPreviewContainerRef}
-        className="fixed pointer-events-none"
-        style={{ visibility: "hidden" }}
-      ></div>
+      <div ref={dragPreviewContainerRef} className="fixed pointer-events-none" style={{ visibility: 'hidden' }}></div>
 
       <div
         className={`fixed top-2 right-2 h-[calc(100vh-1rem)] w-[360px] bg-primary-foreground shadow-lg rounded-xl transition-transform duration-300 border z-[1001] ${
-          isOpen ? "translate-x-0" : "translate-x-[calc(100%+0.5rem)]"
+          isOpen ? 'translate-x-0' : 'translate-x-[calc(100%+0.5rem)]'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Tabs Header */}
           <div className="p-4">
             {showConversationalTab ? (
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="w-full h-10 bg-muted p-1 rounded-full">
-                  <TabsTrigger
-                    value="available"
-                    className="flex-1 text-sm font-medium rounded-full"
-                  >
+                  <TabsTrigger value="available" className="flex-1 text-sm font-medium rounded-full">
                     Available Nodes
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="conversational"
-                    className="flex-1 text-sm font-medium rounded-full"
-                  >
+                  <TabsTrigger value="conversational" className="flex-1 text-sm font-medium rounded-full">
                     Conversational
                   </TabsTrigger>
                 </TabsList>
@@ -233,7 +195,7 @@ const NodePanel: React.FC<NodePanelProps> = ({
 
           {/* Tabs Content */}
           <div className="flex-1 overflow-y-auto bg-background rounded-xl">
-            {(activeTab === "available" || !showConversationalTab) && (
+            {(activeTab === 'available' || !showConversationalTab) && (
               <div className="w-full">
                 {/* Search Field */}
                 <div className="px-4 pt-4 pb-2 sticky top-0 bg-background z-10">
@@ -251,11 +213,9 @@ const NodePanel: React.FC<NodePanelProps> = ({
                 {renderNodeCategories()}
               </div>
             )}
-            {showConversationalTab && activeTab === "conversational" && (
+            {showConversationalTab && activeTab === 'conversational' && (
               <div className="p-4">
-                <p className="text-sm text-muted-foreground">
-                  Conversational nodes coming soon...
-                </p>
+                <p className="text-sm text-muted-foreground">Conversational nodes coming soon...</p>
               </div>
             )}
           </div>

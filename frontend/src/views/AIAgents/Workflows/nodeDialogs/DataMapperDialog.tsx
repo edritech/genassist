@@ -1,25 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/button";
-import { Label } from "@/components/label";
-import { Save, HelpCircle } from "lucide-react";
-import { Input } from "@/components/input";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/button';
+import { Label } from '@/components/label';
+import { Save, HelpCircle } from 'lucide-react';
+import { Input } from '@/components/input';
 
-import { DataMapperNodeData } from "@/views/AIAgents/Workflows/types/nodes";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/hover-card";
-import "ace-builds/src-noconflict/mode-python";
-import "ace-builds/src-noconflict/theme-twilight";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
-import { DraggableAceEditor } from "../components/custom/DraggableAceEditor";
+import { DataMapperNodeData } from '@/views/AIAgents/Workflows/types/nodes';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/hover-card';
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/theme-twilight';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
+import { DraggableAceEditor } from '../components/custom/DraggableAceEditor';
 
-type DataMapperDialogProps = BaseNodeDialogProps<
-  DataMapperNodeData,
-  DataMapperNodeData
->;
+type DataMapperDialogProps = BaseNodeDialogProps<DataMapperNodeData, DataMapperNodeData>;
 
 export const DataMapperDialog: React.FC<DataMapperDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
@@ -87,9 +80,7 @@ export const DataMapperDialog: React.FC<DataMapperDialogProps> = (props) => {
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium">
-                      Python Script Guidelines:
-                    </p>
+                    <p className="text-sm font-medium">Python Script Guidelines:</p>
                     <ul className="text-xs space-y-1">
                       <li>
                         • Input data is available as <code>input_data</code>

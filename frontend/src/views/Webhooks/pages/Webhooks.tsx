@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { Webhook } from "@/interfaces/webhook.interface";
-import { WebhookCard } from "../components/WebhookCard";
-import { WebhookDialog } from "../components/WebhookDialog";
+import { useState } from 'react';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { Webhook } from '@/interfaces/webhook.interface';
+import { WebhookCard } from '../components/WebhookCard';
+import { WebhookDialog } from '../components/WebhookDialog';
 
 export default function WebhooksPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [webhookToEdit, setWebhookToEdit] = useState<Webhook | null>(null);
   const [updatedWebhook, setUpdatedWebhook] = useState<Webhook | null>(null);
 
   const handleWebhookSaved = () => {
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   const handleWebhookUpdated = (webhook: Webhook) => {
@@ -22,13 +22,13 @@ export default function WebhooksPage() {
   };
 
   const handleCreateWebhook = () => {
-    setDialogMode("create");
+    setDialogMode('create');
     setWebhookToEdit(null);
     setIsDialogOpen(true);
   };
 
   const handleEditWebhook = (webhook: Webhook) => {
-    setDialogMode("edit");
+    setDialogMode('edit');
     setWebhookToEdit(webhook);
     setIsDialogOpen(true);
   };

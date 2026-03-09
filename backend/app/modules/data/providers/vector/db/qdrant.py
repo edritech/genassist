@@ -2,22 +2,23 @@
 Qdrant vector database implementation
 """
 
+import hashlib
 import logging
 import os
-import hashlib
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import (
     Distance,
-    VectorParams,
-    PointStruct,
-    Filter,
     FieldCondition,
-    MatchValue,
+    Filter,
     HnswConfigDiff,
+    MatchValue,
+    PointStruct,
+    VectorParams,
 )
 
-from .base import BaseVectorDB, VectorDBConfig, SearchResult
+from .base import BaseVectorDB, SearchResult, VectorDBConfig
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ def _sanitize_qdrant_id(doc_id: str) -> str:
     """
     # Create a deterministic hash of the ID
     # Use SHA256 and take first 32 chars to create a UUID-like string
-    hash_obj = hashlib.sha256(doc_id.encode('utf-8'))
+    hash_obj = hashlib.sha256(doc_id.encode("utf-8"))
     hash_hex = hash_obj.hexdigest()[:32]
     # Format as UUID-like string (8-4-4-4-12)
     return f"{hash_hex[:8]}-{hash_hex[8:12]}-{hash_hex[12:16]}-{hash_hex[16:20]}-{hash_hex[20:32]}"
@@ -117,21 +118,15 @@ class QdrantVectorDB(BaseVectorDB):
             except Exception as get_error:
                 # If get_collections fails, try to get the specific collection
                 # This handles cases where the server is new or endpoint differs
-                logger.debug(
-                    f"Could not list collections, checking specific collection: {get_error}"
-                )
+                logger.debug(f"Could not list collections, checking specific collection: {get_error}")
                 try:
-                    collection_info = await self.client.get_collection(
-                        self.collection_name
-                    )
+                    collection_info = await self.client.get_collection(self.collection_name)
                     collection_exists = collection_info is not None
                 except Exception as get_collection_error:
                     # Collection doesn't exist, which is fine - we'll create it
                     error_msg = str(get_collection_error)
                     if "404" not in error_msg and "Not Found" not in error_msg:
-                        logger.debug(
-                            f"Collection check returned: {get_collection_error}"
-                        )
+                        logger.debug(f"Collection check returned: {get_collection_error}")
                     collection_exists = False
 
             if not collection_exists:
@@ -167,9 +162,7 @@ class QdrantVectorDB(BaseVectorDB):
                         collection_name=self.collection_name,
                         vectors_config=vector_params,
                     )
-                    logger.info(
-                        f"Successfully created Qdrant collection: {self.collection_name}"
-                    )
+                    logger.info(f"Successfully created Qdrant collection: {self.collection_name}")
                 except Exception as create_error:
                     error_msg = str(create_error)
                     # Check if it's a 404 - might indicate server issue or wrong endpoint
@@ -180,9 +173,7 @@ class QdrantVectorDB(BaseVectorDB):
                             f"3) API version mismatch. Error: {create_error}"
                         )
                     else:
-                        logger.error(
-                            f"Failed to create Qdrant collection '{self.collection_name}': {create_error}"
-                        )
+                        logger.error(f"Failed to create Qdrant collection '{self.collection_name}': {create_error}")
                     raise
             else:
                 logger.info(f"Qdrant collection already exists: {self.collection_name}")
@@ -225,12 +216,10 @@ class QdrantVectorDB(BaseVectorDB):
 
             # Prepare points for Qdrant
             points = []
-            for doc_id, vector, metadata, content in zip(
-                ids, vectors, metadatas, contents
-            ):
+            for doc_id, vector, metadata, content in zip(ids, vectors, metadatas, contents):
                 # Sanitize ID for Qdrant (hash to create valid UUID-like string)
                 qdrant_id = _sanitize_qdrant_id(doc_id)
-                
+
                 # Qdrant stores content in payload
                 # Also store original ID in payload for retrieval
                 payload = metadata.copy()
@@ -241,9 +230,7 @@ class QdrantVectorDB(BaseVectorDB):
                 points.append(point)
 
             # Upsert points (insert or update)
-            await self.client.upsert(
-                collection_name=self.collection_name, points=points
-            )
+            await self.client.upsert(collection_name=self.collection_name, points=points)
 
             logger.info(f"Added {len(ids)} vectors to Qdrant collection")
             return True
@@ -264,10 +251,8 @@ class QdrantVectorDB(BaseVectorDB):
 
             # Convert original IDs to sanitized Qdrant IDs
             qdrant_ids = [_sanitize_qdrant_id(doc_id) for doc_id in ids]
-            
-            await self.client.delete(
-                collection_name=self.collection_name, points_selector=qdrant_ids
-            )
+
+            await self.client.delete(collection_name=self.collection_name, points_selector=qdrant_ids)
 
             logger.info(f"Deleted {len(ids)} vectors from Qdrant collection")
             return True
@@ -276,9 +261,7 @@ class QdrantVectorDB(BaseVectorDB):
             logger.error(f"Failed to delete vectors from Qdrant: {e}")
             return False
 
-    def _build_qdrant_filter(
-        self, filter_dict: Optional[Dict[str, Any]]
-    ) -> Optional[Filter]:
+    def _build_qdrant_filter(self, filter_dict: Optional[Dict[str, Any]]) -> Optional[Filter]:
         """Convert filter_dict to Qdrant Filter"""
         if not filter_dict:
             return None
@@ -327,12 +310,12 @@ class QdrantVectorDB(BaseVectorDB):
                 payload = point.payload if point.payload else {}
                 if not isinstance(payload, dict):
                     payload = {}
-                
+
                 # Extract original ID from payload (we stored it there)
                 original_id = payload.pop("_original_id", None)
                 # Use original ID if available, otherwise use Qdrant ID
                 result_id = original_id if original_id else str(point.id)
-                
+
                 # Extract content from payload (we stored it there)
                 content = payload.pop("content", "") if isinstance(payload, dict) else ""
 
@@ -375,7 +358,7 @@ class QdrantVectorDB(BaseVectorDB):
 
             # Convert original IDs to sanitized Qdrant IDs
             qdrant_ids = [_sanitize_qdrant_id(doc_id) for doc_id in ids]
-            
+
             points = await self.client.retrieve(
                 collection_name=self.collection_name,
                 ids=qdrant_ids,
@@ -389,11 +372,11 @@ class QdrantVectorDB(BaseVectorDB):
                 payload = point.payload or {}
                 if not isinstance(payload, dict):
                     payload = {}
-                
+
                 # Extract original ID from payload
                 original_id = payload.pop("_original_id", None)
                 result_id = original_id if original_id else str(point.id)
-                
+
                 content = payload.pop("content", "")
 
                 search_result = SearchResult(
@@ -411,9 +394,7 @@ class QdrantVectorDB(BaseVectorDB):
             logger.error(f"Failed to get vectors by IDs from Qdrant: {e}")
             return []
 
-    async def get_all_ids(
-        self, filter_dict: Optional[Dict[str, Any]] = None
-    ) -> List[str]:
+    async def get_all_ids(self, filter_dict: Optional[Dict[str, Any]] = None) -> List[str]:
         """Get all document IDs in the collection"""
         try:
             if not self.client:
@@ -447,7 +428,7 @@ class QdrantVectorDB(BaseVectorDB):
                     payload = point.payload if point.payload else {}
                     original_id = payload.get("_original_id") if isinstance(payload, dict) else None
                     all_ids.append(original_id if original_id else str(point.id))
-                
+
                 offset = scroll_result[1]  # Next offset
 
                 if offset is None:

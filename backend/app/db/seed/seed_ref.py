@@ -1,15 +1,18 @@
 import asyncio
-from datetime import datetime
 import io
-import os
-from fastapi import UploadFile
-from pathlib import Path
-from injector import Injector
-from sqlalchemy.ext.asyncio import AsyncSession
-from passlib.context import CryptContext
-from uuid import UUID
 import logging
+import os
+from datetime import datetime
+from pathlib import Path
+from uuid import UUID
+
+from fastapi import UploadFile
+from injector import Injector
+from passlib.context import CryptContext
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.utils import hash_api_key
+from app.core.config.settings import settings
 from app.core.utils.date_time_utils import shift_datetime
 from app.core.utils.encryption_utils import encrypt_key
 from app.db.models.api_key import ApiKeyModel
@@ -24,23 +27,22 @@ from app.db.models.role_permission import RolePermissionModel
 from app.db.models.user import UserModel
 from app.db.models.user_role import UserRoleModel
 from app.db.models.user_type import UserTypeModel
-from app.db.seed.seed_data_config import seed_test_data
-from app.schemas.recording import RecordingCreate
-from app.core.config.settings import settings
-from app.services.agent_tool import ToolService
-from app.schemas.agent_tool import ToolConfigBase
-from app.services.agent_knowledge import KnowledgeBaseService
-from app.schemas.agent_knowledge import KBCreate, KBRead
-from app.schemas.datasource import DataSourceCreate
-from app.services.datasources import DataSourceService
-from app.services.app_settings import AppSettingsService
-from app.schemas.app_settings import AppSettingsCreate
 
 # Import agent seeding functions from separate module
 from app.db.seed.seed_agents import (
     seed_demo_agent,
     seed_gen_agent,
 )
+from app.db.seed.seed_data_config import seed_test_data
+from app.schemas.agent_knowledge import KBCreate, KBRead
+from app.schemas.agent_tool import ToolConfigBase
+from app.schemas.app_settings import AppSettingsCreate
+from app.schemas.datasource import DataSourceCreate
+from app.schemas.recording import RecordingCreate
+from app.services.agent_knowledge import KnowledgeBaseService
+from app.services.agent_tool import ToolService
+from app.services.app_settings import AppSettingsService
+from app.services.datasources import DataSourceService
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +51,7 @@ logger = logging.getLogger(__name__)
 # Helper Functions
 # ============================================================================
 
+
 def create_crud_permissions(resource: str, description_template: str = "Allows {action} {resource} data"):
     """Helper function to generate CRUD permissions for a resource."""
     actions = ["create", "read", "update", "delete"]
@@ -56,8 +59,7 @@ def create_crud_permissions(resource: str, description_template: str = "Allows {
         PermissionModel(
             name=f"{action}:{resource}",
             is_active=True,
-            description=description_template.format(
-                action=action, resource=resource.replace('_', ' '))
+            description=description_template.format(action=action, resource=resource.replace("_", " ")),
         )
         for action in actions
     ]
@@ -67,6 +69,7 @@ def create_crud_permissions(resource: str, description_template: str = "Allows {
 # Decoupled Seed Functions
 # ============================================================================
 
+
 async def seed_roles_and_permissions(session: AsyncSession) -> dict:
     """Seed roles and permissions into the database.
 
@@ -74,13 +77,11 @@ async def seed_roles_and_permissions(session: AsyncSession) -> dict:
         Dictionary containing role models keyed by role names.
     """
     # Create roles
-    admin_role = RoleModel(name='admin', role_type="external", is_active=1)
-    supervisor_role = RoleModel(
-        name='supervisor', role_type="external", is_active=1)
-    operator_role = RoleModel(
-        name='operator', role_type="internal", is_active=1)
-    api_role = RoleModel(name='api', role_type="external", is_active=1)
-    agent_role = RoleModel(name='ai agent', role_type="internal", is_active=1)
+    admin_role = RoleModel(name="admin", role_type="external", is_active=1)
+    supervisor_role = RoleModel(name="supervisor", role_type="external", is_active=1)
+    operator_role = RoleModel(name="operator", role_type="internal", is_active=1)
+    api_role = RoleModel(name="api", role_type="external", is_active=1)
+    agent_role = RoleModel(name="ai agent", role_type="internal", is_active=1)
 
     # Create CRUD permissions
     user_permissions = create_crud_permissions("user")
@@ -97,86 +98,101 @@ async def seed_roles_and_permissions(session: AsyncSession) -> dict:
     recording_permissions = create_crud_permissions("recording")
     conversation_permissions = create_crud_permissions("conversation")
     audit_log_permissions = create_crud_permissions("audit_log")
-    conversation_in_progress_permissions = create_crud_permissions(
-        "in_progress_conversation")
+    conversation_in_progress_permissions = create_crud_permissions("in_progress_conversation")
     app_settings_permissions = create_crud_permissions("app_settings")
     feature_flag_permissions = create_crud_permissions("feature_flag")
 
-    takeover_supervisor_permission = PermissionModel(name='takeover_in_progress_conversation',
-                                                     description='Allow takeover of in progress conversation.',
-                                                     is_active=True)
+    takeover_supervisor_permission = PermissionModel(
+        name="takeover_in_progress_conversation",
+        description="Allow takeover of in progress conversation.",
+        is_active=True,
+    )
 
     # Create non-CRUD permissions
     non_standard_crud_permissions = [
         takeover_supervisor_permission,
-        PermissionModel(name='create:analyze_recording',
-                        description='Allow analysis and transcription of audio record.', is_active=True),
-        PermissionModel(name='create:ask_question',
-                        description='Allow asking questions to LLM.', is_active=True),
-        PermissionModel(name='create:upload_transcript',
-                        description='Allow transcript upload.', is_active=True),
-        PermissionModel(name='read:files',
-                        description='Allow reading files.', is_active=True),
         PermissionModel(
-            name='*', description='Allow everything', is_active=True),
+            name="create:analyze_recording",
+            description="Allow analysis and transcription of audio record.",
+            is_active=True,
+        ),
+        PermissionModel(name="create:ask_question", description="Allow asking questions to LLM.", is_active=True),
+        PermissionModel(name="create:upload_transcript", description="Allow transcript upload.", is_active=True),
+        PermissionModel(name="read:files", description="Allow reading files.", is_active=True),
+        PermissionModel(name="*", description="Allow everything", is_active=True),
     ]
 
     # Assign all permissions to admin
     for permission in (
-            user_permissions + user_type_permissions + role_prm_permissions + prm_permissions + apikey_permissions + recording_permissions +
-            conversation_permissions + llm_analyst_permissions + llm_provider_permissions + operator_permissions +
-            data_sources_permissions + role_permissions + audit_log_permissions +
-            conversation_in_progress_permissions + metrics_permissions +
-            non_standard_crud_permissions + app_settings_permissions + feature_flag_permissions
+        user_permissions
+        + user_type_permissions
+        + role_prm_permissions
+        + prm_permissions
+        + apikey_permissions
+        + recording_permissions
+        + conversation_permissions
+        + llm_analyst_permissions
+        + llm_provider_permissions
+        + operator_permissions
+        + data_sources_permissions
+        + role_permissions
+        + audit_log_permissions
+        + conversation_in_progress_permissions
+        + metrics_permissions
+        + non_standard_crud_permissions
+        + app_settings_permissions
+        + feature_flag_permissions
     ):
-        admin_role.role_permissions.append(
-            RolePermissionModel(permission=permission))
+        admin_role.role_permissions.append(RolePermissionModel(permission=permission))
 
     # Assign supervisor permissions
     for permission in operator_permissions:
         if permission.name in ("read:operator", "update:operator"):
-            supervisor_role.role_permissions.append(
-                RolePermissionModel(permission=permission))
+            supervisor_role.role_permissions.append(RolePermissionModel(permission=permission))
 
-    supervisor_role.role_permissions.append(
-        RolePermissionModel(permission=takeover_supervisor_permission))
+    supervisor_role.role_permissions.append(RolePermissionModel(permission=takeover_supervisor_permission))
 
     # Assign operator permissions
     for permission in operator_permissions:
         if permission.name == "read:operator":
-            operator_role.role_permissions.append(
-                RolePermissionModel(permission=permission))
+            operator_role.role_permissions.append(RolePermissionModel(permission=permission))
 
     for permission in conversation_permissions:
         if permission.name == "read:conversation":
-            operator_role.role_permissions.append(
-                RolePermissionModel(permission=permission))
+            operator_role.role_permissions.append(RolePermissionModel(permission=permission))
 
     # Assign api role permissions
     for permission in operator_permissions:
         if permission.name == "read:operator":
-            api_role.role_permissions.append(
-                RolePermissionModel(permission=permission))
+            api_role.role_permissions.append(RolePermissionModel(permission=permission))
 
     for permission in conversation_in_progress_permissions:
-        if permission.name in ["create:in_progress_conversation", "update:in_progress_conversation", "read:in_progress_conversation"]:
-            agent_role.role_permissions.append(
-                RolePermissionModel(permission=permission))
+        if permission.name in [
+            "create:in_progress_conversation",
+            "update:in_progress_conversation",
+            "read:in_progress_conversation",
+        ]:
+            agent_role.role_permissions.append(RolePermissionModel(permission=permission))
 
     # Add all permissions and roles
     session.add_all(
-        user_permissions + llm_analyst_permissions + llm_provider_permissions +
-        operator_permissions + data_sources_permissions + non_standard_crud_permissions +
-        app_settings_permissions + feature_flag_permissions +
-        [admin_role, supervisor_role, operator_role, api_role, agent_role]
+        user_permissions
+        + llm_analyst_permissions
+        + llm_provider_permissions
+        + operator_permissions
+        + data_sources_permissions
+        + non_standard_crud_permissions
+        + app_settings_permissions
+        + feature_flag_permissions
+        + [admin_role, supervisor_role, operator_role, api_role, agent_role]
     )
 
     return {
-        'admin': admin_role,
-        'supervisor': supervisor_role,
-        'operator': operator_role,
-        'api': api_role,
-        'agent': agent_role
+        "admin": admin_role,
+        "supervisor": supervisor_role,
+        "operator": operator_role,
+        "api": api_role,
+        "agent": agent_role,
     }
 
 
@@ -186,15 +202,12 @@ async def seed_user_types(session: AsyncSession) -> dict:
     Returns:
         Dictionary containing user type models keyed by type names.
     """
-    console_user_type = UserTypeModel(name='console')
-    interactive_user_type = UserTypeModel(name='interactive')
+    console_user_type = UserTypeModel(name="console")
+    interactive_user_type = UserTypeModel(name="interactive")
     session.add_all([console_user_type, interactive_user_type])
     await session.commit()
 
-    return {
-        'console': console_user_type,
-        'interactive': interactive_user_type
-    }
+    return {"console": console_user_type, "interactive": interactive_user_type}
 
 
 async def seed_users(session: AsyncSession, user_types: dict, roles: dict) -> dict:
@@ -210,56 +223,67 @@ async def seed_users(session: AsyncSession, user_types: dict, roles: dict) -> di
     """
 
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    admin = UserModel(username='admin', email='admin@genassist.ritech.io', is_active=1,
-                      hashed_password=pwd_context.hash('genadmin'), user_type_id=user_types['interactive'].id,
-                      id=seed_test_data.admin_user_id,
-                      force_upd_pass_date=shift_datetime(
-                          unit="months", amount=3)
-                      )
-    supervisor = UserModel(username='supervisor1', email='supervisor1@genassist.ritech.io', is_active=1,
-                           hashed_password=pwd_context.hash('gensupervisor1'), user_type_id=user_types['interactive'].id,
-                           force_upd_pass_date=shift_datetime(
-                               unit="months", amount=3)
-                           )
-    operator = UserModel(id=UUID(seed_test_data.operator_user_id), username='operator1',
-                         email='operator1@genassist.ritech.io',
-                         is_active=1,
-                         hashed_password=pwd_context.hash('genoperator1'), user_type_id=user_types['interactive'].id,
-                         force_upd_pass_date=shift_datetime(
-                             unit="months", amount=3)
-                         )
-    apiuser = UserModel(username='apiuser1', email='apiuser1@genassist.ritech.io', is_active=1,
-                        hashed_password=pwd_context.hash('genapiuser1'), user_type_id=user_types['console'].id,
-                        force_upd_pass_date=shift_datetime(
-                            unit="months", amount=3)
-                        )
+    admin = UserModel(
+        username="admin",
+        email="admin@genassist.ritech.io",
+        is_active=1,
+        hashed_password=pwd_context.hash("genadmin"),
+        user_type_id=user_types["interactive"].id,
+        id=seed_test_data.admin_user_id,
+        force_upd_pass_date=shift_datetime(unit="months", amount=3),
+    )
+    supervisor = UserModel(
+        username="supervisor1",
+        email="supervisor1@genassist.ritech.io",
+        is_active=1,
+        hashed_password=pwd_context.hash("gensupervisor1"),
+        user_type_id=user_types["interactive"].id,
+        force_upd_pass_date=shift_datetime(unit="months", amount=3),
+    )
+    operator = UserModel(
+        id=UUID(seed_test_data.operator_user_id),
+        username="operator1",
+        email="operator1@genassist.ritech.io",
+        is_active=1,
+        hashed_password=pwd_context.hash("genoperator1"),
+        user_type_id=user_types["interactive"].id,
+        force_upd_pass_date=shift_datetime(unit="months", amount=3),
+    )
+    apiuser = UserModel(
+        username="apiuser1",
+        email="apiuser1@genassist.ritech.io",
+        is_active=1,
+        hashed_password=pwd_context.hash("genapiuser1"),
+        user_type_id=user_types["console"].id,
+        force_upd_pass_date=shift_datetime(unit="months", amount=3),
+    )
 
-    transcribe_operator_user = UserModel(id=UUID(seed_test_data.transcribe_operator_user_id), username='transcribeoperator1',
-                                         email='transcribeoperator1@genassist.ritech.io',
-                                         is_active=1,
-                                         hashed_password=pwd_context.hash('gentranscribeoperator1'), user_type_id=user_types['console'].id,
-                                         force_upd_pass_date=shift_datetime(
-                                             unit="months", amount=3)
-                                         )
+    transcribe_operator_user = UserModel(
+        id=UUID(seed_test_data.transcribe_operator_user_id),
+        username="transcribeoperator1",
+        email="transcribeoperator1@genassist.ritech.io",
+        is_active=1,
+        hashed_password=pwd_context.hash("gentranscribeoperator1"),
+        user_type_id=user_types["console"].id,
+        force_upd_pass_date=shift_datetime(unit="months", amount=3),
+    )
 
     # Assign roles to users
-    admin.user_roles.append(UserRoleModel(role=roles['admin']))
-    supervisor.user_roles.append(UserRoleModel(role=roles['supervisor']))
-    operator.user_roles.append(UserRoleModel(role=roles['operator']))
-    apiuser.user_roles.append(UserRoleModel(role=roles['api']))
-    transcribe_operator_user.user_roles.append(
-        UserRoleModel(role=roles['operator']))
+    admin.user_roles.append(UserRoleModel(role=roles["admin"]))
+    supervisor.user_roles.append(UserRoleModel(role=roles["supervisor"]))
+    operator.user_roles.append(UserRoleModel(role=roles["operator"]))
+    apiuser.user_roles.append(UserRoleModel(role=roles["api"]))
+    transcribe_operator_user.user_roles.append(UserRoleModel(role=roles["operator"]))
 
-    session.add_all([admin, supervisor, operator,
-                    apiuser, transcribe_operator_user])
+    session.add_all([admin, supervisor, operator, apiuser, transcribe_operator_user])
     await session.commit()
 
     return {
-        'admin': admin,
-        'supervisor': supervisor,
-        'operator': operator,
-        'apiuser': apiuser,
-        'transcribe_operator': transcribe_operator_user
+        "admin": admin,
+        "supervisor": supervisor,
+        "operator": operator,
+        "apiuser": apiuser,
+        "transcribe_operator": transcribe_operator_user,
     }
 
 
@@ -270,38 +294,44 @@ async def seed_data_sources(session: AsyncSession) -> dict:
         Dictionary containing data source models keyed by names.
     """
     # Seed s3 DataSource
-    s3_data_source = DataSourceModel(id=UUID(seed_test_data.data_source_id), name="s3 contracts small", source_type="S3",
-                                     connection_data={
-        "bucket_name": os.environ.get("AWS_S3_TEST_BUCKET"),
-        "region": os.environ.get("AWS_REGION"),
-        "access_key": encrypt_key(os.environ.get("AWS_ACCESS_KEY_ID")),
-        "secret_key": encrypt_key(os.environ.get("AWS_SECRET_ACCESS_KEY")),
-        "prefix": "contracts-small/"
-    }, is_active=1)
+    s3_data_source = DataSourceModel(
+        id=UUID(seed_test_data.data_source_id),
+        name="s3 contracts small",
+        source_type="S3",
+        connection_data={
+            "bucket_name": os.environ.get("AWS_S3_TEST_BUCKET"),
+            "region": os.environ.get("AWS_REGION"),
+            "access_key": encrypt_key(os.environ.get("AWS_ACCESS_KEY_ID")),
+            "secret_key": encrypt_key(os.environ.get("AWS_SECRET_ACCESS_KEY")),
+            "prefix": "contracts-small/",
+        },
+        is_active=1,
+    )
 
     # Seed s3 AUDIO DataSource
-    s3_audio_data_source = DataSourceModel(id=UUID(seed_test_data.transcribe_data_source_id), name="s3 audio files to transcribe", source_type="S3",
-                                           connection_data={
-        "bucket_name": os.environ.get("AWS_S3_TEST_BUCKET"),
-        "region": os.environ.get("AWS_REGION"),
-        "access_key": os.environ.get("AWS_ACCESS_KEY_ID"),
-        "secret_key": os.environ.get("AWS_SECRET_ACCESS_KEY"),
-        "prefix": "sample-recordings/"
-    }, is_active=1)
+    s3_audio_data_source = DataSourceModel(
+        id=UUID(seed_test_data.transcribe_data_source_id),
+        name="s3 audio files to transcribe",
+        source_type="S3",
+        connection_data={
+            "bucket_name": os.environ.get("AWS_S3_TEST_BUCKET"),
+            "region": os.environ.get("AWS_REGION"),
+            "access_key": os.environ.get("AWS_ACCESS_KEY_ID"),
+            "secret_key": os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            "prefix": "sample-recordings/",
+        },
+        is_active=1,
+    )
     session.add_all([s3_data_source, s3_audio_data_source])
 
     await session.commit()
 
-    return {
-        's3': s3_data_source,
-        's3_audio': s3_audio_data_source
-    }
+    return {"s3": s3_data_source, "s3_audio": s3_audio_data_source}
 
 
 async def seed_customer(session: AsyncSession):
     """Seed customer into the database."""
-    customer = CustomerModel(source_ref="default",
-                             full_name="default", external_id="default")
+    customer = CustomerModel(source_ref="default", full_name="default", external_id="default")
     session.add(customer)
     await session.commit()
 
@@ -314,54 +344,53 @@ async def seed_llm_providers(session: AsyncSession) -> dict:
     """
     llm_provider = LlmProvidersModel(
         id=UUID(seed_test_data.llm_provider_id),
-        name='openai dev 1.0',
+        name="openai dev 1.0",
         llm_model_provider="openai",
         is_active=1,
         llm_model="gpt-4o",
         connection_data={
             "api_key": encrypt_key(settings.OPENAI_API_KEY),
-        }
+        },
     )
     local_llm_provider_gpt_oss = LlmProvidersModel(
         id=UUID(seed_test_data.local_llm_provider_gpt_oss_id),
-        name='gpt-oss',
+        name="gpt-oss",
         llm_model_provider="ollama",
         is_active=1,
         llm_model="gpt-oss:20b",
         connection_data={
             "base_url": "http://192.168.10.231:11434/",
-        }
+        },
     )
 
     local_llm_provider_llama = LlmProvidersModel(
         id=UUID(seed_test_data.local_llm_provider_llama_id),
-        name='Llama 3.3 70B 4Q',
+        name="Llama 3.3 70B 4Q",
         llm_model_provider="ollama",
         is_active=1,
         llm_model="llama3.3:70b-instruct-q4_K_M",
         connection_data={
             "base_url": "http://192.168.10.231:11434/",
-        }
+        },
     )
     local_llm_provider_vllm_llama = LlmProvidersModel(
         id=UUID(seed_test_data.local_llm_provider_vllm_llama),
-        name='Llama 3.1 8B custom',
+        name="Llama 3.1 8B custom",
         llm_model_provider="vllm",
         is_active=1,
         llm_model="./outputs/llama-3.1-8b-tool-calling/merged",
         connection_data={
             "base_url": "http://192.168.10.231:11434/",
-        }
+        },
     )
-    session.add_all([llm_provider, local_llm_provider_gpt_oss,
-                    local_llm_provider_llama, local_llm_provider_vllm_llama])
+    session.add_all([llm_provider, local_llm_provider_gpt_oss, local_llm_provider_llama, local_llm_provider_vllm_llama])
     await session.commit()
 
     return {
-        'openai': llm_provider,
-        'gpt_oss': local_llm_provider_gpt_oss,
-        'llama': local_llm_provider_llama,
-        'vllm_llama': local_llm_provider_vllm_llama
+        "openai": llm_provider,
+        "gpt_oss": local_llm_provider_gpt_oss,
+        "llama": local_llm_provider_llama,
+        "vllm_llama": local_llm_provider_vllm_llama,
     }
 
 
@@ -375,29 +404,30 @@ async def seed_llm_analysts(session: AsyncSession, llm_provider):
     # Seed LLM analyst speaker separator
     gpt_speaker_separator_llm_analyst = LlmAnalystModel(
         id=UUID(seed_test_data.llm_analyst_speaker_separator_id),
-        name='gpt_speaker_separator_service prompt',
+        name="gpt_speaker_separator_service prompt",
         llm_provider_id=llm_provider.id,
         prompt=seed_test_data.speaker_separation_llm_analyst_prompt,
-        is_active=1
+        is_active=1,
     )
     # Seed LLM analyst kpi analyzer
     gpt_kpi_analyzer_llm_analyst = LlmAnalystModel(
         id=UUID(seed_test_data.llm_analyst_kpi_analyzer_id),
-        name='gpt_kpi_analyzer_service system prompt',
+        name="gpt_kpi_analyzer_service system prompt",
         llm_provider_id=llm_provider.id,
         prompt=seed_test_data.kpi_analyzer_system_prompt,
-        is_active=1
+        is_active=1,
     )
     # Seed LLM analyst hostility score
     in_progress_hostility_llm_analyst = LlmAnalystModel(
         id=UUID(seed_test_data.llm_analyst_in_progress_hostility_id),
-        name='gpt_kpi_analyzer_service in progress hostility system prompt',
+        name="gpt_kpi_analyzer_service in progress hostility system prompt",
         llm_provider_id=llm_provider.id,
         prompt=seed_test_data.in_progress_hostility_system_prompt,
-        is_active=1
+        is_active=1,
     )
-    session.add_all([gpt_speaker_separator_llm_analyst,
-                    gpt_kpi_analyzer_llm_analyst, in_progress_hostility_llm_analyst])
+    session.add_all(
+        [gpt_speaker_separator_llm_analyst, gpt_kpi_analyzer_llm_analyst, in_progress_hostility_llm_analyst]
+    )
 
     await session.commit()
 
@@ -410,8 +440,7 @@ async def seed_operators(session: AsyncSession) -> dict:
     """
     # Seed operator statistics
     op_stats = OperatorStatisticsModel(
-        avg_positive_sentiment=0, call_count=0,
-        avg_negative_sentiment=0, avg_neutral_sentiment=0
+        avg_positive_sentiment=0, call_count=0, avg_negative_sentiment=0, avg_neutral_sentiment=0
     )
     session.add(op_stats)
     await session.commit()
@@ -419,11 +448,11 @@ async def seed_operators(session: AsyncSession) -> dict:
     # Seed operator
     operator = OperatorModel(
         id=UUID(seed_test_data.operator_id),
-        first_name='Operator',
-        last_name='01',
+        first_name="Operator",
+        last_name="01",
         is_active=1,
         statistics_id=op_stats.id,
-        user_id=seed_test_data.operator_user_id
+        user_id=seed_test_data.operator_user_id,
     )
     session.add(operator)
     await session.commit()
@@ -431,19 +460,18 @@ async def seed_operators(session: AsyncSession) -> dict:
     # Seed Transcribe operator
     transcribe_operator = OperatorModel(
         id=UUID(seed_test_data.transcribe_operator_id),
-        first_name='Transcribe',
-        last_name='Operator 01',
+        first_name="Transcribe",
+        last_name="Operator 01",
         is_active=1,
         statistics_id=op_stats.id,
-        user_id=seed_test_data.transcribe_operator_user_id
+        user_id=seed_test_data.transcribe_operator_user_id,
     )
     session.add(transcribe_operator)
     await session.commit()
 
     # Seed ZEN operator statistics
     zen_op_stats = OperatorStatisticsModel(
-        avg_positive_sentiment=0, call_count=0,
-        avg_negative_sentiment=0, avg_neutral_sentiment=0
+        avg_positive_sentiment=0, call_count=0, avg_negative_sentiment=0, avg_neutral_sentiment=0
     )
     session.add(zen_op_stats)
     await session.commit()
@@ -451,20 +479,16 @@ async def seed_operators(session: AsyncSession) -> dict:
     # Seed Zendesk Operator
     zen_operator = OperatorModel(
         id=UUID(seed_test_data.zen_operator_id),
-        first_name='Zendesk',
-        last_name='Operator',
+        first_name="Zendesk",
+        last_name="Operator",
         is_active=1,
         statistics_id=zen_op_stats.id,
-        user_id=seed_test_data.zen_operator_user_id
+        user_id=seed_test_data.zen_operator_user_id,
     )
     session.add(zen_operator)
     await session.commit()
 
-    return {
-        'main': operator,
-        'transcribe': transcribe_operator,
-        'zendesk': zen_operator
-    }
+    return {"main": operator, "transcribe": transcribe_operator, "zendesk": zen_operator}
 
 
 async def seed_api_keys(session: AsyncSession, admin_user, admin_role):
@@ -475,9 +499,13 @@ async def seed_api_keys(session: AsyncSession, admin_user, admin_role):
         admin_user: Admin user model
         admin_role: Admin role model
     """
-    api_key = ApiKeyModel(key_val=encrypt_key('test123'), name='test key',
-                          hashed_value=hash_api_key('test123'),
-                          is_active=1, user_id=admin_user.id)
+    api_key = ApiKeyModel(
+        key_val=encrypt_key("test123"),
+        name="test key",
+        hashed_value=hash_api_key("test123"),
+        is_active=1,
+        user_id=admin_user.id,
+    )
     api_key.api_key_roles.append(ApiKeyRoleModel(role=admin_role))
     session.add(api_key)
     await session.commit()
@@ -498,11 +526,9 @@ async def seed_app_settings(session: AsyncSession, injector: Injector) -> None:
         "Zendesk": {
             "zendesk_subdomain": settings.ZENDESK_SUBDOMAIN,
             "zendesk_email": settings.ZENDESK_EMAIL,
-            "zendesk_api_token": settings.ZENDESK_API_TOKEN
+            "zendesk_api_token": settings.ZENDESK_API_TOKEN,
         },
-        "WhatsApp": {
-            "whatsapp_token": settings.WHATSAPP_TOKEN
-        },
+        "WhatsApp": {"whatsapp_token": settings.WHATSAPP_TOKEN},
         "Gmail": {
             "gmail_client_id": settings.GMAIL_CLIENT_ID,
             "gmail_client_secret": settings.GMAIL_CLIENT_SECRET,
@@ -510,12 +536,9 @@ async def seed_app_settings(session: AsyncSession, injector: Injector) -> None:
         "Microsoft": {
             "microsoft_client_id": settings.MICROSOFT_CLIENT_ID,
             "microsoft_client_secret": settings.MICROSOFT_CLIENT_SECRET,
-            "microsoft_tenant_id": settings.MICROSOFT_TENANT_ID
+            "microsoft_tenant_id": settings.MICROSOFT_TENANT_ID,
         },
-        "Slack": {
-            "slack_bot_token": settings.SLACK_TOKEN,
-            "slack_signing_secret": settings.SLACK_SIGNING_SECRET
-        }
+        "Slack": {"slack_bot_token": settings.SLACK_TOKEN, "slack_signing_secret": settings.SLACK_SIGNING_SECRET},
     }
 
     success_count = 0
@@ -524,11 +547,9 @@ async def seed_app_settings(session: AsyncSession, injector: Injector) -> None:
     for service_name, service_settings in all_settings.items():
         try:
             # Check if all required values are present
-            missing_values = {k: v for k,
-                              v in service_settings.items() if not v}
+            missing_values = {k: v for k, v in service_settings.items() if not v}
             if missing_values:
-                logger.warning(
-                    f"Missing {service_name} settings: {list(missing_values.keys())}")
+                logger.warning(f"Missing {service_name} settings: {list(missing_values.keys())}")
                 error_count += 1
                 continue
 
@@ -538,7 +559,7 @@ async def seed_app_settings(session: AsyncSession, injector: Injector) -> None:
                 type=service_name,
                 values=service_settings,
                 description=f"{service_name} integration settings",
-                is_active=1
+                is_active=1,
             )
 
             await app_settings_service.create(item)
@@ -551,8 +572,7 @@ async def seed_app_settings(session: AsyncSession, injector: Injector) -> None:
     # Commit only after all items are created
     if success_count > 0:
         await session.commit()
-        logger.info(
-            f"Successfully seeded {success_count} app settings. {error_count} failed.")
+        logger.info(f"Successfully seeded {success_count} app settings. {error_count} failed.")
     else:
         logger.warning("No app settings were seeded successfully.")
 
@@ -560,6 +580,7 @@ async def seed_app_settings(session: AsyncSession, injector: Injector) -> None:
 # ============================================================================
 # Main Seed Function (Backward Compatibility)
 # ============================================================================
+
 
 async def seed_data(session: AsyncSession, injector: Injector):
     """Seeds initial data into the database.
@@ -586,23 +607,23 @@ async def seed_data(session: AsyncSession, injector: Injector):
     llm_providers = await seed_llm_providers(session)
 
     # Seed LLM analysts
-    await seed_llm_analysts(session, llm_providers['openai'])
+    await seed_llm_analysts(session, llm_providers["openai"])
 
     # Seed operators
     await seed_operators(session)
 
     # Seed API keys
-    await seed_api_keys(session, users['admin'], roles['admin'])
+    await seed_api_keys(session, users["admin"], roles["admin"])
 
     # Seed knowledge base
-    product_docs = await seed_knowledge_base(session, users['admin'].id, injector)
-    gen_assist_kb = await seed_knowledge_base_for_gen_agent(session, users['admin'].id, injector)
-    db_kb = await seed_knowledge_base_for_sql_database(session, users['admin'].id, injector)
-    await seed_knowledge_base_for_s3(session, users['admin'].id, data_sources['s3'], injector)
+    product_docs = await seed_knowledge_base(session, users["admin"].id, injector)
+    gen_assist_kb = await seed_knowledge_base_for_gen_agent(session, users["admin"].id, injector)
+    db_kb = await seed_knowledge_base_for_sql_database(session, users["admin"].id, injector)
+    await seed_knowledge_base_for_s3(session, users["admin"].id, data_sources["s3"], injector)
 
     # Seed agents
-    await seed_demo_agent(session, roles['agent'], injector, [product_docs], users['admin'].id)
-    await seed_gen_agent(session, roles['agent'], injector, [product_docs, gen_assist_kb, db_kb], users['admin'].id)
+    await seed_demo_agent(session, roles["agent"], injector, [product_docs], users["admin"].id)
+    await seed_gen_agent(session, roles["agent"], injector, [product_docs, gen_assist_kb, db_kb], users["admin"].id)
 
     # Seed common workflows (commented out)
     # await seed_zendesk_agent(session, roles['agent'], injector, [product_docs, gen_assist_kb, db_kb], users['admin'].id)
@@ -629,30 +650,22 @@ async def seed_tools(session: AsyncSession, created_by: UUID, injector: Injector
         api_config={
             "endpoint": "https://api.exchangerate-api.com/v4/latest",
             "method": "GET",
-            "headers": {
-                "Content-Type": "application/json"
-            },
-            "query_params": {
-                "base": "${from_currency}"
-            }
+            "headers": {"Content-Type": "application/json"},
+            "query_params": {"base": "${from_currency}"},
         },
         parameters_schema={
             "from_currency": {
                 "type": "string",
                 "description": "Currency code to convert from (e.g., USD)",
-                "required": True
+                "required": True,
             },
             "to_currency": {
                 "type": "string",
                 "description": "Currency code to convert to (e.g., EUR)",
-                "required": True
+                "required": True,
             },
-            "amount": {
-                "type": "number",
-                "description": "Amount to convert",
-                "required": True
-            }
-        }
+            "amount": {"type": "number", "description": "Amount to convert", "required": True},
+        },
     )
 
     # Create tools
@@ -663,8 +676,14 @@ async def seed_tools(session: AsyncSession, created_by: UUID, injector: Injector
     return res
 
 
-async def create_conversation(session: AsyncSession, operator: OperatorModel, data_source: DataSourceModel, customer: CustomerModel, injector: Injector):
-    metadata = RecordingCreate(
+async def create_conversation(
+    session: AsyncSession,
+    operator: OperatorModel,
+    data_source: DataSourceModel,
+    customer: CustomerModel,
+    injector: Injector,
+):
+    RecordingCreate(
         operator_id=operator.id,
         transcription_model_name=settings.DEFAULT_WHISPER_MODEL,
         llm_analyst_speaker_separator_id=None,
@@ -674,14 +693,12 @@ async def create_conversation(session: AsyncSession, operator: OperatorModel, da
         customer_id=customer.id,
     )
 
-    dir_path = os.path.abspath(os.path.join(
-        os.path.dirname(__file__), "../../.."))
-    filename = dir_path+'/tests/integration/audio/tech-support.mp3'
+    dir_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+    filename = dir_path + "/tests/integration/audio/tech-support.mp3"
     contents = open(filename, "rb").read()
 
-    headers = {'content-type': "audio/mp3"}
-    file = UploadFile(file=io.BytesIO(contents),
-                      filename="test.mp3", headers=headers)
+    headers = {"content-type": "audio/mp3"}
+    UploadFile(file=io.BytesIO(contents), filename="test.mp3", headers=headers)
 
     # await injector.get(AudioService).process_recording(file, metadata)
 
@@ -696,8 +713,7 @@ async def seed_knowledge_base(session: AsyncSession, created_by: UUID, injector:
     existing_kb = next((kb for kb in all_kbs if kb.name == kb_name), None)
 
     if existing_kb:
-        logger.info(
-            f"Knowledge base '{kb_name}' already exists, skipping creation.")
+        logger.info(f"Knowledge base '{kb_name}' already exists, skipping creation.")
         return existing_kb
 
     # Example knowledge base item for product documentation
@@ -742,11 +758,7 @@ async def seed_knowledge_base(session: AsyncSession, created_by: UUID, injector:
         file_type="text",
         files=[],
         vector_store={"config": "default"},
-        rag_config={
-            "enabled": False,
-            "vector_db": {"enabled": False},
-            "light_rag": {"enabled": False}
-        }
+        rag_config={"enabled": False, "vector_db": {"enabled": False}, "light_rag": {"enabled": False}},
     )
 
     # Create knowledge base items
@@ -771,25 +783,20 @@ async def seed_knowledge_base_for_gen_agent(
     existing_kb = next((kb for kb in all_kbs if kb.name == kb_name), None)
 
     if existing_kb:
-        logger.info(
-            f"Knowledge base '{kb_name}' already exists, skipping creation.")
+        logger.info(f"Knowledge base '{kb_name}' already exists, skipping creation.")
         return existing_kb
 
     # ── 1️⃣  read the file in a worker thread ────────────────────────────
     if not open_api_path.exists():
-        raise FileNotFoundError(
-            "openapi.json not found. Did output_open_api() run before seeding?"
-        )
+        raise FileNotFoundError("openapi.json not found. Did output_open_api() run before seeding?")
 
-    raw_json: str = await asyncio.to_thread(
-        open_api_path.read_text, encoding="utf-8"
-    )
+    raw_json: str = await asyncio.to_thread(open_api_path.read_text, encoding="utf-8")
 
     # ── 2️⃣  build the KB item ──────────────────────────────────────────
     openapi_item = KBCreate(
         name=kb_name,
         description="Generated OpenAPI spec for every backend route",
-        type="text",                       # or "text" if your column is TEXT
+        type="text",  # or "text" if your column is TEXT
         source="internal",
         content=raw_json,
         file_path=str(open_api_path),
@@ -824,8 +831,7 @@ async def seed_knowledge_base_for_sql_database(
     existing_kb = next((kb for kb in all_kbs if kb.name == kb_name), None)
 
     if existing_kb:
-        logger.info(
-            f"Knowledge base '{kb_name}' already exists, skipping creation.")
+        logger.info(f"Knowledge base '{kb_name}' already exists, skipping creation.")
         return existing_kb
 
     # 1. Build the sql datasource item
@@ -840,7 +846,8 @@ async def seed_knowledge_base_for_sql_database(
             "database_user": settings.DB_USER,
             "database_password": settings.DB_PASS,
             # "connection_string": f"postgresql://{settings.DB_USER}:{settings.DB_PASS}@{settings.DB_HOST}/{settings.DB_NAME}",
-            "allowed_tables": ['conversations', 'operators']},
+            "allowed_tables": ["conversations", "operators"],
+        },
         is_active=1,
     )
 
@@ -885,8 +892,7 @@ async def seed_knowledge_base_for_s3(
     existing_kb = next((kb for kb in all_kbs if kb.name == kb_name), None)
 
     if existing_kb:
-        logger.info(
-            f"Knowledge base '{kb_name}' already exists, skipping creation.")
+        logger.info(f"Knowledge base '{kb_name}' already exists, skipping creation.")
         return existing_kb
 
     kb = KBCreate(

@@ -1,9 +1,11 @@
 from typing import List
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi_injector import Injected
-from app.core.permissions.constants import Permissions as P
+
 from app.auth.dependencies import auth, permissions
+from app.core.permissions.constants import Permissions as P
 from app.schemas.tenants import TenantCreate, TenantResponse, TenantUpdate
 from app.services.tenant import TenantService
 
@@ -65,9 +67,7 @@ async def get_tenant(
     tenant = await service.get_tenant_by_id(tenant_id)
 
     if not tenant:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")
 
     return tenant
 
@@ -85,9 +85,7 @@ async def get_tenant_by_slug(
     tenant = await service.get_tenant_by_slug(tenant_slug)
 
     if not tenant:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")
 
     return tenant
 
@@ -108,9 +106,7 @@ async def update_tenant(
     tenant = await service.update_tenant(tenant_id, **updates)
 
     if not tenant:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")
 
     return tenant
 
@@ -128,6 +124,4 @@ async def deactivate_tenant(
     success = await service.deactivate_tenant(tenant_id)
 
     if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tenant not found")

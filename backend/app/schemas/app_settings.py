@@ -1,10 +1,10 @@
-from pydantic import BaseModel, ConfigDict, field_validator
-from typing import Optional, Dict, Any, Literal
-from uuid import UUID
 from datetime import datetime
+from typing import Any, Dict, Literal, Optional
+from uuid import UUID
 
-AppSettingsType = Literal["Zendesk", "WhatsApp",
-                          "Gmail", "Microsoft", "Slack", "Jira", "FileManagerSettings", "Other"]
+from pydantic import BaseModel, ConfigDict, field_validator
+
+AppSettingsType = Literal["Zendesk", "WhatsApp", "Gmail", "Microsoft", "Slack", "Jira", "FileManagerSettings", "Other"]
 
 
 class AppSettingsBase(BaseModel):

@@ -1,10 +1,11 @@
-from uuid import UUID
 from typing import List, Optional
+from uuid import UUID
+
 from injector import inject
+from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import and_
-from sqlalchemy.exc import IntegrityError
+
 from app.db.models.app_settings import AppSettingsModel
 from app.schemas.app_settings import AppSettingsCreate, AppSettingsUpdate
 
@@ -32,9 +33,7 @@ class AppSettingsRepository:
     async def get_by_id(self, id: UUID) -> Optional[AppSettingsModel]:
         return await self.db.get(AppSettingsModel, id)
 
-    async def get_by_type_and_name(
-        self, setting_type: str, name: str
-    ) -> Optional[AppSettingsModel]:
+    async def get_by_type_and_name(self, setting_type: str, name: str) -> Optional[AppSettingsModel]:
         """Get app setting by type and name."""
         query = select(AppSettingsModel).where(
             and_(AppSettingsModel.type == setting_type, AppSettingsModel.name == name)
@@ -48,9 +47,7 @@ class AppSettingsRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def update(
-        self, id: UUID, dto: AppSettingsUpdate
-    ) -> Optional[AppSettingsModel]:
+    async def update(self, id: UUID, dto: AppSettingsUpdate) -> Optional[AppSettingsModel]:
         obj = await self.db.get(AppSettingsModel, id)
         if not obj:
             return None
@@ -69,7 +66,5 @@ class AppSettingsRepository:
         return True
 
     async def get_all(self) -> List[AppSettingsModel]:
-        result = await self.db.execute(
-            select(AppSettingsModel).order_by(AppSettingsModel.created_at.asc())
-        )
+        result = await self.db.execute(select(AppSettingsModel).order_by(AppSettingsModel.created_at.asc()))
         return list(result.scalars().all())

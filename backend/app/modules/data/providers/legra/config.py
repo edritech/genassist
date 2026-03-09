@@ -26,30 +26,29 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 class LegraConfig(BaseModel):
     """Configuration for LEGRA provider"""
-    enabled: bool = Field(
-        default=False, description="Whether LEGRA is enabled")
-    embedding_model: str = Field(
-        default=LEGRA_DEFAULTS["embedding_model"], description="Embedding model name")
+
+    enabled: bool = Field(default=False, description="Whether LEGRA is enabled")
+    embedding_model: str = Field(default=LEGRA_DEFAULTS["embedding_model"], description="Embedding model name")
     cluster_resolution: float = Field(
-        default=LEGRA_DEFAULTS["cluster_resolution"], description="Community detection resolution")
-    generator_model_name: str = Field(
-        default=LEGRA_DEFAULTS["generation_model"], description="Generator model name")
-    use_gpu: bool = Field(
-        default=LEGRA_DEFAULTS["generation_use_gpu"], description="Whether to use GPU acceleration")
+        default=LEGRA_DEFAULTS["cluster_resolution"], description="Community detection resolution"
+    )
+    generator_model_name: str = Field(default=LEGRA_DEFAULTS["generation_model"], description="Generator model name")
+    use_gpu: bool = Field(default=LEGRA_DEFAULTS["generation_use_gpu"], description="Whether to use GPU acceleration")
     max_tokens: int = Field(
-        default=LEGRA_DEFAULTS["generation_max_tokens"], description="Maximum tokens for generation")
-    n_neighbors: int = Field(default=LEGRA_DEFAULTS["graph_n_neighbors"],
-                             description="Number of neighbors for kNN graph")
-    metric: str = Field(default=LEGRA_DEFAULTS["graph_distance_metric"],
-                        description="Distance metric for similarity")
-    min_sents: int = Field(
-        default=LEGRA_DEFAULTS["chunk_min_sentences"], description="Minimum sentences per chunk")
-    max_sents: int = Field(
-        default=LEGRA_DEFAULTS["chunk_max_sentences"], description="Maximum sentences per chunk")
+        default=LEGRA_DEFAULTS["generation_max_tokens"], description="Maximum tokens for generation"
+    )
+    n_neighbors: int = Field(
+        default=LEGRA_DEFAULTS["graph_n_neighbors"], description="Number of neighbors for kNN graph"
+    )
+    metric: str = Field(default=LEGRA_DEFAULTS["graph_distance_metric"], description="Distance metric for similarity")
+    min_sents: int = Field(default=LEGRA_DEFAULTS["chunk_min_sentences"], description="Minimum sentences per chunk")
+    max_sents: int = Field(default=LEGRA_DEFAULTS["chunk_max_sentences"], description="Maximum sentences per chunk")
     min_sent_length: int = Field(
-        default=LEGRA_DEFAULTS["chunk_min_sentence_length"], description="Minimum sentence length")
+        default=LEGRA_DEFAULTS["chunk_min_sentence_length"], description="Minimum sentence length"
+    )
     working_dir: Optional[str] = Field(
-        default=LEGRA_DEFAULTS["storage_working_directory"], description="Working directory for LEGRA data")
+        default=LEGRA_DEFAULTS["storage_working_directory"], description="Working directory for LEGRA data"
+    )
 
     def get_working_dir(self, kb_id: str) -> str:
         """Get the working directory for a specific knowledge base"""

@@ -6,26 +6,25 @@ from fastapi_cache.coder import PickleCoder
 from fastapi_cache.decorator import cache
 from injector import inject
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.utils import generate_password
 from app.cache.redis_cache import invalidate_agent_cache, make_key_builder
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
-from app.db.models import AgentModel
+from app.db.models import AgentModel, AgentSecuritySettingsModel
 from app.db.utils.sql_alchemy_utils import null_unloaded_attributes
 from app.repositories.agent import AgentRepository
 from app.repositories.user_types import UserTypesRepository
 from app.schemas.agent import AgentCreate, AgentListItem, AgentRead, AgentUpdate
-from app.schemas.common import PaginatedResponse
-from app.schemas.filter import BaseFilterModel
 from app.schemas.agent_security_settings import (
     AgentSecuritySettingsCreate,
     AgentSecuritySettingsUpdate,
 )
-from app.db.models import AgentSecuritySettingsModel
+from app.schemas.common import PaginatedResponse
+from app.schemas.filter import BaseFilterModel
 from app.schemas.workflow import WorkflowUpdate, get_base_workflow
 from app.services.operators import OperatorService
 from app.services.workflow import WorkflowService
-
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +54,7 @@ class AgentConfigService:
         """Get all agent configurations as dictionaries (for backward compatibility)"""
         return await self.repository.get_all_full()
 
-    async def get_list_paginated(
-        self, filter_obj: BaseFilterModel
-    ) -> PaginatedResponse[AgentListItem]:
+    async def get_list_paginated(self, filter_obj: BaseFilterModel) -> PaginatedResponse[AgentListItem]:
         """Get paginated list of agents with minimal data for list view"""
         rows, total = await self.repository.get_list_paginated(filter_obj)
 
@@ -137,21 +134,15 @@ class AgentConfigService:
         agent_data["is_active"] = int(agent_data.get("is_active", False))
         agent_data["operator_id"] = operator.id
         # Store as semi-colon separated string
-        agent_data["possible_queries"] = ";".join(
-            agent_data.get("possible_queries", "")
-        )
-        agent_data["thinking_phrases"] = ";".join(
-            agent_data.get("thinking_phrases", "")
-        )
+        agent_data["possible_queries"] = ";".join(agent_data.get("possible_queries", ""))
+        agent_data["thinking_phrases"] = ";".join(agent_data.get("thinking_phrases", ""))
         # Handle image blob - if it's provided, it should already be bytes
         if "welcome_image" in agent_data and agent_data["welcome_image"] is not None:
             if isinstance(agent_data["welcome_image"], str):
                 # If it's a string, convert to bytes (assuming it's base64 encoded)
                 import base64
 
-                agent_data["welcome_image"] = base64.b64decode(
-                    agent_data["welcome_image"]
-                )
+                agent_data["welcome_image"] = base64.b64decode(agent_data["welcome_image"])
         orm_agent = AgentModel(**agent_data)
 
         created_agent = await self.repository.create(orm_agent)
@@ -160,21 +151,15 @@ class AgentConfigService:
         if security_settings_data:
             security_settings = AgentSecuritySettingsModel(
                 agent_id=created_agent.id,
-                **AgentSecuritySettingsCreate(**security_settings_data).model_dump(
-                    exclude_unset=True
-                ),
+                **AgentSecuritySettingsCreate(**security_settings_data).model_dump(exclude_unset=True),
             )
         else:
             # Create with default token_based_auth=false
-            security_settings = AgentSecuritySettingsModel(
-                agent_id=created_agent.id, token_based_auth=False
-            )
+            security_settings = AgentSecuritySettingsModel(agent_id=created_agent.id, token_based_auth=False)
         self.db.add(security_settings)
         await self.db.flush()
 
-        await self.db.refresh(
-            created_agent, attribute_names=["operator", "security_settings"]
-        )
+        await self.db.refresh(created_agent, attribute_names=["operator", "security_settings"])
 
         old_workflow = await self.workflow_service.get_by_id(created_agent.workflow_id)
         await self.workflow_service.update(
@@ -219,25 +204,16 @@ class AgentConfigService:
             scalar_changes["is_active"] = int(scalar_changes["is_active"])
         # Store as semi-colon separated string
         if "possible_queries" in scalar_changes:
-            scalar_changes["possible_queries"] = ";".join(
-                scalar_changes["possible_queries"]
-            )
+            scalar_changes["possible_queries"] = ";".join(scalar_changes["possible_queries"])
         if "thinking_phrases" in scalar_changes:
-            scalar_changes["thinking_phrases"] = ";".join(
-                scalar_changes["thinking_phrases"]
-            )
+            scalar_changes["thinking_phrases"] = ";".join(scalar_changes["thinking_phrases"])
         # Handle image blob
-        if (
-            "welcome_image" in scalar_changes
-            and scalar_changes["welcome_image"] is not None
-        ):
+        if "welcome_image" in scalar_changes and scalar_changes["welcome_image"] is not None:
             if isinstance(scalar_changes["welcome_image"], str):
                 # If it's a string, convert to bytes (assuming it's base64 encoded)
                 import base64
 
-                scalar_changes["welcome_image"] = base64.b64decode(
-                    scalar_changes["welcome_image"]
-                )
+                scalar_changes["welcome_image"] = base64.b64decode(scalar_changes["welcome_image"])
         for field, value in scalar_changes.items():
             setattr(agent, field, value)
 
@@ -245,18 +221,16 @@ class AgentConfigService:
         if security_settings_update is not None:
             if agent.security_settings:
                 # Update existing security settings
-                security_update_data = AgentSecuritySettingsUpdate(
-                    **security_settings_update
-                ).model_dump(exclude_unset=True)
+                security_update_data = AgentSecuritySettingsUpdate(**security_settings_update).model_dump(
+                    exclude_unset=True
+                )
                 for field, value in security_update_data.items():
                     setattr(agent.security_settings, field, value)
             else:
                 # Create new security settings
                 security_settings = AgentSecuritySettingsModel(
                     agent_id=agent.id,
-                    **AgentSecuritySettingsCreate(
-                        **security_settings_update
-                    ).model_dump(exclude_unset=True),
+                    **AgentSecuritySettingsCreate(**security_settings_update).model_dump(exclude_unset=True),
                 )
                 self.db.add(security_settings)
                 agent.security_settings = security_settings
@@ -302,13 +276,9 @@ class AgentConfigService:
         key_builder=user_id_key_builder,
         coder=PickleCoder,
     )
-    async def get_by_user_id(
-        self, user_id: UUID, with_workflow: bool = False
-    ) -> AgentRead:
+    async def get_by_user_id(self, user_id: UUID, with_workflow: bool = False) -> AgentRead:
         """Get agent by user ID and cache the result"""
-        agent = await self.repository.get_by_user_id(
-            user_id, with_workflow=with_workflow
-        )
+        agent = await self.repository.get_by_user_id(user_id, with_workflow=with_workflow)
         if not agent:
             logger.debug("No agent for userid:" + str(user_id))
             raise AppException(ErrorKey.AGENT_NOT_FOUND, status_code=404)
@@ -319,9 +289,7 @@ class AgentConfigService:
 
         return agent_read
 
-    async def upload_welcome_image(
-        self, agent_id: UUID, image_data: bytes
-    ) -> AgentModel:
+    async def upload_welcome_image(self, agent_id: UUID, image_data: bytes) -> AgentModel:
         """Upload welcome image for an agent"""
         agent = await self.repository.get_by_id(agent_id)
         if not agent:
@@ -348,9 +316,7 @@ class AgentConfigService:
 
     async def get_by_operator_id(self, operator_id: UUID) -> AgentModel:
         """Get agent by operator ID with security_settings eagerly loaded."""
-        agent = await self.repository.get_by_operator_id(
-            operator_id, eager=("security_settings",)
-        )
+        agent = await self.repository.get_by_operator_id(operator_id, eager=("security_settings",))
         if not agent:
             raise AppException(ErrorKey.AGENT_NOT_FOUND, status_code=404)
         return agent

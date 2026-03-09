@@ -1,15 +1,14 @@
-import pytest
 import logging
+
+import pytest
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture(scope="module")
 def new_api_key_data():
-    return {
-        "name": "test api key",
-        "description": "test api key description",
-        "role_ids": []
-    }
+    return {"name": "test api key", "description": "test api key description", "role_ids": []}
+
 
 @pytest.mark.asyncio
 async def test_create_api_key(authorized_client, new_api_key_data):
@@ -22,6 +21,7 @@ async def test_create_api_key(authorized_client, new_api_key_data):
     assert data["name"] == new_api_key_data["name"]
     new_api_key_data["id"] = data["id"]  # Store for use in later tests
 
+
 @pytest.mark.asyncio
 async def test_get_api_keys(authorized_client):
     response = authorized_client.get("/api/api-keys/")
@@ -29,6 +29,7 @@ async def test_get_api_keys(authorized_client):
     data = response.json()
     assert isinstance(data, list)
     assert any("id" in item for item in data)
+
 
 @pytest.mark.asyncio
 async def test_get_api_key_by_id(authorized_client, new_api_key_data):
@@ -39,14 +40,11 @@ async def test_get_api_key_by_id(authorized_client, new_api_key_data):
     assert data["id"] == id
     assert data["name"] == new_api_key_data["name"]
 
+
 @pytest.mark.asyncio
 async def test_update_api_key(authorized_client, new_api_key_data):
     id = new_api_key_data["id"]
-    update_data = {
-        "name": "test api key updated",
-        "description": "updated description",
-        "is_active": 0
-    }
+    update_data = {"name": "test api key updated", "description": "updated description", "is_active": 0}
 
     response = authorized_client.patch(f"/api/api-keys/{id}", json=update_data)
     assert response.status_code == 200
@@ -55,6 +53,7 @@ async def test_update_api_key(authorized_client, new_api_key_data):
     assert data["id"] == id
     assert data["name"] == update_data["name"]
     assert data["is_active"] == update_data["is_active"]
+
 
 @pytest.mark.asyncio
 async def test_delete_api_key(authorized_client, new_api_key_data):
@@ -66,4 +65,4 @@ async def test_delete_api_key(authorized_client, new_api_key_data):
 
     # Confirm deletion
     get_response = authorized_client.get(f"/api/api-keys/{id}")
-    assert get_response.status_code == 404 
+    assert get_response.status_code == 404

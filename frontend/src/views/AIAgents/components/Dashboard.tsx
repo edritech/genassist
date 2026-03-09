@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { AgentListItem } from "@/interfaces/ai-agent.interface";
+import React, { useState, useEffect, useCallback } from 'react';
+import { AgentListItem } from '@/interfaces/ai-agent.interface';
 import {
   deleteAgentConfig,
   getAgentConfig,
   getAgentConfigsList,
   getAgentIntegrationKey,
   initializeAgent,
-} from "@/services/api";
-import { useNavigate } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
-import { toast } from "react-hot-toast";
-import AgentList from "./AgentList";
-import ManageApiKeysModal from "./Keys/ManageApiKeysModal";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+} from '@/services/api';
+import { useNavigate } from 'react-router-dom';
+import { AlertCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import AgentList from './AgentList';
+import ManageApiKeysModal from './Keys/ManageApiKeysModal';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -44,16 +44,13 @@ const Dashboard: React.FC = () => {
       const fullAgent = await getAgentConfig(agentId);
       setModalContext({ agentId, userId: fullAgent.user_id, redirectOnClose: false });
     } catch (err) {
-      toast.error("Failed to load agent details");
+      toast.error('Failed to load agent details');
     }
   };
 
   const isMissingApiKeyError = (err: unknown) => {
     if (!(err instanceof Error)) return false;
-    return (
-      err.message.includes("No active API key") ||
-      err.message.includes("API key value missing")
-    );
+    return err.message.includes('No active API key') || err.message.includes('API key value missing');
   };
 
   const fetchAgents = useCallback(async (currentPage: number, currentPageSize: number, append: boolean = false) => {
@@ -65,7 +62,7 @@ const Dashboard: React.FC = () => {
       }
       const response = await getAgentConfigsList(currentPage, currentPageSize);
       if (append) {
-        setAgents(prev => [...prev, ...response.items]);
+        setAgents((prev) => [...prev, ...response.items]);
       } else {
         setAgents(response.items);
       }
@@ -74,7 +71,7 @@ const Dashboard: React.FC = () => {
       setHasMore(response.page < response.total_pages);
       setError(null);
     } catch (err) {
-      setError("Failed to load agent configurations");
+      setError('Failed to load agent configurations');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -106,12 +103,12 @@ const Dashboard: React.FC = () => {
     try {
       setIsDeleting(true);
       await deleteAgentConfig(agentToDelete.id);
-      toast.success("Agent deleted successfully.");
+      toast.success('Agent deleted successfully.');
       // Refetch to update pagination correctly
       await fetchAgents(page, pageSize);
     } catch (err) {
-      toast.error("Failed to delete agent.");
-      setError("Failed to delete agent");
+      toast.error('Failed to delete agent.');
+      setError('Failed to delete agent');
     } finally {
       setAgentToDelete(null);
       setIsDeleteDialogOpen(false);
@@ -126,13 +123,11 @@ const Dashboard: React.FC = () => {
         await initializeAgent(agentId);
 
         // Update the local state optimistically
-        const updatedAgents = agents.map((a) =>
-          a.id === agentId ? { ...a, is_active: !a.is_active } : a
-        );
+        const updatedAgents = agents.map((a) => (a.id === agentId ? { ...a, is_active: !a.is_active } : a));
         setAgents(updatedAgents);
       }
     } catch (err) {
-      setError("Failed to update agent status");
+      setError('Failed to update agent status');
       // Refetch to ensure UI is in sync with backend
       await fetchAgents(page, pageSize);
     }
@@ -149,11 +144,11 @@ const Dashboard: React.FC = () => {
           const fullAgent = await getAgentConfig(agentId);
           setModalContext({ agentId, userId: fullAgent.user_id, redirectOnClose: true });
         } catch {
-          toast.error("Failed to load agent details");
+          toast.error('Failed to load agent details');
         }
         return;
       }
-      toast.error("Failed to fetch an API key.");
+      toast.error('Failed to fetch an API key.');
     }
   };
 
@@ -171,16 +166,11 @@ const Dashboard: React.FC = () => {
       if (isMissingApiKeyError(err)) {
         return;
       }
-      toast.error("Failed to fetch an API key.");
+      toast.error('Failed to fetch an API key.');
     }
   };
 
-  if (loading)
-    return (
-      <div className="flex items-center justify-center p-8">
-        Loading workflows configurations...
-      </div>
-    );
+  if (loading) return <div className="flex items-center justify-center p-8">Loading workflows configurations...</div>;
 
   if (error) {
     return (
@@ -191,20 +181,14 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="bg-white p-6 rounded-md shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">
-            Server Connection Error
-          </h2>
-          <p className="mb-4">
-            Unable to connect to the AI Agent server. This may be because:
-          </p>
+          <h2 className="text-xl font-semibold mb-4">Server Connection Error</h2>
+          <p className="mb-4">Unable to connect to the AI Agent server. This may be because:</p>
           <ul className="list-disc pl-6 mb-6 space-y-2">
             <li>The server is not running</li>
             <li>There's a network issue</li>
             <li>The server configuration is incorrect</li>
           </ul>
-          <p className="mb-6">
-            Please check your server configuration and try again.
-          </p>
+          <p className="mb-6">Please check your server configuration and try again.</p>
         </div>
       </div>
     );
@@ -240,7 +224,7 @@ const Dashboard: React.FC = () => {
           onOpenChange={setIsDeleteDialogOpen}
           onConfirm={handleDeleteAgent}
           isInProgress={isDeleting}
-          itemName={agentToDelete?.name || ""}
+          itemName={agentToDelete?.name || ''}
           description={`This action cannot be undone. This will permanently delete agent "${agentToDelete?.name}".`}
         ></ConfirmDialog>
       </div>

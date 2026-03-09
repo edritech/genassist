@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { UsersCard } from "@/views/Users/components/UsersCard";
-import { UserDialog } from "../components/UserDialog";
-import { User } from "@/interfaces/user.interface";
+import { useState } from 'react';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { UsersCard } from '@/views/Users/components/UsersCard';
+import { UserDialog } from '../components/UserDialog';
+import { User } from '@/interfaces/user.interface';
 
 export default function Users() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [updatedUser, setUpdatedUser] = useState<User | null>(null);
 
@@ -22,13 +22,13 @@ export default function Users() {
   };
 
   const handleCreateUser = () => {
-    setDialogMode("create");
+    setDialogMode('create');
     setUserToEdit(null);
     setIsDialogOpen(true);
   };
 
   const handleEditUser = (user: User) => {
-    setDialogMode("edit");
+    setDialogMode('edit');
     setUserToEdit(user);
     setIsDialogOpen(true);
   };

@@ -1,5 +1,5 @@
-import { LucideIcon, ThumbsUp, Clock, CheckCircle } from "lucide-react";
-import { TranscriptMetrics } from "@/interfaces/transcript.interface";
+import { LucideIcon, ThumbsUp, Clock, CheckCircle } from 'lucide-react';
+import { TranscriptMetrics } from '@/interfaces/transcript.interface';
 
 type ScoreCardProps = {
   icon: LucideIcon;
@@ -9,13 +9,7 @@ type ScoreCardProps = {
   iconClassName?: string;
 };
 
-export function ScoreCard({
-  icon: Icon,
-  label,
-  value,
-  className = "",
-  iconClassName = "",
-}: ScoreCardProps) {
+export function ScoreCard({ icon: Icon, label, value, className = '', iconClassName = '' }: ScoreCardProps) {
   return (
     <div className={`flex bg-gray-100 rounded-xl p-4 ${className}`}>
       <Icon className={`w-5 h-5 mt-1 ${iconClassName}`} />
@@ -32,10 +26,9 @@ type ScoreCardsProps = {
   className?: string;
 };
 
-const formatScorePercentage = (value: number) =>
-  value > 0 ? `${Math.round((value / 10) * 100)}%` : "0%";
+const formatScorePercentage = (value: number) => (value > 0 ? `${Math.round((value / 10) * 100)}%` : '0%');
 
-export function ScoreCards({ metrics, className = "" }: ScoreCardsProps) {
+export function ScoreCards({ metrics, className = '' }: ScoreCardsProps) {
   return (
     <div className={`grid grid-cols-2 gap-4 ${className}`}>
       <ScoreCard

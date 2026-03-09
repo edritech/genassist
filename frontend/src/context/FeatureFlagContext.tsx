@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { getFeatureFlags } from '@/services/featureFlags';
 import { FeatureFlag, ParsedFeatureFlag } from '@/interfaces/featureFlag.interface';
-import { parseFeatureFlags, isFeatureEnabled as checkFeatureEnabled, getFeatureValue as getFeatureValueHelper } from '@/helpers/featureFlag';
+import {
+  parseFeatureFlags,
+  isFeatureEnabled as checkFeatureEnabled,
+  getFeatureValue as getFeatureValueHelper,
+} from '@/helpers/featureFlag';
 import { isAuthenticated } from '@/services/auth';
 
 interface FeatureFlagContextType {
@@ -74,14 +78,10 @@ export const FeatureFlagProvider: React.FC<FeatureFlagProviderProps> = ({ childr
     getValue,
     getFeatureItems,
     getFeatureItem,
-    refreshFlags
+    refreshFlags,
   };
 
-  return (
-    <FeatureFlagContext.Provider value={value}>
-      {children}
-    </FeatureFlagContext.Provider>
-  );
+  return <FeatureFlagContext.Provider value={value}>{children}</FeatureFlagContext.Provider>;
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -91,4 +91,4 @@ export const useFeatureFlag = (): FeatureFlagContextType => {
     throw new Error('useFeatureFlag must be used within a FeatureFlagProvider');
   }
   return context;
-}; 
+};

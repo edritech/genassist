@@ -4,13 +4,13 @@ MCP Server Adapter using the official MCP Python SDK.
 This adapter bridges FastAPI routes with the MCP SDK to properly expose workflows as MCP tools.
 """
 
-import logging
-from typing import Dict, Any, List
 import json
+import logging
 import uuid
+from typing import Any, Dict, List
 
-from mcp.types import Tool, TextContent
 from mcp.server import Server
+from mcp.types import TextContent, Tool
 
 from app.modules.workflow.engine.workflow_engine import WorkflowEngine
 
@@ -49,9 +49,7 @@ class WorkflowMCPServerAdapter:
 
         for workflow_mapping in self.mcp_server.workflows:
             # Get workflow to extract input schema
-            workflow_model = await self.workflow_repo.get_by_id(
-                workflow_mapping.workflow_id
-            )
+            workflow_model = await self.workflow_repo.get_by_id(workflow_mapping.workflow_id)
 
             if not workflow_model:
                 logger.warning(
@@ -76,9 +74,7 @@ class WorkflowMCPServerAdapter:
 
         return tools
 
-    async def call_tool(
-        self, tool_name: str, arguments: Dict[str, Any]
-    ) -> List[TextContent]:
+    async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> List[TextContent]:
         """
         Execute a workflow as an MCP tool.
 
@@ -100,14 +96,10 @@ class WorkflowMCPServerAdapter:
                 break
 
         if not workflow_mapping:
-            raise ValueError(
-                f"Tool '{tool_name}' not found or not exposed by this server"
-            )
+            raise ValueError(f"Tool '{tool_name}' not found or not exposed by this server")
 
         # Get workflow
-        workflow_model = await self.workflow_repo.get_by_id(
-            workflow_mapping.workflow_id
-        )
+        workflow_model = await self.workflow_repo.get_by_id(workflow_mapping.workflow_id)
         if not workflow_model:
             raise ValueError("Workflow not found")
 

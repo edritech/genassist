@@ -1,10 +1,12 @@
-from google.api_core.client_options import ClientOptions
-from google.cloud import speech_v2
-from google.cloud import speech as cloud_speech
-from google.oauth2 import service_account
-import os
 import json
-from typing import Optional, Union
+import os
+from typing import Optional
+
+from google.api_core.client_options import ClientOptions
+from google.cloud import speech as cloud_speech
+from google.cloud import speech_v2
+from google.oauth2 import service_account
+
 from .GoogleStorageService import GoogleStorageService  # adjust relative import if needed
 
 
@@ -32,7 +34,6 @@ class GoogleTranscribeService:
         config_json: Optional[str] = None,
         config_json_file: Optional[str] = None,
     ):
-        
         credentials = None
         project_id = None
 
@@ -57,19 +58,19 @@ class GoogleTranscribeService:
         self.sst_model = sst_model
 
         self.client = speech_v2.SpeechClient(
-            credentials=credentials, 
-            client_options=ClientOptions(api_endpoint=f"{sst_region}-speech.googleapis.com"), 
+            credentials=credentials,
+            client_options=ClientOptions(api_endpoint=f"{sst_region}-speech.googleapis.com"),
         )
 
         if storage_bucket and not storage_service:
-            self.storage_service = GoogleStorageService(config_json=config_json, config_json_file = config_json_file, storage_bucket = storage_bucket)
+            self.storage_service = GoogleStorageService(
+                config_json=config_json, config_json_file=config_json_file, storage_bucket=storage_bucket
+            )
 
     # ----------------------
     # Short Audio Transcription
     # ----------------------
-    def transcribe_short_audio(
-        self, file_name: Optional[str] = None, content: Optional[bytes] = None
-    ):
+    def transcribe_short_audio(self, file_name: Optional[str] = None, content: Optional[bytes] = None):
         """Transcribes short audio directly or from local file."""
         if not content and not file_name:
             raise ValueError("Either 'content' or 'file_name' must be provided.")
@@ -102,9 +103,7 @@ class GoogleTranscribeService:
     # ----------------------
     # Long Audio Transcription
     # ----------------------
-    def transcribe_long_audio(
-        self, file_name: Optional[str] = None, content: Optional[bytes] = None
-    ):
+    def transcribe_long_audio(self, file_name: Optional[str] = None, content: Optional[bytes] = None):
         """Uploads long audio to GCS, transcribes it, and cleans up."""
         if not self.storage_service or not self.storage_bucket:
             raise ValueError("storage_service and storage_bucket are required for long audio transcription.")
@@ -121,7 +120,9 @@ class GoogleTranscribeService:
 
         if content:
             # self.storage_service.upload_bytes(self.storage_bucket, blob_name, content)
-            self.storage_service.file_upload_content(local_file_content=content,local_file_name=blob_name, destination_name=blob_name, prefix="uploads")
+            self.storage_service.file_upload_content(
+                local_file_content=content, local_file_name=blob_name, destination_name=blob_name, prefix="uploads"
+            )
         else:
             # self.storage_service.upload_file(self.storage_bucket, file_name, blob_name)
             self.storage_service.file_upload(local_file_path=file_name, destination_name=blob_name, prefix="uploads")
@@ -151,7 +152,7 @@ class GoogleTranscribeService:
         print("OK - Transcription complete.")
 
         # Cleanup
-        #self.storage_service.delete_file(self.storage_bucket, blob_name)
+        # self.storage_service.delete_file(self.storage_bucket, blob_name)
         self.storage_service.file_delete(filename=blob_name, prefix="uploads")
 
         return response
@@ -159,9 +160,7 @@ class GoogleTranscribeService:
     # ----------------------
     # Diarization
     # ----------------------
-    def diarize_audio(
-        self, file_name: Optional[str] = None, content: Optional[bytes] = None
-    ):
+    def diarize_audio(self, file_name: Optional[str] = None, content: Optional[bytes] = None):
         """Performs speaker diarization for long audio."""
         if not self.storage_service or not self.storage_bucket:
             raise ValueError("storage_service and storage_bucket are required for diarization.")
@@ -177,7 +176,9 @@ class GoogleTranscribeService:
 
         if content:
             # self.storage_service.upload_bytes(self.storage_bucket, blob_name, content)
-            self.storage_service.file_upload_content(local_file_content=content,local_file_name=blob_name, destination_name=blob_name, prefix="uploads")
+            self.storage_service.file_upload_content(
+                local_file_content=content, local_file_name=blob_name, destination_name=blob_name, prefix="uploads"
+            )
         else:
             # self.storage_service.upload_file(self.storage_bucket, file_name, blob_name)
             self.storage_service.file_upload(local_file_path=blob_name, destination_name=blob_name, prefix="uploads")
@@ -219,7 +220,6 @@ class GoogleTranscribeService:
 
         return response
 
-
     def get_merged_transcripts(self, response) -> str:
         """
         Merge all transcript alternatives from a Speech-to-Text v2 BatchRecognizeResponse
@@ -233,9 +233,8 @@ class GoogleTranscribeService:
         """
         transcripts = []
         lang_code = ""
-        full_text=""
+        full_text = ""
         try:
-                
             # Iterate through files in response
             for file_key, file_result in response.results.items():
                 # Check inline recognition results (preferred)
@@ -246,7 +245,7 @@ class GoogleTranscribeService:
                         if result.alternatives:
                             transcripts.append(result.alternatives[0].transcript.strip())
                             # print(result.language_code)
-                            lang_code=result.language_code
+                            lang_code = result.language_code
 
                 # Fallback to outer transcript object if inline missing
                 elif file_result.transcript and file_result.transcript.results:
@@ -254,22 +253,19 @@ class GoogleTranscribeService:
                         if result.alternatives:
                             transcripts.append(result.alternatives[0].transcript.strip())
                             # print(result.language_code)
-                            lang_code=result.language_code
+                            lang_code = result.language_code
 
             # Merge with space (you can use ". " if you want sentence separation)
             full_text = " ".join(t for t in transcripts if t)
 
         except Exception as e:
-            # fail gracefully and print error to console 
+            # fail gracefully and print error to console
             print(f"Error converting output: {e}")
 
-        return_result = {
-            "text":full_text.strip(),
-            "language":lang_code, 
-            "original_output":response
-        }
+        return_result = {"text": full_text.strip(), "language": lang_code, "original_output": response}
 
         return return_result
+
 
 ##############################################
 # usage

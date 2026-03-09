@@ -5,12 +5,7 @@ interface OnboardingNameAgentProps {
   onContinue: () => void;
 }
 
-export const OnboardingNameAgent = ({
-  value,
-  disabled = false,
-  onChange,
-  onContinue,
-}: OnboardingNameAgentProps) => {
+export const OnboardingNameAgent = ({ value, disabled = false, onChange, onContinue }: OnboardingNameAgentProps) => {
   const isButtonDisabled = disabled || !value.trim();
 
   return (
@@ -38,11 +33,11 @@ export const OnboardingNameAgent = ({
           type="submit"
           disabled={isButtonDisabled}
           className={[
-            "h-10 w-32 rounded-xl text-sm font-semibold text-white transition-colors",
+            'h-10 w-32 rounded-xl text-sm font-semibold text-white transition-colors',
             isButtonDisabled
-              ? "bg-[#a7a3ff]"
-              : "bg-[#5b4bff] shadow-[0_10px_24px_rgba(91,75,255,0.35)] hover:bg-[#4f46e5]",
-          ].join(" ")}
+              ? 'bg-[#a7a3ff]'
+              : 'bg-[#5b4bff] shadow-[0_10px_24px_rgba(91,75,255,0.35)] hover:bg-[#4f46e5]',
+          ].join(' ')}
         >
           Continue
         </button>

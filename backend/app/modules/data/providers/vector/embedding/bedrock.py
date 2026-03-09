@@ -7,6 +7,7 @@ import logging
 from typing import List
 
 from app.core.config.settings import settings
+
 from .base import BaseEmbedder, EmbeddingConfig
 
 logger = logging.getLogger(__name__)
@@ -48,13 +49,9 @@ class BedrockEmbedder(BaseEmbedder):
             # 2. AWS credentials file (~/.aws/credentials)
             # 3. IAM instance profile (EC2/ECS)
             # 4. IAM role (Lambda/ECS with task role)
-            self.client = BedrockEmbeddings(
-                model_id=model_id,
-                region_name=region_name
-            )
+            self.client = BedrockEmbeddings(model_id=model_id, region_name=region_name)
 
-            logger.info(
-                f"Initialized Bedrock embeddings with model: {model_id} in region: {region_name}")
+            logger.info(f"Initialized Bedrock embeddings with model: {model_id} in region: {region_name}")
             return True
 
         except Exception as e:
@@ -107,18 +104,14 @@ class BedrockEmbedder(BaseEmbedder):
         for attempt in range(max_retries):
             try:
                 # TEST: Using slow operation (15s) instead of actual Bedrock call
-                embedding = await asyncio.wait_for(
-                    self.client.aembed_query(query),
-                    timeout=timeout_seconds
-                )
+                embedding = await asyncio.wait_for(self.client.aembed_query(query), timeout=timeout_seconds)
                 return embedding
 
             except asyncio.TimeoutError:
                 logger.warning(
-                    f"Bedrock embed_query timed out after {timeout_seconds}s "
-                    f"(attempt {attempt + 1}/{max_retries})"
+                    f"Bedrock embed_query timed out after {timeout_seconds}s (attempt {attempt + 1}/{max_retries})"
                 )
-                
+
                 # Reinitialize client after timeout to ensure clean connection
                 # This helps prevent hanging connections from accumulating
                 if attempt < max_retries - 1:
@@ -128,9 +121,7 @@ class BedrockEmbedder(BaseEmbedder):
                         logger.error("Failed to reinitialize Bedrock client")
                         return []
                 else:
-                    logger.error(
-                        f"Failed to generate query embedding after {max_retries} attempts due to timeout"
-                    )
+                    logger.error(f"Failed to generate query embedding after {max_retries} attempts due to timeout")
                     return []
 
             except Exception as e:

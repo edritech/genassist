@@ -1,13 +1,20 @@
 import base64
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
-from typing import List, Dict, Optional, Any
 import logging
 from datetime import datetime, timedelta
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import Any, Dict, List, Optional
 from uuid import UUID
+
+import requests
 from fastapi import HTTPException
+
+# Google API imports
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
@@ -16,12 +23,6 @@ from app.dependencies.injector import injector
 from app.schemas.datasource import DataSourceUpdate
 from app.services.app_settings import AppSettingsService
 from app.services.datasources import DataSourceService
-
-# Google API imports
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-import requests
 
 logger = logging.getLogger(__name__)
 
@@ -58,18 +59,15 @@ class GmailConnector:
             ds_service = injector.get(DataSourceService)
             ds = await ds_service.get_by_id(self.ds_id, decrypt_sensitive=True)
             if not ds:
-                logger.error(
-                    f"Cant find gmail datasource with id: {self.ds_id}")
+                logger.error(f"Cant find gmail datasource with id: {self.ds_id}")
                 return
             logger.info(f"Connection data: {ds}")
 
             self.current_access_token = ds.connection_data.get("access_token")
             self.refresh_token = ds.connection_data.get("refresh_token")
-            self.expires_at = datetime.fromisoformat(
-                ds.connection_data.get("expires_at")
-            )
+            self.expires_at = datetime.fromisoformat(ds.connection_data.get("expires_at"))
 
-            logger.info(f"Read Gmail tokens from connection data.")
+            logger.info("Read Gmail tokens from connection data.")
 
             # Get app_settings_id from data source connection_data
             app_settings_id = ds.connection_data.get("app_settings_id")
@@ -81,8 +79,7 @@ class GmailConnector:
             app_settings = await settings_service.get_by_id(UUID(app_settings_id))
 
             # Extract values from the values field
-            values = app_settings.values if isinstance(
-                app_settings.values, dict) else {}
+            values = app_settings.values if isinstance(app_settings.values, dict) else {}
             client_id = values.get("gmail_client_id")
             client_secret = values.get("gmail_client_secret")
 
@@ -94,8 +91,7 @@ class GmailConnector:
                 raise Exception("gmail_client_id not found in app settings!")
 
             if not client_secret:
-                raise Exception(
-                    "gmail_client_secret not found in app settings!")
+                raise Exception("gmail_client_secret not found in app settings!")
 
             self.client_id = client_id
             self.client_secret = client_secret
@@ -149,11 +145,8 @@ class GmailConnector:
 
                     # Add 5-minute buffer to refresh before actual expiration
                     if current_time >= (self.expires_at - timedelta(minutes=5)):
-                        logger.info(
-                            "Gmail access token expired or expiring soon, refreshing..."
-                        )
-                        refreshed_tokens = self._refresh_gmail_token(
-                            self.refresh_token)
+                        logger.info("Gmail access token expired or expiring soon, refreshing...")
+                        refreshed_tokens = self._refresh_gmail_token(self.refresh_token)
 
                         if refreshed_tokens:
                             from app.dependencies.injector import injector
@@ -164,12 +157,8 @@ class GmailConnector:
                             await self._save_refreshed_tokens(refreshed_tokens)
 
                             self.current_access_token = refreshed_tokens["access_token"]
-                            self.refresh_token = refreshed_tokens.get(
-                                "refresh_token", self.refresh_token
-                            )
-                            self.expires_at = datetime.fromisoformat(
-                                refreshed_tokens["expires_at"]
-                            )
+                            self.refresh_token = refreshed_tokens.get("refresh_token", self.refresh_token)
+                            self.expires_at = datetime.fromisoformat(refreshed_tokens["expires_at"])
                             return refreshed_tokens
                         else:
                             logger.error("Failed to refresh Gmail token")
@@ -183,42 +172,28 @@ class GmailConnector:
                         }
 
                 except (ValueError, AttributeError) as e:
-                    logger.warning(
-                        f"Invalid token expiration format: {e}, attempting refresh"
-                    )
+                    logger.warning(f"Invalid token expiration format: {e}, attempting refresh")
                     # If we can't parse expiration, try to refresh anyway
-                    refreshed_tokens = self._refresh_gmail_token(
-                        self.refresh_token)
+                    refreshed_tokens = self._refresh_gmail_token(self.refresh_token)
 
                     if refreshed_tokens:
                         await self._save_refreshed_tokens(refreshed_tokens)
                         self.current_access_token = refreshed_tokens["access_token"]
-                        self.refresh_token = refreshed_tokens.get(
-                            "refresh_token", self.refresh_token
-                        )
-                        self.expires_at = datetime.fromisoformat(
-                            refreshed_tokens["expires_at"]
-                        )
+                        self.refresh_token = refreshed_tokens.get("refresh_token", self.refresh_token)
+                        self.expires_at = datetime.fromisoformat(refreshed_tokens["expires_at"])
                         return refreshed_tokens
             else:
                 # No expiration info stored, try to validate current token
-                logger.info(
-                    "No token expiration info found, validating current token..."
-                )
+                logger.info("No token expiration info found, validating current token...")
                 if not self._validate_gmail_token(self.refresh_token):
                     logger.info("Gmail access token is invalid, refreshing...")
-                    refreshed_tokens = self._refresh_gmail_token(
-                        self.refresh_token)
+                    refreshed_tokens = self._refresh_gmail_token(self.refresh_token)
 
                     if refreshed_tokens:
                         self._save_refreshed_tokens(refreshed_tokens)
                         self.current_access_token = refreshed_tokens["access_token"]
-                        self.refresh_token = refreshed_tokens.get(
-                            "refresh_token", self.refresh_token
-                        )
-                        self.expires_at = datetime.fromisoformat(
-                            refreshed_tokens["expires_at"]
-                        )
+                        self.refresh_token = refreshed_tokens.get("refresh_token", self.refresh_token)
+                        self.expires_at = datetime.fromisoformat(refreshed_tokens["expires_at"])
                         return refreshed_tokens
                     else:
                         logger.error("Failed to refresh Gmail token")
@@ -290,12 +265,8 @@ class GmailConnector:
             headers = {"Authorization": f"Bearer {self.current_access_token}"}
             response = requests.request("GET", user_info_url, headers=headers)
             if response.status_code != 200:
-                logger.error(
-                    f"Failed to retrieve user info: {response.status_code} - {response.text}"
-                )
-                raise HTTPException(
-                    status_code=400, detail="Failed to retrieve user information"
-                )
+                logger.error(f"Failed to retrieve user info: {response.status_code} - {response.text}")
+                raise HTTPException(status_code=400, detail="Failed to retrieve user information")
             return True
 
         except requests.exceptions.RequestException:
@@ -315,12 +286,8 @@ class GmailConnector:
 
             existing_data = ds.connection_data
             existing_data["access_token"] = tokens["access_token"]
-            existing_data["refresh_token"] = tokens.get(
-                "refresh_token", existing_data["refresh_token"]
-            )
-            existing_data["expires_at"] = tokens.get(
-                "expires_at", existing_data["expires_at"]
-            )
+            existing_data["refresh_token"] = tokens.get("refresh_token", existing_data["refresh_token"])
+            existing_data["expires_at"] = tokens.get("expires_at", existing_data["expires_at"])
 
             ds_update = DataSourceUpdate(
                 name=ds.name,
@@ -405,33 +372,22 @@ class GmailConnector:
                         file_data = attachment_info.get("file", {})
 
                         if not filename or not file_data:
-                            logger.warning(
-                                f"Skipping attachment {i}: missing filename or file_data"
-                            )
+                            logger.warning(f"Skipping attachment {i}: missing filename or file_data")
                             continue
 
                         base64_content = file_data.get("content")
                         if base64_content:
                             try:
-                                logger.info(
-                                    f"Processing attachment: {filename}")
-                                logger.debug(
-                                    f"Base64 content length: {len(base64_content)}"
-                                )
+                                logger.info(f"Processing attachment: {filename}")
+                                logger.debug(f"Base64 content length: {len(base64_content)}")
 
                                 file_content = base64.b64decode(base64_content)
-                                logger.debug(
-                                    f"Decoded content length: {len(file_content)} bytes"
-                                )
+                                logger.debug(f"Decoded content length: {len(file_content)} bytes")
 
                                 # Determine MIME type based on file extension or provided type
-                                file_type = attachment_info.get(
-                                    "type", "application/octet-stream"
-                                )
+                                file_type = attachment_info.get("type", "application/octet-stream")
                                 main_type, sub_type = (
-                                    file_type.split("/", 1)
-                                    if "/" in file_type
-                                    else ("application", "octet-stream")
+                                    file_type.split("/", 1) if "/" in file_type else ("application", "octet-stream")
                                 )
 
                                 # Create MIME part with proper type
@@ -449,21 +405,15 @@ class GmailConnector:
 
                                 # Attach to message
                                 message.attach(part)
-                                logger.info(
-                                    f"Successfully attached: {filename} ({len(file_content)} bytes)"
-                                )
+                                logger.info(f"Successfully attached: {filename} ({len(file_content)} bytes)")
 
                             except Exception as e:
-                                logger.error(
-                                    f"Error processing attachment {filename}: {str(e)}"
-                                )
+                                logger.error(f"Error processing attachment {filename}: {str(e)}")
                                 import traceback
 
                                 logger.error(traceback.format_exc())
                         else:
-                            logger.warning(
-                                f"No content found for attachment: {filename}"
-                            )
+                            logger.warning(f"No content found for attachment: {filename}")
 
             # Encode message
             raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
@@ -472,12 +422,7 @@ class GmailConnector:
             if not self.service:
                 await self._initialize_service()
 
-            send_result = (
-                self.service.users()
-                .messages()
-                .send(userId="me", body={"raw": raw_message})
-                .execute()
-            )
+            send_result = self.service.users().messages().send(userId="me", body={"raw": raw_message}).execute()
 
             result = {
                 "success": True,
@@ -552,12 +497,7 @@ class GmailConnector:
                 await self._initialize_service()
 
             for message in messages:
-                msg_detail = (
-                    self.service.users()
-                    .messages()
-                    .get(userId="me", id=message["id"], format="full")
-                    .execute()
-                )
+                msg_detail = self.service.users().messages().get(userId="me", id=message["id"], format="full").execute()
 
                 # Extract message information
                 headers = msg_detail["payload"].get("headers", [])
@@ -575,9 +515,7 @@ class GmailConnector:
                 body = self._extract_message_body(msg_detail["payload"])
 
                 # Extract recipients more comprehensively
-                to_recipients = get_header_value(
-                    ["to", "delivered-to", "x-original-to"]
-                )
+                to_recipients = get_header_value(["to", "delivered-to", "x-original-to"])
                 cc_recipients = get_header_value(["cc"])
                 bcc_recipients = get_header_value(["bcc"])
 
@@ -621,14 +559,11 @@ class GmailConnector:
             for part in payload["parts"]:
                 if part["mimeType"] == "text/plain":
                     if "data" in part["body"]:
-                        body = base64.urlsafe_b64decode(part["body"]["data"]).decode(
-                            "utf-8"
-                        )
+                        body = base64.urlsafe_b64decode(part["body"]["data"]).decode("utf-8")
                         break
         elif payload["mimeType"] == "text/plain":
             if "data" in payload["body"]:
-                body = base64.urlsafe_b64decode(
-                    payload["body"]["data"]).decode("utf-8")
+                body = base64.urlsafe_b64decode(payload["body"]["data"]).decode("utf-8")
 
         return body
 
@@ -674,9 +609,7 @@ class GmailConnector:
             logger.error(f"Failed to delete message: {error}")
             return False
 
-    async def search_emails(
-        self, search_criteria: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    async def search_emails(self, search_criteria: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Advanced email search with multiple criteria
 
@@ -739,9 +672,7 @@ class GmailConnector:
 
         return await self.get_messages(query=query, max_results=max_results)
 
-    async def reply_to_email(
-        self, original_email: Dict[str, Any], reply_body: str
-    ) -> Dict[str, Any]:
+    async def reply_to_email(self, original_email: Dict[str, Any], reply_body: str) -> Dict[str, Any]:
         """
         Reply to an email
 
@@ -873,12 +804,6 @@ class GmailConnector:
         # 2. optional: filter by attendee e-mail on the client side
         if attendee:
             attendee_lower = attendee.lower()
-            items = [
-                e
-                for e in items
-                if any(
-                    a["email"].lower() == attendee_lower for a in e.get("attendees", [])
-                )
-            ]
+            items = [e for e in items if any(a["email"].lower() == attendee_lower for a in e.get("attendees", []))]
 
         return items

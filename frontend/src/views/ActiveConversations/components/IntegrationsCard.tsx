@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { Mail, Headset, MessageSquare, MessageCircle, Calendar, Settings } from "lucide-react";
-import { Card } from "@/components/card";
-import { IntegrationWorkflowsDialog } from "./IntegrationWorkflowsDialog";
-import { fetchDashboardIntegrations } from "@/services/dashboard";
-import type { IntegrationItem as ApiIntegrationItem } from "@/interfaces/dashboard.interface";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { Mail, Headset, MessageSquare, MessageCircle, Calendar, Settings } from 'lucide-react';
+import { Card } from '@/components/card';
+import { IntegrationWorkflowsDialog } from './IntegrationWorkflowsDialog';
+import { fetchDashboardIntegrations } from '@/services/dashboard';
+import type { IntegrationItem as ApiIntegrationItem } from '@/interfaces/dashboard.interface';
+import { useNavigate } from 'react-router-dom';
 
-type IconType = "mail" | "headset" | "slack" | "whatsapp" | "calendar" | "other";
+type IconType = 'mail' | 'headset' | 'slack' | 'whatsapp' | 'calendar' | 'other';
 
 interface Integration {
   id: string;
@@ -26,15 +26,15 @@ interface IntegrationsCardProps {
 
 const getIconTypeFromIntegrationType = (type: string): IconType => {
   const typeMap: Record<string, IconType> = {
-    gmail: "mail",
-    zendesk: "headset",
-    slack: "slack",
-    whatsapp: "whatsapp",
-    microsoft: "calendar",
-    jira: "other",
-    other: "other",
+    gmail: 'mail',
+    zendesk: 'headset',
+    slack: 'slack',
+    whatsapp: 'whatsapp',
+    microsoft: 'calendar',
+    jira: 'other',
+    other: 'other',
   };
-  return typeMap[type.toLowerCase()] || "other";
+  return typeMap[type.toLowerCase()] || 'other';
 };
 
 const transformApiIntegration = (item: ApiIntegrationItem): Integration => ({
@@ -42,39 +42,39 @@ const transformApiIntegration = (item: ApiIntegrationItem): Integration => ({
   name: item.name,
   description: item.description || getDefaultDescription(item.type),
   icon: getIconTypeFromIntegrationType(item.type),
-  iconColor: "text-green-700",
-  bgColor: "bg-green-100",
+  iconColor: 'text-green-700',
+  bgColor: 'bg-green-100',
   type: item.type,
 });
 
 const getDefaultDescription = (type: string): string => {
   const descriptions: Record<string, string> = {
-    gmail: "Send via Gmail",
-    zendesk: "Create support tickets",
-    slack: "Send Slack messages",
-    whatsapp: "Send WhatsApp messages",
-    microsoft: "Microsoft 365 integration",
-    jira: "Create Jira issues",
-    other: "Custom integration",
+    gmail: 'Send via Gmail',
+    zendesk: 'Create support tickets',
+    slack: 'Send Slack messages',
+    whatsapp: 'Send WhatsApp messages',
+    microsoft: 'Microsoft 365 integration',
+    jira: 'Create Jira issues',
+    other: 'Custom integration',
   };
-  return descriptions[type.toLowerCase()] || "Custom integration";
+  return descriptions[type.toLowerCase()] || 'Custom integration';
 };
 
 const getIcon = (iconType: IconType) => {
-  const iconProps = { className: "w-5 h-5" };
+  const iconProps = { className: 'w-5 h-5' };
 
   switch (iconType) {
-    case "mail":
+    case 'mail':
       return <Mail {...iconProps} />;
-    case "headset":
+    case 'headset':
       return <Headset {...iconProps} />;
-    case "slack":
+    case 'slack':
       return <MessageSquare {...iconProps} />;
-    case "whatsapp":
+    case 'whatsapp':
       return <MessageCircle {...iconProps} />;
-    case "calendar":
+    case 'calendar':
       return <Calendar {...iconProps} />;
-    case "other":
+    case 'other':
     default:
       return <Settings {...iconProps} />;
   }
@@ -108,7 +108,7 @@ export function IntegrationsCard({
           setIntegrations(response.integrations.map(transformApiIntegration));
         }
       } catch (error) {
-        console.error("Error fetching integrations:", error);
+        console.error('Error fetching integrations:', error);
       } finally {
         setLoading(false);
       }
@@ -126,7 +126,7 @@ export function IntegrationsCard({
     if (onViewAll) {
       onViewAll();
     } else {
-      navigate("/app-settings");
+      navigate('/app-settings');
     }
   };
 
@@ -138,10 +138,7 @@ export function IntegrationsCard({
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold text-foreground">Integrations</h3>
           </div>
-          <button
-            onClick={handleViewAll}
-            className="text-sm font-medium text-foreground hover:underline hidden"
-          >
+          <button onClick={handleViewAll} className="text-sm font-medium text-foreground hover:underline hidden">
             View all
           </button>
         </div>
@@ -157,10 +154,7 @@ export function IntegrationsCard({
           ) : integrations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>No integrations configured yet.</p>
-              <button
-                onClick={handleViewAll}
-                className="mt-2 text-sm text-primary hover:underline"
-              >
+              <button onClick={handleViewAll} className="mt-2 text-sm text-primary hover:underline">
                 Configure integrations
               </button>
             </div>
@@ -173,19 +167,13 @@ export function IntegrationsCard({
               >
                 {/* Icon */}
                 <div className={`${integration.bgColor} flex items-center p-2 rounded-lg shrink-0`}>
-                  <div className={integration.iconColor}>
-                    {getIcon(integration.icon)}
-                  </div>
+                  <div className={integration.iconColor}>{getIcon(integration.icon)}</div>
                 </div>
 
                 {/* Content */}
                 <div className="flex flex-col flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-accent-foreground truncate">
-                    {integration.type}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {integration.description}
-                  </p>
+                  <p className="text-sm font-semibold text-accent-foreground truncate">{integration.type}</p>
+                  <p className="text-xs text-muted-foreground truncate">{integration.description}</p>
                 </div>
               </div>
             ))

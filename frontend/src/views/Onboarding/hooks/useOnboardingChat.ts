@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChatService, type AgentWelcomeData, type ChatMessage } from "genassist-chat-react";
-import { type RegistrationStatus } from "@/context/RoutesContext";  
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChatService, type AgentWelcomeData, type ChatMessage } from 'genassist-chat-react';
+import { type RegistrationStatus } from '@/context/RoutesContext';
 
 export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: RegistrationStatus }) => {
   const [error, setError] = useState<string | null>(null);
-  const [prompt, setPrompt] = useState<string>("");
+  const [prompt, setPrompt] = useState<string>('');
   const [agentReply, setAgentReply] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -22,12 +22,15 @@ export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: 
   const isStartingConversationRef = useRef(false);
   const hasUserStartedChatRef = useRef(false);
 
-  const onboardingBaseUrl = (import.meta.env.VITE_ONBOARDING_API_URL as string) || "";
-  const onboardingApiKey = (import.meta.env.VITE_ONBOARDING_CHAT_APIKEY as string) || "";
-  const tenant = (localStorage.getItem("tenant_id") as string | null) || undefined;
+  const onboardingBaseUrl = (import.meta.env.VITE_ONBOARDING_API_URL as string) || '';
+  const onboardingApiKey = (import.meta.env.VITE_ONBOARDING_CHAT_APIKEY as string) || '';
+  const tenant = (localStorage.getItem('tenant_id') as string | null) || undefined;
   const chatRef = useRef<ChatService | null>(null);
 
-  const hasConfig = useMemo(() => Boolean(onboardingBaseUrl && onboardingApiKey), [onboardingApiKey, onboardingBaseUrl]);
+  const hasConfig = useMemo(
+    () => Boolean(onboardingBaseUrl && onboardingApiKey),
+    [onboardingApiKey, onboardingBaseUrl]
+  );
 
   useEffect(() => {
     if (!hasConfig || !onboardingBaseUrl) return;
@@ -42,7 +45,7 @@ export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: 
       setWelcomeTitle(data?.title ?? null);
       setWelcomeMessage(data?.message ?? null);
       const faqOptions = Array.isArray(data?.possibleQueries)
-        ? data.possibleQueries.filter((q) => typeof q === "string" && q.trim().length > 0)
+        ? data.possibleQueries.filter((q) => typeof q === 'string' && q.trim().length > 0)
         : [];
       setWelcomeFaqs(faqOptions);
     };
@@ -54,17 +57,17 @@ export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: 
       if (Array.isArray(cfg.phrases) && cfg.phrases.length) {
         setThinkingPhrases(cfg.phrases);
       }
-      if (typeof cfg.delayMs === "number") {
+      if (typeof cfg.delayMs === 'number') {
         setThinkingDelayMs(Math.max(250, cfg.delayMs));
       }
     }
 
     chat.setMessageHandler((message: ChatMessage) => {
       if (!hasUserAskedRef.current) return;
-      if (message.speaker !== "customer") {
+      if (message.speaker !== 'customer') {
         setIsThinking(false);
       }
-      if (message.speaker === "agent") {
+      if (message.speaker === 'agent') {
         setAgentReply(message.text);
       }
     });
@@ -108,7 +111,7 @@ export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: 
         if (Array.isArray(cfg.phrases) && cfg.phrases.length) {
           setThinkingPhrases(cfg.phrases);
         }
-        if (typeof cfg.delayMs === "number") {
+        if (typeof cfg.delayMs === 'number') {
           setThinkingDelayMs(Math.max(250, cfg.delayMs));
         }
       }
@@ -122,11 +125,11 @@ export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: 
     if (chatRef.current?.getConversationId?.()) return;
 
     // if the registration status is existing, skip the conversation
-    if (registrationStatus === "existing") return;
+    if (registrationStatus === 'existing') return;
 
     startConversationIfNeeded().catch((err: unknown) => {
       if (!isMountedRef.current) return;
-      const message = err instanceof Error ? err.message : "Unable to start onboarding chat.";
+      const message = err instanceof Error ? err.message : 'Unable to start onboarding chat.';
       setError(message);
     });
   }, [hasConfig, isChatReady, startConversationIfNeeded, registrationStatus]);
@@ -137,13 +140,13 @@ export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: 
       if (!trimmed) return;
 
       if (!hasConfig) {
-        setError("Add VITE_GENASSIST_CHAT_APIKEY and API URL to use onboarding chat.");
+        setError('Add VITE_GENASSIST_CHAT_APIKEY and API URL to use onboarding chat.');
         return;
       }
 
       const chat = chatRef.current;
       if (!chat) {
-        setError("Chat service not ready yet.");
+        setError('Chat service not ready yet.');
         return;
       }
 
@@ -160,16 +163,16 @@ export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: 
       try {
         await startConversationIfNeeded();
         await chat.sendMessage(trimmed);
-        setPrompt("");
+        setPrompt('');
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Unable to send message.";
+        const message = err instanceof Error ? err.message : 'Unable to send message.';
         setError(message);
         setIsThinking(false);
       } finally {
         setIsSending(false);
       }
     },
-    [hasConfig, startConversationIfNeeded],
+    [hasConfig, startConversationIfNeeded]
   );
 
   const handleSubmit = useCallback(
@@ -177,7 +180,7 @@ export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: 
       event.preventDefault();
       await sendMessage(prompt);
     },
-    [prompt, sendMessage],
+    [prompt, sendMessage]
   );
 
   const sendQuickAction = useCallback(
@@ -186,26 +189,29 @@ export const useOnboardingChat = ({ registrationStatus }: { registrationStatus: 
       setPrompt(message);
       await sendMessage(message);
     },
-    [isSending, sendMessage],
+    [isSending, sendMessage]
   );
 
   useEffect(() => {
     if (!isThinking) return;
-    const timer = setInterval(() => {
-      setThinkingIndex((prev) => (prev + 1) % (thinkingPhrases.length || 1));
-    }, Math.max(500, thinkingDelayMs));
+    const timer = setInterval(
+      () => {
+        setThinkingIndex((prev) => (prev + 1) % (thinkingPhrases.length || 1));
+      },
+      Math.max(500, thinkingDelayMs)
+    );
     return () => clearInterval(timer);
   }, [isThinking, thinkingDelayMs, thinkingPhrases.length]);
 
   const subtitleText =
     agentReply ||
     (isThinking
-      ? thinkingPhrases[thinkingIndex] || "Thinking…"
+      ? thinkingPhrases[thinkingIndex] || 'Thinking…'
       : !hasUserStartedChat
         ? welcomeMessage || "Now let's create your first agent together."
         : "Now let's create your first agent together.");
 
-  const titleText = welcomeTitle || "What would you like your agent to do?";
+  const titleText = welcomeTitle || 'What would you like your agent to do?';
 
   return {
     prompt,

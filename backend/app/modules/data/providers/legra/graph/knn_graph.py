@@ -5,7 +5,7 @@ import numpy.typing as npt
 from sklearn.neighbors import NearestNeighbors
 
 __all__ = [
-    'KNNGraphBuilder',
+    "KNNGraphBuilder",
 ]
 
 
@@ -27,7 +27,6 @@ class KNNGraphBuilder:
             n_neighbors=self.n_neighbors,
             metric=self.metric,
         )
-
 
     def fit(self, emb_matrix: npt.NDArray) -> Tuple[ig.Graph, List[Tuple[int, int]]]:
         """
@@ -56,4 +55,3 @@ class KNNGraphBuilder:
 
         graph = ig.Graph(n=N, edges=edges, directed=False)
         return graph, edges
-

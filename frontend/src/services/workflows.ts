@@ -1,41 +1,27 @@
-import { apiRequest } from "@/config/api";
-import { FieldSchema } from "@/interfaces/dynamicFormSchemas.interface";
+import { apiRequest } from '@/config/api';
+import { FieldSchema } from '@/interfaces/dynamicFormSchemas.interface';
 
-import {
-  Workflow,
-  WorkflowCreatePayload,
-  WorkflowUpdatePayload,
-} from "@/interfaces/workflow.interface";
-import { NodeData } from "@/views/AIAgents/Workflows/types/nodes";
+import { Workflow, WorkflowCreatePayload, WorkflowUpdatePayload } from '@/interfaces/workflow.interface';
+import { NodeData } from '@/views/AIAgents/Workflows/types/nodes';
 
-const BASE = "genagent/workflow";
+const BASE = 'genagent/workflow';
 
 // Get all workflows
-export const getAllWorkflows = () => apiRequest<Workflow[]>("GET", `${BASE}/`);
+export const getAllWorkflows = () => apiRequest<Workflow[]>('GET', `${BASE}/`);
 
 // Get workflow by ID
-export const getWorkflowById = (id: string) =>
-  apiRequest<Workflow>("GET", `${BASE}/${id}`);
+export const getWorkflowById = (id: string) => apiRequest<Workflow>('GET', `${BASE}/${id}`);
 
 // Create a new workflow
 export const createWorkflow = (workflow: WorkflowCreatePayload) =>
-  apiRequest<Workflow>(
-    "POST",
-    `${BASE}/`,
-    workflow as unknown as Record<string, unknown>
-  );
+  apiRequest<Workflow>('POST', `${BASE}/`, workflow as unknown as Record<string, unknown>);
 
 // Update an existing workflow
 export const updateWorkflow = (id: string, workflow: WorkflowUpdatePayload) =>
-  apiRequest<Workflow>(
-    "PUT",
-    `${BASE}/${id}`,
-    workflow as unknown as Record<string, unknown>
-  );
+  apiRequest<Workflow>('PUT', `${BASE}/${id}`, workflow as unknown as Record<string, unknown>);
 
 // Delete a workflow
-export const deleteWorkflow = (id: string) =>
-  apiRequest<void>("DELETE", `${BASE}/${id}`);
+export const deleteWorkflow = (id: string) => apiRequest<void>('DELETE', `${BASE}/${id}`);
 
 // Test a workflow configuration with a test message
 export interface WorkflowTestPayload {
@@ -62,29 +48,21 @@ export interface NodeSchemas {
 
 export const getAllNodeSchemas = async (): Promise<NodeSchemas> => {
   try {
-    return await apiRequest<NodeSchemas>("GET", `${BASE}/node_schemas`);
+    return await apiRequest<NodeSchemas>('GET', `${BASE}/node_schemas`);
   } catch (error) {
-    console.error("Error fetching all node schemas", error);
+    console.error('Error fetching all node schemas', error);
     throw error;
   }
 };
 
 export const testNode = (testData: NodeTestPayload) =>
-  apiRequest<WorkflowTestResponse>(
-    "POST",
-    `${BASE}/test-node`,
-    testData as unknown as Record<string, unknown>
-  );
+  apiRequest<WorkflowTestResponse>('POST', `${BASE}/test-node`, testData as unknown as Record<string, unknown>);
 
 export const testWorkflow = (testData: WorkflowTestPayload) =>
-  apiRequest<WorkflowTestResponse>(
-    "POST",
-    `${BASE}/test`,
-    testData as unknown as Record<string, unknown>
-  );
+  apiRequest<WorkflowTestResponse>('POST', `${BASE}/test`, testData as unknown as Record<string, unknown>);
 
 export const generatePythonTemplate = (schema: any, prompt?: string) =>
-  apiRequest<{ template: string }>("POST", `${BASE}/generate-python-template`, {
+  apiRequest<{ template: string }>('POST', `${BASE}/generate-python-template`, {
     parameters_schema: schema,
     prompt,
   } as unknown as Record<string, unknown>);
@@ -109,7 +87,7 @@ export interface WorkflowWizardResponse {
 // Create a workflow from onboarding chat
 export const createWorkflowFromWizard = (payload: WorkflowWizardPayload) =>
   apiRequest<WorkflowWizardResponse>(
-    "POST",
-    "workflow-manager/config/from-wizard",
+    'POST',
+    'workflow-manager/config/from-wizard',
     payload as unknown as Record<string, unknown>
   );

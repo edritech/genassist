@@ -1,7 +1,7 @@
 """Human In The Loop node that collects user data via a dynamic form."""
 
-from typing import Any, Dict
 import logging
+from typing import Any, Dict
 
 from app.modules.workflow.engine.base_node import BaseNode
 from app.modules.workflow.engine.workflow_state import WorkflowPausedException
@@ -64,7 +64,9 @@ class HumanInTheLoopNode(BaseNode):
                 self.get_state().node_outputs.update(paused_outputs)
 
             cancelled = self.state.initial_values.get("human_in_the_loop_cancelled", False)
-            output_data = {**human_in_the_loop_from_form, "_cancelled": True} if cancelled else human_in_the_loop_from_form
+            output_data = (
+                {**human_in_the_loop_from_form, "_cancelled": True} if cancelled else human_in_the_loop_from_form
+            )
             # Cache for ask_once
             if ask_once:
                 await self.cache_user_input(human_in_the_loop_from_form)
@@ -78,9 +80,7 @@ class HumanInTheLoopNode(BaseNode):
             return provided_values
 
         # 4. Pause workflow — save state and raise exception to propagate through all layers
-        await self.get_memory().set_metadata(
-            "paused_node_outputs", self.get_state().node_outputs
-        )
+        await self.get_memory().set_metadata("paused_node_outputs", self.get_state().node_outputs)
 
         form_schema = {
             "message": message,
@@ -89,11 +89,13 @@ class HumanInTheLoopNode(BaseNode):
         }
 
         logger.info(f"HumanInTheLoopNode {self.node_id}: requesting user input")
-        raise WorkflowPausedException({
-            "status": "awaiting_input",
-            "form_schema": form_schema,
-            "node_id": self.node_id,
-        })
+        raise WorkflowPausedException(
+            {
+                "status": "awaiting_input",
+                "form_schema": form_schema,
+                "node_id": self.node_id,
+            }
+        )
 
     def _extract_provided_values(self, form_fields: list) -> Dict[str, Any] | None:
         """Extract pre-filled values from initial_values (e.g. from test-node endpoint).

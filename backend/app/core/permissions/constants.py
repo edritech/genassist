@@ -15,11 +15,13 @@ Example:
 
 class AgentPermissions:
     """Agent-related permissions"""
+
     SWITCH = "switch:agent"
 
 
 class ApiKeyPermissions:
     """API Key CRUD permissions"""
+
     CREATE = "create:api_key"
     READ = "read:api_key"
     UPDATE = "update:api_key"
@@ -28,6 +30,7 @@ class ApiKeyPermissions:
 
 class AppSettingsPermissions:
     """Application settings permissions"""
+
     CREATE = "create:app_settings"
     READ = "read:app_settings"
     WRITE = "write:app_settings"
@@ -37,11 +40,13 @@ class AppSettingsPermissions:
 
 class AuditLogPermissions:
     """Audit log permissions"""
+
     READ = "read:audit_log"
 
 
 class ConversationPermissions:
     """Conversation permissions"""
+
     READ = "read:conversation"
     CREATE_IN_PROGRESS = "create:in_progress_conversation"
     UPDATE_IN_PROGRESS = "update:in_progress_conversation"
@@ -51,6 +56,7 @@ class ConversationPermissions:
 
 class DataSourcePermissions:
     """Data source CRUD permissions"""
+
     CREATE = "create:data_source"
     READ = "read:data_source"
     UPDATE = "update:data_source"
@@ -59,6 +65,7 @@ class DataSourcePermissions:
 
 class FeatureFlagPermissions:
     """Feature flag CRUD permissions"""
+
     CREATE = "create:feature_flag"
     READ = "read:feature_flag"
     UPDATE = "update:feature_flag"
@@ -67,11 +74,13 @@ class FeatureFlagPermissions:
 
 class KnowledgeBasePermissions:
     """Knowledge base permissions"""
+
     UPDATE = "update:knowledge_base"
 
 
 class LlmAnalystPermissions:
     """LLM Analyst CRUD permissions"""
+
     CREATE = "create:llm_analyst"
     READ = "read:llm_analyst"
     UPDATE = "update:llm_analyst"
@@ -80,6 +89,7 @@ class LlmAnalystPermissions:
 
 class LlmProviderPermissions:
     """LLM Provider CRUD permissions"""
+
     CREATE = "create:llm_provider"
     READ = "read:llm_provider"
     UPDATE = "update:llm_provider"
@@ -88,6 +98,7 @@ class LlmProviderPermissions:
 
 class MlModelPermissions:
     """ML Model CRUD permissions"""
+
     CREATE = "create:ml_model"
     READ = "read:ml_model"
     UPDATE = "update:ml_model"
@@ -96,12 +107,14 @@ class MlModelPermissions:
 
 class OperatorPermissions:
     """Operator permissions"""
+
     READ = "read:operator"
     UPDATE = "update:operator"
 
 
 class PermissionPermissions:
     """Permission CRUD permissions (meta-permissions)"""
+
     CREATE = "create:permission"
     READ = "read:permission"
     UPDATE = "update:permission"
@@ -110,6 +123,7 @@ class PermissionPermissions:
 
 class RecordingPermissions:
     """Recording-related permissions"""
+
     READ = "read:recording"
     CREATE_ANALYZE = "create:analyze_recording"
     CREATE_UPLOAD_TRANSCRIPT = "create:upload_transcript"
@@ -120,6 +134,7 @@ class RecordingPermissions:
 
 class RolePermissions:
     """Role CRUD permissions"""
+
     CREATE = "create:role"
     READ = "read:role"
     UPDATE = "update:role"
@@ -128,6 +143,7 @@ class RolePermissions:
 
 class RolePermissionPermissions:
     """Role-Permission relationship CRUD permissions"""
+
     CREATE = "create:role_permission"
     READ = "read:role_permission"
     UPDATE = "update:role_permission"
@@ -136,6 +152,7 @@ class RolePermissionPermissions:
 
 class TenantPermissions:
     """Tenant CRUD permissions"""
+
     CREATE = "create:tenant"
     READ = "read:tenant"
     UPDATE = "update:tenant"
@@ -144,6 +161,7 @@ class TenantPermissions:
 
 class UserPermissions:
     """User CRUD permissions"""
+
     CREATE = "create:user"
     READ = "read:user"
     UPDATE = "update:user"
@@ -151,6 +169,7 @@ class UserPermissions:
 
 class UserTypePermissions:
     """User type CRUD permissions"""
+
     CREATE = "create:user_type"
     READ = "read:user_type"
     UPDATE = "update:user_type"
@@ -159,6 +178,7 @@ class UserTypePermissions:
 
 class WorkflowPermissions:
     """Workflow permissions"""
+
     CREATE = "create:workflow"
     READ = "read:workflow"
     UPDATE = "update:workflow"
@@ -169,6 +189,7 @@ class WorkflowPermissions:
 
 class OpenAIPermissions:
     """OpenAI fine-tuning permissions"""
+
     WRITE_FILE = "write:openai_file"
     READ_FILE = "read:openai_file"
     WRITE_JOB = "write:openai_job"
@@ -177,21 +198,26 @@ class OpenAIPermissions:
     READ_FINE_TUNABLE_MODELS = "read:openai_fine_tunable_models"
     DELETE_FINE_TUNED_MODEL = "delete:openai_fine_tuned_model"
 
+
 class CustomerPermissions:
     CREATE = "create:customer"
     READ = "read:customer"
     UPDATE = "update:customer"
     DELETE = "delete:customer"
 
+
 class FileManagerPermissions:
     """File manager permissions"""
+
     READ = "read:file"
     CREATE = "create:file"
     UPDATE = "update:file"
     DELETE = "delete:file"
 
+
 class DashboardPermissions:
     """Dashboard read permissions"""
+
     READ = "read:dashboard"
 
 
@@ -209,6 +235,7 @@ class Permissions:
         if has_permission(user, P.LlmProvider.READ):
             ...
     """
+
     Agent = AgentPermissions
     ApiKey = ApiKeyPermissions
     AppSettings = AppSettingsPermissions
@@ -238,6 +265,7 @@ class Permissions:
 # Backwards compatibility: support "write:app_settings" style
 class LegacyPermissions:
     """Legacy permission strings that don't follow standard naming"""
+
     WRITE_APP_SETTINGS = "write:app_settings"
 
 
@@ -252,20 +280,37 @@ def get_all_permission_constants() -> set[str]:
 
     # Get all permission classes
     permission_classes = [
-        AgentPermissions, ApiKeyPermissions, AppSettingsPermissions,
-        AuditLogPermissions, ConversationPermissions, DataSourcePermissions,
-        FeatureFlagPermissions, KnowledgeBasePermissions, LlmAnalystPermissions,
-        LlmProviderPermissions, MlModelPermissions, OperatorPermissions,
-        PermissionPermissions, RecordingPermissions, RolePermissions,
-        RolePermissionPermissions, TenantPermissions, UserPermissions,
-        UserTypePermissions, WorkflowPermissions, OpenAIPermissions,
-        CustomerPermissions, DashboardPermissions, LegacyPermissions, FileManagerPermissions
+        AgentPermissions,
+        ApiKeyPermissions,
+        AppSettingsPermissions,
+        AuditLogPermissions,
+        ConversationPermissions,
+        DataSourcePermissions,
+        FeatureFlagPermissions,
+        KnowledgeBasePermissions,
+        LlmAnalystPermissions,
+        LlmProviderPermissions,
+        MlModelPermissions,
+        OperatorPermissions,
+        PermissionPermissions,
+        RecordingPermissions,
+        RolePermissions,
+        RolePermissionPermissions,
+        TenantPermissions,
+        UserPermissions,
+        UserTypePermissions,
+        WorkflowPermissions,
+        OpenAIPermissions,
+        CustomerPermissions,
+        DashboardPermissions,
+        LegacyPermissions,
+        FileManagerPermissions,
     ]
 
     # Extract all string constants
     for perm_class in permission_classes:
         for attr_name in dir(perm_class):
-            if not attr_name.startswith('_'):
+            if not attr_name.startswith("_"):
                 attr_value = getattr(perm_class, attr_name)
                 if isinstance(attr_value, str):
                     all_perms.add(attr_value)

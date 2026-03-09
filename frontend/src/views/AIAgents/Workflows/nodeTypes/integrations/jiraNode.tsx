@@ -1,21 +1,17 @@
-import { NodeProps } from "reactflow";
-import { JiraNodeData } from "../../types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import { useEffect, useState } from "react";
-import BaseNodeContainer from "../BaseNodeContainer";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { JiraDialog } from "../../nodeDialogs/JiraDialog";
-import { NodeContentRow } from "../nodeContent";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { getAllAppSettings } from "@/services/appSettings";
+import { NodeProps } from 'reactflow';
+import { JiraNodeData } from '../../types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import { useEffect, useState } from 'react';
+import BaseNodeContainer from '../BaseNodeContainer';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { JiraDialog } from '../../nodeDialogs/JiraDialog';
+import { NodeContentRow } from '../nodeContent';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { getAllAppSettings } from '@/services/appSettings';
 
-export const JIRA_NODE_TYPE = "jiraNode";
+export const JIRA_NODE_TYPE = 'jiraNode';
 
-const JiraNode: React.FC<NodeProps<JiraNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const JiraNode: React.FC<NodeProps<JiraNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(JIRA_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
 
@@ -46,18 +42,16 @@ const JiraNode: React.FC<NodeProps<JiraNodeData>> = ({
     }
   };
 
-  const selectedAppSettingName = appSettings.find(
-    (setting) => setting.id === data.app_settings_id
-  )?.name;
+  const selectedAppSettingName = appSettings.find((setting) => setting.id === data.app_settings_id)?.name;
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Configuration",
+      label: 'Configuration',
       value: selectedAppSettingName,
-      placeholder: "None selected",
+      placeholder: 'None selected',
     },
-    { label: "Space Key", value: data.spaceKey },
-    { label: "Task Name", value: data.taskName },
+    { label: 'Space Key', value: data.spaceKey },
+    { label: 'Task Name', value: data.taskName },
   ];
 
   return (

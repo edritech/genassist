@@ -1,19 +1,15 @@
-import React, { useState } from "react";
-import { NodeProps } from "reactflow";
-import { APIToolNodeData } from "../../types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import { APIToolDialog } from "../../nodeDialogs/APIToolDialog";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { extractDynamicVariablesAsRecord } from "../../utils/helpers";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
+import React, { useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { APIToolNodeData } from '../../types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import { APIToolDialog } from '../../nodeDialogs/APIToolDialog';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { extractDynamicVariablesAsRecord } from '../../utils/helpers';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
 
-export const API_TOOL_NODE_TYPE = "apiToolNode";
-const APIToolNode: React.FC<NodeProps<APIToolNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+export const API_TOOL_NODE_TYPE = 'apiToolNode';
+const APIToolNode: React.FC<NodeProps<APIToolNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(API_TOOL_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -30,10 +26,10 @@ const APIToolNode: React.FC<NodeProps<APIToolNodeData>> = ({
   };
 
   const nodeContent: NodeContentRow[] = [
-    { label: "Endpoint", value: data.endpoint },
-    { label: "Method", value: data.method },
+    { label: 'Endpoint', value: data.endpoint },
+    { label: 'Method', value: data.method },
     {
-      label: "Variables",
+      label: 'Variables',
       value: extractDynamicVariablesAsRecord(JSON.stringify(data)),
       areDynamicVars: true,
     },

@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { TableCell, TableRow } from "@/components/table";
-import { Badge } from "@/components/badge";
-import { Button } from "@/components/button";
-import { Pencil } from "lucide-react";
-import { getAllUsers } from "@/services/users";
-import { toast } from "react-hot-toast";
-import { User } from "@/interfaces/user.interface";
-import { getPaginationMeta } from "@/helpers/pagination";
-import { PaginationBar } from "@/components/PaginationBar";
+import { useEffect, useState } from 'react';
+import { DataTable } from '@/components/DataTable';
+import { TableCell, TableRow } from '@/components/table';
+import { Badge } from '@/components/badge';
+import { Button } from '@/components/button';
+import { Pencil } from 'lucide-react';
+import { getAllUsers } from '@/services/users';
+import { toast } from 'react-hot-toast';
+import { User } from '@/interfaces/user.interface';
+import { getPaginationMeta } from '@/helpers/pagination';
+import { PaginationBar } from '@/components/PaginationBar';
 
 interface UsersCardProps {
   searchQuery: string;
@@ -17,12 +17,7 @@ interface UsersCardProps {
   updatedUser?: User | null;
 }
 
-export function UsersCard({
-  searchQuery,
-  refreshKey = 0,
-  onEditUser,
-  updatedUser = null,
-}: UsersCardProps) {
+export function UsersCard({ searchQuery, refreshKey = 0, onEditUser, updatedUser = null }: UsersCardProps) {
   const PAGE_SIZE = 10;
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,8 +32,7 @@ export function UsersCard({
         setUsers(userData);
         setError(null);
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Failed to fetch users";
+        const message = err instanceof Error ? err.message : 'Failed to fetch users';
         setError(message);
         toast.error(message);
       } finally {
@@ -51,11 +45,7 @@ export function UsersCard({
 
   useEffect(() => {
     if (updatedUser) {
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === updatedUser.id ? updatedUser : user
-        )
-      );
+      setUsers((prevUsers) => prevUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user)));
     }
   }, [updatedUser]);
 
@@ -73,15 +63,7 @@ export function UsersCard({
   const paginatedUsers = filteredUsers.slice(pagination.startIndex, pagination.endIndex);
   const pageItemCount = paginatedUsers.length;
 
-  const headers = [
-    "ID",
-    "Username",
-    "Email",
-    "Status",
-    "User Type",
-    "Roles",
-    "Action",
-  ];
+  const headers = ['ID', 'Username', 'Email', 'Status', 'User Type', 'Roles', 'Action'];
 
   const renderRow = (user: User, index: number) => (
     <TableRow key={user.id}>
@@ -89,13 +71,11 @@ export function UsersCard({
       <TableCell className="font-medium break-all">{user.username}</TableCell>
       <TableCell className="truncate">{user.email}</TableCell>
       <TableCell className="overflow-hidden whitespace-nowrap text-clip">
-        <Badge variant={user.is_active === 1 ? "default" : "secondary"}>
-          {user.is_active === 1 ? "Active" : "Inactive"}
+        <Badge variant={user.is_active === 1 ? 'default' : 'secondary'}>
+          {user.is_active === 1 ? 'Active' : 'Inactive'}
         </Badge>
       </TableCell>
-      <TableCell className="truncate">
-        {user.user_type?.name || "N/A"}
-      </TableCell>
+      <TableCell className="truncate">{user.user_type?.name || 'N/A'}</TableCell>
       <TableCell className="overflow-hidden whitespace-nowrap text-clip">
         <div className="flex gap-1 flex-wrap">
           {user.roles && user.roles.length > 0 ? (
@@ -110,12 +90,7 @@ export function UsersCard({
         </div>
       </TableCell>
       <TableCell>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onEditUser(user)}
-          title="Edit User"
-        >
+        <Button variant="ghost" size="sm" onClick={() => onEditUser(user)} title="Edit User">
           <Pencil className="w-4 h-4 text-black" />
         </Button>
       </TableCell>

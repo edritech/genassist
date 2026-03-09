@@ -1,5 +1,7 @@
 import pytest
+
 from app.db.seed.seed_data_config import seed_test_data
+
 
 @pytest.fixture(scope="module")
 def new_llm_analyst_data():
@@ -7,7 +9,7 @@ def new_llm_analyst_data():
         "name": "Test Analyst",
         "llm_provider_id": seed_test_data.llm_provider_id,
         "prompt": seed_test_data.kpi_analyzer_system_prompt,
-        "is_active": 1
+        "is_active": 1,
     }
 
 
@@ -42,10 +44,7 @@ async def test_get_llm_analyst_by_id(authorized_client, new_llm_analyst_data):
 @pytest.mark.asyncio
 async def test_update_llm_analyst(authorized_client, new_llm_analyst_data):
     llm_analyst_id = new_llm_analyst_data["id"]
-    update_payload = {
-        "name": "Updated Test Analyst",
-        "prompt": "Updated prompt"
-    }
+    update_payload = {"name": "Updated Test Analyst", "prompt": "Updated prompt"}
     response = authorized_client.patch(f"/api/llm-analyst/{llm_analyst_id}", json=update_payload)
     assert response.status_code == 200
     data = response.json()

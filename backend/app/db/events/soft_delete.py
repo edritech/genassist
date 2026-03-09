@@ -1,9 +1,10 @@
 from sqlalchemy import event
 from sqlalchemy.orm import Session, with_loader_criteria
+
 from app.db.base import SoftDeleteMixin
 
-
 SOFT_DELETE_FLAG = "include_deleted"
+
 
 @event.listens_for(Session, "do_orm_execute")
 def _soft_delete_filter(execute_state):

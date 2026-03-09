@@ -1,33 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { NodeProps } from "reactflow";
-import { getNodeColor } from "../../utils/nodeColors";
-import { GmailNodeData } from "../../types/nodes";
-import { getAllDataSources } from "@/services/dataSources";
-import { DataSource } from "@/interfaces/dataSource.interface";
-import { useQuery } from "@tanstack/react-query";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { GmailDialog } from "../../nodeDialogs/GmailDialog";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
-import { extractDynamicVariablesAsRecord } from "../../utils/helpers";
+import React, { useEffect, useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { getNodeColor } from '../../utils/nodeColors';
+import { GmailNodeData } from '../../types/nodes';
+import { getAllDataSources } from '@/services/dataSources';
+import { DataSource } from '@/interfaces/dataSource.interface';
+import { useQuery } from '@tanstack/react-query';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { GmailDialog } from '../../nodeDialogs/GmailDialog';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
+import { extractDynamicVariablesAsRecord } from '../../utils/helpers';
 
-export const GMAIL_NODE_TYPE = "gmailNode";
+export const GMAIL_NODE_TYPE = 'gmailNode';
 
-const GmailNode: React.FC<NodeProps<GmailNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const GmailNode: React.FC<NodeProps<GmailNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(GMAIL_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const { data: connectors = [] } = useQuery({
-    queryKey: ["dataSources"],
+    queryKey: ['dataSources'],
     queryFn: getAllDataSources,
-    select: (data: DataSource[]) =>
-      data.filter((p) => p.is_active === 1 && p.source_type === "gmail"),
+    select: (data: DataSource[]) => data.filter((p) => p.is_active === 1 && p.source_type === 'gmail'),
   });
 
   useEffect(() => {
@@ -48,10 +43,10 @@ const GmailNode: React.FC<NodeProps<GmailNodeData>> = ({
   };
 
   const nodeContent: NodeContentRow[] = [
-    { label: "Recipient", value: data.to },
-    { label: "Subject", value: data.subject },
+    { label: 'Recipient', value: data.to },
+    { label: 'Subject', value: data.subject },
     {
-      label: "Variables",
+      label: 'Variables',
       value: extractDynamicVariablesAsRecord(JSON.stringify(data)),
       areDynamicVars: true,
     },

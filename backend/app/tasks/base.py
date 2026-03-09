@@ -1,11 +1,12 @@
-from celery import Task, shared_task
-from datetime import datetime
 import logging
-from typing import Callable, List, Any, Awaitable
+from datetime import datetime
+from typing import Any, Awaitable, Callable, List
 
-from app.services.tenant import TenantService
-from app.core.tenant_scope import set_tenant_context, clear_tenant_context
+from celery import Task, shared_task
+
 from app.core.config.settings import settings
+from app.core.tenant_scope import clear_tenant_context, set_tenant_context
+from app.services.tenant import TenantService
 
 logger = logging.getLogger(__name__)
 
@@ -48,35 +49,37 @@ def long_running_task(duration: int = 60):
 def create_task_wrapper(task_func: Callable[..., Awaitable[Any]]) -> Callable:
     """
     Creates a reusable wrapper function for tasks that need request scope and session cleanup.
-    
+
     This helper eliminates code duplication by providing a standard pattern for:
     - Creating request scopes for dependency injection
     - Ensuring database sessions are properly closed
     - Handling errors gracefully
-    
+
     Args:
         task_func: The actual async task function to wrap
-        
+
     Returns:
         A wrapper function that can be used with run_task_for_all_tenants
-        
+
     Example:
         async def my_task_async(param1: str):
             # Your task logic here
             return {"result": "success"}
-            
+
         async def my_task_async_with_scope(param1: str = None):
             wrapper = create_task_wrapper(my_task_async)
             return await run_task_for_all_tenants(wrapper, param1=param1)
     """
+
     async def run_with_scope(**kwargs):
         """Inner wrapper that creates request scope and ensures cleanup"""
-        from app.dependencies.injector import injector
         from fastapi_injector import RequestScopeFactory
         from sqlalchemy.ext.asyncio import AsyncSession
-        
+
+        from app.dependencies.injector import injector
+
         request_scope_factory = injector.get(RequestScopeFactory)
-        
+
         async with request_scope_factory.create_scope():
             try:
                 # Call the actual task function with the provided kwargs
@@ -93,34 +96,30 @@ def create_task_wrapper(task_func: Callable[..., Awaitable[Any]]) -> Callable:
                         pass  # Session might not exist or already closed
                 except Exception:
                     pass
-    
+
     return run_with_scope
 
 
-async def run_task_with_tenant_support(
-    task_func: Callable[..., Awaitable[Any]],
-    task_name: str,
-    **kwargs
-) -> dict:
+async def run_task_with_tenant_support(task_func: Callable[..., Awaitable[Any]], task_name: str, **kwargs) -> dict:
     """
     High-level helper that runs a task for all tenants with proper error handling.
-    
-    This is a convenience function that combines create_task_wrapper and 
+
+    This is a convenience function that combines create_task_wrapper and
     run_task_for_all_tenants with consistent error handling and logging.
-    
+
     Args:
         task_func: The actual async task function to run
         task_name: Name of the task for logging purposes
         **kwargs: Arguments to pass to the task function
-        
+
     Returns:
         Dictionary with status and results
-        
+
     Example:
         async def my_task_async(param1: str):
             # Your task logic here
             return {"result": "success"}
-            
+
         async def my_task_async_with_scope(param1: str = None):
             return await run_task_with_tenant_support(
                 my_task_async,
@@ -130,10 +129,10 @@ async def run_task_with_tenant_support(
     """
     try:
         logger.info(f"Starting {task_name} task for all tenants...")
-        
+
         wrapper = create_task_wrapper(task_func)
         results = await run_task_for_all_tenants(wrapper, **kwargs)
-        
+
         logger.info(f"{task_name} completed for {len(results)} tenant(s)")
         return {
             "status": "success",
@@ -190,9 +189,7 @@ async def run_task_for_all_tenants(task_func: Callable, **kwargs) -> List[dict]:
                             }
                         )
                 except Exception as e:
-                    logger.error(
-                        f"Error running task for master database: {e}", exc_info=True
-                    )
+                    logger.error(f"Error running task for master database: {e}", exc_info=True)
                     results.append(
                         {
                             "tenant_id": "master",
@@ -218,9 +215,7 @@ async def run_task_for_all_tenants(task_func: Callable, **kwargs) -> List[dict]:
                     try:
                         # Set tenant context for this tenant
                         set_tenant_context(str(tenant.slug))
-                        logger.info(
-                            f"Running task for tenant: {tenant.name} ({tenant.slug})"
-                        )
+                        logger.info(f"Running task for tenant: {tenant.name} ({tenant.slug})")
 
                         # Run the task function with tenant context
                         result = await task_func(**kwargs)

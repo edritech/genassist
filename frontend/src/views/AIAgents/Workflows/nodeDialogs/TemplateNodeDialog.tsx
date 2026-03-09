@@ -1,36 +1,31 @@
-import React, { useState, useEffect } from "react";
-import { TemplateNodeData } from "../types/nodes";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { DraggableTextArea } from "../components/custom/DraggableTextArea";
-import { Save } from "lucide-react";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
+import React, { useState, useEffect } from 'react';
+import { TemplateNodeData } from '../types/nodes';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { DraggableTextArea } from '../components/custom/DraggableTextArea';
+import { Save } from 'lucide-react';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
 
-type TemplateNodeDialogProps = BaseNodeDialogProps<
-  TemplateNodeData,
-  TemplateNodeData
->;
+type TemplateNodeDialogProps = BaseNodeDialogProps<TemplateNodeData, TemplateNodeData>;
 
-export const TemplateNodeDialog: React.FC<TemplateNodeDialogProps> = (
-  props
-) => {
+export const TemplateNodeDialog: React.FC<TemplateNodeDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
 
   const [templateData, setTemplateData] = useState<{
     name: string;
     template: string;
   }>({
-    name: data.name || "",
-    template: data.template || "",
+    name: data.name || '',
+    template: data.template || '',
   });
 
   useEffect(() => {
     if (isOpen) {
       setTemplateData({
-        name: data.name || "",
-        template: data.template || "",
+        name: data.name || '',
+        template: data.template || '',
       });
     }
   }, [isOpen, data]);
@@ -70,9 +65,7 @@ export const TemplateNodeDialog: React.FC<TemplateNodeDialogProps> = (
           <Input
             id="name"
             value={templateData.name}
-            onChange={(e) =>
-              setTemplateData({ ...templateData, name: e.target.value })
-            }
+            onChange={(e) => setTemplateData({ ...templateData, name: e.target.value })}
             placeholder="e.g., Template"
             className="w-full"
           />
@@ -82,9 +75,7 @@ export const TemplateNodeDialog: React.FC<TemplateNodeDialogProps> = (
           <DraggableTextArea
             id="template"
             value={templateData.template}
-            onChange={(e) =>
-              setTemplateData({ ...templateData, template: e.target.value })
-            }
+            onChange={(e) => setTemplateData({ ...templateData, template: e.target.value })}
             placeholder="Enter your template here... Use {{session.message}} or drag variables from the left panel"
             className="h-32 font-mono text-sm"
             rows={8}

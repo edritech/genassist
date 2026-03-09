@@ -1,9 +1,10 @@
 import json
 import logging
+
 import pytest
-from app.db.seed.seed_data_config import seed_test_data
 
 logger = logging.getLogger(__name__)
+
 
 @pytest.fixture(scope="module")
 def new_agent_data():
@@ -15,6 +16,7 @@ def new_agent_data():
         "possible_queries": ["What can you do?", "What can you not do?"],
         "thinking_phrases": ["Thinking...", "Thinking about it..."],
     }
+
 
 @pytest.mark.asyncio
 async def test_get_agents(authorized_client, new_agent_data):
@@ -63,7 +65,7 @@ async def test_update_agent(authorized_client, new_agent_data):
     del update["id"]
 
     response = authorized_client.put(f"/api/genagent/agents/configs/{id}", json=update)
-    
+
     data = response.json()
     print(f" test update agent response:{data}")
     logger.info(f" test update agent response:{data}")

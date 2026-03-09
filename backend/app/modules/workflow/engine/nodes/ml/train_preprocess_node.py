@@ -4,12 +4,12 @@ Train Preprocess node implementation using the BaseNode class.
 This node performs data preprocessing using Python code on training data.
 """
 
-from typing import Dict, Any
 import logging
+from typing import Any, Dict
 
-from app.modules.workflow.engine.base_node import BaseNode
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
+from app.modules.workflow.engine.base_node import BaseNode
 from app.modules.workflow.engine.nodes.ml import ml_utils
 
 logger = logging.getLogger(__name__)
@@ -56,9 +56,7 @@ class TrainPreprocessNode(BaseNode):
             df = None
             if file_url:
                 data, df = ml_utils.load_csv_file(file_url, self.state.thread_id)
-                logger.info(
-                    f"Loaded data from file: {file_url} ({len(df) if df is not None else 0} rows)"
-                )
+                logger.info(f"Loaded data from file: {file_url} ({len(df) if df is not None else 0} rows)")
 
             # Execute the preprocessing Python code
             self.set_node_input(python_code)
@@ -83,9 +81,7 @@ class TrainPreprocessNode(BaseNode):
                 columns = list(processed_df.columns)
                 row_count = len(processed_df)
 
-                logger.info(
-                    f"Preprocessing completed: {row_count} rows, {len(columns)} columns"
-                )
+                logger.info(f"Preprocessing completed: {row_count} rows, {len(columns)} columns")
 
                 # Save processed data to CSV using thread_id and timestamp with _preprocess suffix
                 csv_file_path = await ml_utils.save_data_to_csv(
@@ -112,9 +108,7 @@ class TrainPreprocessNode(BaseNode):
             except AppException:
                 raise
             except Exception as e:
-                logger.error(
-                    f"Error executing preprocessing code: {str(e)}", exc_info=True
-                )
+                logger.error(f"Error executing preprocessing code: {str(e)}", exc_info=True)
                 raise AppException(
                     error_key=ErrorKey.INTERNAL_ERROR,
                     error_detail=f"Preprocessing code execution failed: {str(e)}",
@@ -123,9 +117,7 @@ class TrainPreprocessNode(BaseNode):
         except AppException:
             raise
         except Exception as e:
-            logger.error(
-                f"Unexpected error in train preprocess node: {str(e)}", exc_info=True
-            )
+            logger.error(f"Unexpected error in train preprocess node: {str(e)}", exc_info=True)
             raise AppException(
                 error_key=ErrorKey.INTERNAL_ERROR,
                 error_detail=f"Train preprocess processing failed: {str(e)}",

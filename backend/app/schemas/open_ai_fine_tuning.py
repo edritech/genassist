@@ -1,5 +1,6 @@
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any, List
 
 
 class Hyperparameters(BaseModel):
@@ -13,16 +14,16 @@ class CreateFineTuningJobRequest(BaseModel):
     model: str = Field(..., description="The model to fine-tune (e.g., gpt-4.1-nano-2025-04-14)")
     validation_file: Optional[str] = Field(None, description="The ID of the uploaded validation file")
     hyperparameters: Optional[Dict[str, Any]] = Field(None, description="Hyperparameters for fine-tuning")
-    suffix: Optional[str] = Field(None, max_length=40, description="A string of up to 40 characters for the fine-tuned model name")
+    suffix: Optional[str] = Field(
+        None, max_length=40, description="A string of up to 40 characters for the fine-tuned model name"
+    )
 
     class Config:
         json_schema_extra = {
             "example": {
                 "training_file": "file-RCnFCYRhFDcq1aHxiYkBHw",
                 "model": "gpt-4.1-nano-2025-04-14",
-                "hyperparameters": {
-                    "n_epochs": 3
-                }
+                "hyperparameters": {"n_epochs": 3},
             }
         }
 

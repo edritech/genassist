@@ -1,30 +1,26 @@
-import React, { useState } from "react";
-import { NodeProps } from "reactflow";
-import { PythonCodeNodeData } from "../../types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import { PythonCodeDialog } from "../../nodeDialogs/PythonCodeDialog";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { extractDynamicVariablesAsRecord } from "../../utils/helpers";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
+import React, { useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { PythonCodeNodeData } from '../../types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import { PythonCodeDialog } from '../../nodeDialogs/PythonCodeDialog';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { extractDynamicVariablesAsRecord } from '../../utils/helpers';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
 
-export const PYTHON_CODE_NODE_TYPE = "pythonCodeNode";
+export const PYTHON_CODE_NODE_TYPE = 'pythonCodeNode';
 
-const PythonCodeNode: React.FC<NodeProps<PythonCodeNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const PythonCodeNode: React.FC<NodeProps<PythonCodeNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(PYTHON_CODE_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // Get code preview (first few lines)
   const getCodePreview = () => {
-    if (!data.code) return "";
-    const lines = data.code?.split("\n");
+    if (!data.code) return '';
+    const lines = data.code?.split('\n');
     if (lines?.length <= 3) return data.code;
-    return lines?.slice(0, 3).join("\n") + "\n...";
+    return lines?.slice(0, 3).join('\n') + '\n...';
   };
 
   const onUpdate = (updatedData: PythonCodeNodeData) => {
@@ -40,12 +36,12 @@ const PythonCodeNode: React.FC<NodeProps<PythonCodeNodeData>> = ({
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Python Script",
+      label: 'Python Script',
       value: data.code,
       isCode: true,
     },
     {
-      label: "Variables",
+      label: 'Variables',
       value: extractDynamicVariablesAsRecord(JSON.stringify(data)),
       areDynamicVars: true,
     },

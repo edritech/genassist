@@ -1,11 +1,14 @@
 from typing import List
 from uuid import UUID
+
 from injector import inject
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models import ToolModel
 from app.repositories.tool import ToolRepository
 from app.schemas.agent_tool import ToolConfigBase, ToolConfigRead
+
 
 @inject
 class ToolService:

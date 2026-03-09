@@ -6,8 +6,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from .config import AgentRAGConfig, KbRAGConfig
-from .providers import SearchResult, BaseDataProvider, LegraProvider, VectorProvider, LightRAGProvider, PlainProvider
-
+from .providers import BaseDataProvider, LegraProvider, LightRAGProvider, PlainProvider, SearchResult, VectorProvider
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +23,7 @@ class AgentRAGService:
         self._initialized = False
 
     @staticmethod
-    def from_kb_config(knowledge_base_id: str, config: Dict[str, Any]) -> 'AgentRAGService':
-
+    def from_kb_config(knowledge_base_id: str, config: Dict[str, Any]) -> "AgentRAGService":
         if config is None or config.get("enabled", False) is False:
             config = AgentRAGConfig(knowledge_base_id=knowledge_base_id)
             return AgentRAGService(config)
@@ -52,10 +50,8 @@ class AgentRAGService:
             # Initialize vector provider if enabled
             vector_config = self.config.get_vector_config()
             if vector_config:
-                logger.info(
-                    f"Initializing vector provider for KB {self.knowledge_base_id}")
-                vector_provider = VectorProvider(
-                    vector_config, self.knowledge_base_id)
+                logger.info(f"Initializing vector provider for KB {self.knowledge_base_id}")
+                vector_provider = VectorProvider(vector_config, self.knowledge_base_id)
                 await vector_provider.initialize()
                 if not vector_provider.is_initialized():
                     logger.error("Failed to initialize vector provider")
@@ -66,10 +62,8 @@ class AgentRAGService:
             # Initialize LEGRA provider if enabled
             legra_config = self.config.get_legra_config()
             if legra_config and legra_config.enabled:
-                logger.info(
-                    f"Initializing LEGRA provider for KB {self.knowledge_base_id}")
-                legra_provider = LegraProvider(
-                    legra_config, self.knowledge_base_id)
+                logger.info(f"Initializing LEGRA provider for KB {self.knowledge_base_id}")
+                legra_provider = LegraProvider(legra_config, self.knowledge_base_id)
                 if not legra_provider.initialize():
                     logger.error("Failed to initialize LEGRA provider")
                     success = False
@@ -79,10 +73,8 @@ class AgentRAGService:
             # Initialize LightRAG provider if enabled
             lightrag_config = self.config.get_lightrag_config()
             if lightrag_config and lightrag_config.enabled:
-                logger.info(
-                    f"Initializing LightRAG provider for KB {self.knowledge_base_id}")
-                lightrag_provider = LightRAGProvider(
-                    lightrag_config, self.knowledge_base_id)
+                logger.info(f"Initializing LightRAG provider for KB {self.knowledge_base_id}")
+                lightrag_provider = LightRAGProvider(lightrag_config, self.knowledge_base_id)
                 if not await lightrag_provider.initialize():
                     logger.error("Failed to initialize LightRAG provider")
                     success = False
@@ -91,8 +83,7 @@ class AgentRAGService:
                     self.data_provider.append(lightrag_provider)
 
             if not self.data_provider:
-                logger.info(
-                    f"Initializing Plain provider for KB {self.knowledge_base_id}")
+                logger.info(f"Initializing Plain provider for KB {self.knowledge_base_id}")
                 plain_provider = PlainProvider(self.knowledge_base_id)
                 if not await plain_provider.initialize():
                     logger.error("Failed to initialize Plain provider")
@@ -102,8 +93,7 @@ class AgentRAGService:
                     self.data_provider.append(plain_provider)
 
             self._initialized = success
-            logger.info(
-                f"DataSourceService initialized for KB {self.knowledge_base_id}: {success}")
+            logger.info(f"DataSourceService initialized for KB {self.knowledge_base_id}: {success}")
             return success
 
         except Exception as e:
@@ -111,11 +101,7 @@ class AgentRAGService:
             return False
 
     async def add_document(
-        self,
-        doc_id: str,
-        content: str,
-        metadata: Dict[str, Any] = None,
-        legra_finalize: bool = True
+        self, doc_id: str, content: str, metadata: Dict[str, Any] = None, legra_finalize: bool = True
     ) -> Dict[str, bool]:
         """
         Add a document to all enabled providers
@@ -141,8 +127,7 @@ class AgentRAGService:
                 success = await provider.add_document(doc_id, content, metadata)
                 results[provider.name] = success
             except Exception as e:
-                logger.error(
-                    f"{provider.name} add_document failed: {e}")
+                logger.error(f"{provider.name} add_document failed: {e}")
                 results[provider.name] = False
 
         logger.info(f"Added document {doc_id}: {results}")
@@ -161,8 +146,7 @@ class AgentRAGService:
                 success = await provider.delete_document(doc_id)
                 results[provider.name] = success
             except Exception as e:
-                logger.error(
-                    f"{provider.name} delete_document failed: {e}")
+                logger.error(f"{provider.name} delete_document failed: {e}")
                 results[provider.name] = False
 
         logger.info(f"Deleted document {doc_id}: {results}")
@@ -180,8 +164,7 @@ class AgentRAGService:
                 ids = await provider.get_document_ids()
                 all_ids.update(ids)
             except Exception as e:
-                logger.error(
-                    f"{provider.name} get_document_ids failed: {e}")
+                logger.error(f"{provider.name} get_document_ids failed: {e}")
 
         return list(all_ids)
 
@@ -250,7 +233,8 @@ class AgentRAGService:
     async def finalize_legra(self) -> bool:
         """Finalize LEGRA provider (build index and graph)"""
         legra_provider: Optional[LegraProvider] = next(
-            (provider for provider in self.data_provider if provider.name == "legra"), None)
+            (provider for provider in self.data_provider if provider.name == "legra"), None
+        )
         if not legra_provider:
             logger.error("LEGRA provider not available")
             return False
@@ -266,11 +250,7 @@ class AgentRAGService:
     def get_provider_stats(self) -> Dict[str, Any]:
         """Get statistics from all providers"""
         stats = {
-            "service": {
-                "knowledge_base_id": self.knowledge_base_id,
-                "initialized": self._initialized,
-                "providers": []
-            }
+            "service": {"knowledge_base_id": self.knowledge_base_id, "initialized": self._initialized, "providers": []}
         }
 
         for provider in self.data_provider:

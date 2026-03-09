@@ -1,10 +1,5 @@
-import React from "react";
-import {
-  BaseEdge,
-  EdgeLabelRenderer,
-  getBezierPath,
-  Position,
-} from "reactflow";
+import React from 'react';
+import { BaseEdge, EdgeLabelRenderer, getBezierPath, Position } from 'reactflow';
 
 interface CustomArrowEdgeProps {
   id: string;
@@ -67,25 +62,21 @@ const CustomArrowEdge: React.FC<CustomArrowEdgeProps> = ({
         style={{
           ...style,
           strokeWidth: 2,
-          stroke: "hsl(var(--brand-600))",
-          strokeDasharray: "7,7",
+          stroke: 'hsl(var(--brand-600))',
+          strokeDasharray: '7,7',
         }}
       />
       <EdgeLabelRenderer>
         <div
           style={{
-            position: "absolute",
+            position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             fontSize: 12,
-            pointerEvents: "all",
+            pointerEvents: 'all',
           }}
           className="nodrag nopan"
         >
-          {data?.label && (
-            <div className="bg-white px-2 py-1 rounded border shadow-sm text-xs">
-              {data.label}
-            </div>
-          )}
+          {data?.label && <div className="bg-white px-2 py-1 rounded border shadow-sm text-xs">{data.label}</div>}
         </div>
       </EdgeLabelRenderer>
     </>

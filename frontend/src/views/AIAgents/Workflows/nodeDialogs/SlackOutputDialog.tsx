@@ -1,37 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { SlackOutputNodeData } from "../types/nodes";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { Save } from "lucide-react";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
-import { DraggableInput } from "../components/custom/DraggableInput";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { getAllAppSettings } from "@/services/appSettings";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { AppSettingDialog } from "@/views/AppSettings/components/AppSettingDialog";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
+import React, { useState, useEffect } from 'react';
+import { SlackOutputNodeData } from '../types/nodes';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Save } from 'lucide-react';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
+import { DraggableInput } from '../components/custom/DraggableInput';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { getAllAppSettings } from '@/services/appSettings';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { AppSettingDialog } from '@/views/AppSettings/components/AppSettingDialog';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
 
-type SlackOutputDialogProps = BaseNodeDialogProps<
-  SlackOutputNodeData,
-  SlackOutputNodeData
->;
+type SlackOutputDialogProps = BaseNodeDialogProps<SlackOutputNodeData, SlackOutputNodeData>;
 
 export const SlackOutputDialog: React.FC<SlackOutputDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
   const [name, setName] = useState(data.name);
-  const [channel, setChannel] = useState(data.channel || "");
-  const [message, setMessage] = useState(data.message || "");
-  const [appSettingsId, setAppSettingsId] = useState(
-    data.app_settings_id || ""
-  );
+  const [channel, setChannel] = useState(data.channel || '');
+  const [message, setMessage] = useState(data.message || '');
+  const [appSettingsId, setAppSettingsId] = useState(data.app_settings_id || '');
   const [appSettings, setAppSettings] = useState<AppSetting[]>([]);
   const [isLoadingAppSettings, setIsLoadingAppSettings] = useState(false);
   const [isCreateSettingOpen, setIsCreateSettingOpen] = useState(false);
@@ -39,9 +28,9 @@ export const SlackOutputDialog: React.FC<SlackOutputDialogProps> = (props) => {
   useEffect(() => {
     if (isOpen) {
       setName(data.name);
-      setChannel(data.channel || "");
-      setMessage(data.message || "");
-      setAppSettingsId(data.app_settings_id || "");
+      setChannel(data.channel || '');
+      setMessage(data.message || '');
+      setAppSettingsId(data.app_settings_id || '');
 
       // Fetch app settings
       const fetchAppSettings = async () => {
@@ -107,13 +96,13 @@ export const SlackOutputDialog: React.FC<SlackOutputDialogProps> = (props) => {
         <div className="space-y-2">
           <Label htmlFor="app-settings-id">Configuration Vars (Optional)</Label>
           <Select
-            value={appSettingsId || ""}
+            value={appSettingsId || ''}
             onValueChange={(value) => {
-              if (value === "__create__") {
+              if (value === '__create__') {
                 setIsCreateSettingOpen(true);
                 return;
               }
-              setAppSettingsId(value || "");
+              setAppSettingsId(value || '');
             }}
             disabled={isLoadingAppSettings}
           >
@@ -124,9 +113,7 @@ export const SlackOutputDialog: React.FC<SlackOutputDialogProps> = (props) => {
               {appSettings
                 .filter((setting) => {
                   const settingTypeLower = setting.type.toLowerCase();
-                  return (
-                    settingTypeLower === "slack" && setting.is_active === 1
-                  );
+                  return settingTypeLower === 'slack' && setting.is_active === 1;
                 })
                 .map((setting) => (
                   <SelectItem key={setting.id} value={setting.id}>

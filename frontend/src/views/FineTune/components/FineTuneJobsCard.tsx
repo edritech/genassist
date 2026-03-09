@@ -1,26 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { DataTable } from "@/components/DataTable";
-import { TableCell, TableRow } from "@/components/table";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { Badge } from "@/components/badge";
-import { Button } from "@/components/button";
-import { formatCallDuration } from "@/helpers/formatters";
-import {
-  Loader2,
-  Trash2,
-} from "lucide-react";
-import { toast } from "react-hot-toast";
-import { listFineTuneJobs } from "@/services/openaiFineTune";
-import type { FineTuneJob } from "@/interfaces/fineTune.interface";
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { DataTable } from '@/components/DataTable';
+import { TableCell, TableRow } from '@/components/table';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { Badge } from '@/components/badge';
+import { Button } from '@/components/button';
+import { formatCallDuration } from '@/helpers/formatters';
+import { Loader2, Trash2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { listFineTuneJobs } from '@/services/openaiFineTune';
+import type { FineTuneJob } from '@/interfaces/fineTune.interface';
 import {
   formatStatusLabel,
   normalizePercent,
   normalizeSeconds,
   getAccuracyFromMetrics,
   inProgressStatuses,
-} from "@/views/FineTune/utils/utils";
-import type { FineTuneJobsCardProps, JobProgress } from "@/views/FineTune/types";
+} from '@/views/FineTune/utils/utils';
+import type { FineTuneJobsCardProps, JobProgress } from '@/views/FineTune/types';
 
 export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCardProps) {
   const navigate = useNavigate();
@@ -42,8 +39,8 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
       setJobs(data);
       setError(null);
     } catch (err) {
-      setError("Failed to fetch jobs");
-      toast.error("Failed to fetch jobs");
+      setError('Failed to fetch jobs');
+      toast.error('Failed to fetch jobs');
     } finally {
       setLoading(false);
     }
@@ -59,13 +56,7 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
     );
   }, [jobs, searchQuery]);
 
-  const headers = [
-    "Name",
-    "Model",
-    "Status",
-    "Accuracy",
-    { label: "Action", className: "text-center pr-4" },
-  ];
+  const headers = ['Name', 'Model', 'Status', 'Accuracy', { label: 'Action', className: 'text-center pr-4' }];
 
   const handleDelete = (job: FineTuneJob) => {
     setJobToDelete(job);
@@ -77,9 +68,9 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
     try {
       setIsDeleting(true);
       setJobs((prev) => prev.filter((j) => j.id !== jobToDelete.id));
-      toast.success("Job removed from the list");
+      toast.success('Job removed from the list');
     } catch (err) {
-      toast.error("Failed to delete job");
+      toast.error('Failed to delete job');
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
@@ -89,10 +80,9 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
 
   const renderStatus = (job: FineTuneJob) => {
     const progress = (job as Record<string, unknown>).progress as JobProgress | undefined;
-    const normalizedStatus = String(job.status || progress?.status || "").toLowerCase();
-    const isTerminalStatus = ["succeeded", "failed", "cancelled"].includes(normalizedStatus);
-    const isInProgress =
-      !isTerminalStatus && (inProgressStatuses.has(normalizedStatus) || progress?.is_running);
+    const normalizedStatus = String(job.status || progress?.status || '').toLowerCase();
+    const isTerminalStatus = ['succeeded', 'failed', 'cancelled'].includes(normalizedStatus);
+    const isInProgress = !isTerminalStatus && (inProgressStatuses.has(normalizedStatus) || progress?.is_running);
     const percent =
       normalizePercent((job as Record<string, unknown>).progress_percentage) ??
       normalizePercent(progress?.progress_percentage);
@@ -100,15 +90,9 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
       normalizeSeconds((job as Record<string, unknown>).estimated_seconds_remaining) ??
       normalizeSeconds(progress?.estimated_seconds_remaining);
     const subLabel =
-      progress?.message ||
-      (job as Record<string, unknown>).message ||
-      (job as Record<string, unknown>).error_message;
-    const progressLabel =
-      typeof percent === "number" ? `${percent} %` : formatStatusLabel(normalizedStatus);
-    const etaLabel =
-      typeof estimatedSeconds === "number"
-        ? `${formatCallDuration(estimatedSeconds)} left`
-        : null;
+      progress?.message || (job as Record<string, unknown>).message || (job as Record<string, unknown>).error_message;
+    const progressLabel = typeof percent === 'number' ? `${percent} %` : formatStatusLabel(normalizedStatus);
+    const etaLabel = typeof estimatedSeconds === 'number' ? `${formatCallDuration(estimatedSeconds)} left` : null;
 
     if (isInProgress) {
       return (
@@ -118,20 +102,16 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
             <span className="font-medium text-foreground flex items-center gap-1">
               {progressLabel}
               {etaLabel && (
-                <span className="text-xs font-normal text-muted-foreground whitespace-nowrap">
-                  ({etaLabel})
-                </span>
+                <span className="text-xs font-normal text-muted-foreground whitespace-nowrap">({etaLabel})</span>
               )}
             </span>
-            {subLabel && (
-              <span className="text-xs text-muted-foreground">{String(subLabel)}</span>
-            )}
+            {subLabel && <span className="text-xs text-muted-foreground">{String(subLabel)}</span>}
           </div>
         </div>
       );
     }
 
-    if (normalizedStatus === "succeeded") {
+    if (normalizedStatus === 'succeeded') {
       return (
         <Badge variant="outline" className="px-3 py-1 text-xs font-medium">
           Completed
@@ -139,18 +119,15 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
       );
     }
 
-    if (normalizedStatus === "cancelled") {
+    if (normalizedStatus === 'cancelled') {
       return (
-        <Badge
-          variant="secondary"
-          className="px-3 py-1 text-xs font-medium bg-muted text-muted-foreground"
-        >
+        <Badge variant="secondary" className="px-3 py-1 text-xs font-medium bg-muted text-muted-foreground">
           Cancelled
         </Badge>
       );
     }
 
-    if (normalizedStatus === "failed") {
+    if (normalizedStatus === 'failed') {
       return (
         <Badge variant="destructive" className="px-3 py-1 text-xs font-medium">
           Failed
@@ -167,10 +144,9 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
 
   const renderAccuracy = (job: FineTuneJob) => {
     const progress = (job as Record<string, unknown>).progress as JobProgress | undefined;
-    const normalizedStatus = String(job.status || progress?.status || "").toLowerCase();
-    const isTerminalStatus = ["succeeded", "failed", "cancelled"].includes(normalizedStatus);
-    const isInProgress =
-      !isTerminalStatus && (inProgressStatuses.has(normalizedStatus) || progress?.is_running);
+    const normalizedStatus = String(job.status || progress?.status || '').toLowerCase();
+    const isTerminalStatus = ['succeeded', 'failed', 'cancelled'].includes(normalizedStatus);
+    const isInProgress = !isTerminalStatus && (inProgressStatuses.has(normalizedStatus) || progress?.is_running);
     const latestMetricsAccuracy = getAccuracyFromMetrics(progress?.latest_metrics, isInProgress);
     const accuracy =
       normalizePercent((job as Record<string, unknown>).accuracy) ??
@@ -224,7 +200,7 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
       if (!jobIdentifier) return;
-      if (e.key === "Enter" || e.key === " ") {
+      if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         navigate(`/fine-tune/${jobIdentifier}`);
       }
@@ -239,9 +215,9 @@ export function FineTuneJobsCard({ searchQuery, refreshKey = 0 }: FineTuneJobsCa
         tabIndex={0}
       >
         <TableCell className="font-medium text-foreground">
-          {job.suffix || job.fine_tuned_model || job.id || "—"}
+          {job.suffix || job.fine_tuned_model || job.id || '—'}
         </TableCell>
-        <TableCell className="text-muted-foreground">{job.model || "—"}</TableCell>
+        <TableCell className="text-muted-foreground">{job.model || '—'}</TableCell>
         <TableCell className="min-w-[180px]">{renderStatus(job)}</TableCell>
         <TableCell className="min-w-[140px]">{renderAccuracy(job)}</TableCell>
         <TableCell

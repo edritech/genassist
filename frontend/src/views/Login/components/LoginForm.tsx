@@ -1,21 +1,21 @@
-import { useState } from "react";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Checkbox } from "@/components/checkbox";
-import { Link } from "react-router-dom";
-import { PasswordInput } from "@/components/PasswordInput";
+import { useState } from 'react';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Checkbox } from '@/components/checkbox';
+import { Link } from 'react-router-dom';
+import { PasswordInput } from '@/components/PasswordInput';
 
 interface LoginFormProps {
   onSubmit: (username: string, password: string, tenant: string, keepSignedIn: boolean) => void;
   isLoading: boolean;
 }
 
-const isMultiTenantEnabled = import.meta.env.VITE_MULTI_TENANT_ENABLED === "true";
+const isMultiTenantEnabled = import.meta.env.VITE_MULTI_TENANT_ENABLED === 'true';
 
 export const LoginForm = ({ onSubmit, isLoading }: LoginFormProps) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [tenant, setTenant] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [tenant, setTenant] = useState('');
   const [keepSignedIn, setKeepSignedIn] = useState(false);
 
   const handleTenantChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,10 +81,7 @@ export const LoginForm = ({ onSubmit, isLoading }: LoginFormProps) => {
             Keep me signed in
           </label>
         </div>
-        <Link
-          to="/forgot-password"
-          className="text-sm text-zinc-500 hover:text-zinc-600"
-        >
+        <Link to="/forgot-password" className="text-sm text-zinc-500 hover:text-zinc-600">
           Forgot password?
         </Link>
       </div>
@@ -94,7 +91,7 @@ export const LoginForm = ({ onSubmit, isLoading }: LoginFormProps) => {
         className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
         disabled={isLoading || !username || !password}
       >
-        {isLoading ? "Signing in..." : "Sign in"}
+        {isLoading ? 'Signing in...' : 'Sign in'}
       </Button>
     </form>
   );

@@ -1,19 +1,15 @@
-import React, { useState } from "react";
-import { NodeProps } from "reactflow";
-import { AggregatorNodeData } from "../../types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { AggregatorDialog } from "../../nodeDialogs/AggregatorDialog";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
+import React, { useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { AggregatorNodeData } from '../../types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { AggregatorDialog } from '../../nodeDialogs/AggregatorDialog';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
 
-export const AGGREGATOR_NODE_TYPE = "aggregatorNode";
+export const AGGREGATOR_NODE_TYPE = 'aggregatorNode';
 
-const AggregatorNode: React.FC<NodeProps<AggregatorNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const AggregatorNode: React.FC<NodeProps<AggregatorNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(AGGREGATOR_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -33,21 +29,20 @@ const AggregatorNode: React.FC<NodeProps<AggregatorNodeData>> = ({
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Strategy",
+      label: 'Strategy',
       value: data.aggregationStrategy,
       isSelection: true,
     },
     {
-      label: "Require All Inputs",
-      value: requireAllInputs ? "Yes" : "No",
+      label: 'Require All Inputs',
+      value: requireAllInputs ? 'Yes' : 'No',
       isSelection: true,
     },
     {
-      label: "Timeout",
-      value:
-        timeout === 0 ? "" : timeout === 1 ? "1 second" : `${timeout} seconds`,
+      label: 'Timeout',
+      value: timeout === 0 ? '' : timeout === 1 ? '1 second' : `${timeout} seconds`,
     },
-    { label: "Forward Template", value: data.forwardTemplate },
+    { label: 'Forward Template', value: data.forwardTemplate },
   ];
 
   return (

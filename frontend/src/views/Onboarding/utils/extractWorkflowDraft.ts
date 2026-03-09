@@ -12,14 +12,14 @@ export interface WorkflowDraft {
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 const isWorkflowDraftNode = (value: unknown): value is WorkflowDraftNode => {
   if (!isRecord(value)) return false;
-  if (typeof value.uniqueId !== "string" || value.uniqueId.trim().length === 0) return false;
-  if (typeof value.node_name !== "string" || value.node_name.trim().length === 0) return false;
-  if (typeof value.function_of_node !== "string" || value.function_of_node.trim().length === 0) return false;
-  if (!(value.next_node_id === null || typeof value.next_node_id === "string")) return false;
+  if (typeof value.uniqueId !== 'string' || value.uniqueId.trim().length === 0) return false;
+  if (typeof value.node_name !== 'string' || value.node_name.trim().length === 0) return false;
+  if (typeof value.function_of_node !== 'string' || value.function_of_node.trim().length === 0) return false;
+  if (!(value.next_node_id === null || typeof value.next_node_id === 'string')) return false;
   return true;
 };
 
@@ -85,27 +85,27 @@ const findBalancedJsonCandidate = (text: string, startIndex: number): string | n
         isEscaping = false;
         continue;
       }
-      if (ch === "\\") {
+      if (ch === '\\') {
         isEscaping = true;
         continue;
       }
-      if (ch === "\"") {
+      if (ch === '"') {
         inString = false;
       }
       continue;
     }
 
-    if (ch === "\"") {
+    if (ch === '"') {
       inString = true;
       continue;
     }
 
-    if (ch === "{") {
+    if (ch === '{') {
       braceDepth += 1;
       continue;
     }
 
-    if (ch === "}") {
+    if (ch === '}') {
       braceDepth -= 1;
       if (braceDepth < 0) return null;
       if (braceDepth === 0 && bracketDepth === 0) {
@@ -114,12 +114,12 @@ const findBalancedJsonCandidate = (text: string, startIndex: number): string | n
       continue;
     }
 
-    if (ch === "[") {
+    if (ch === '[') {
       bracketDepth += 1;
       continue;
     }
 
-    if (ch === "]") {
+    if (ch === ']') {
       bracketDepth -= 1;
       if (bracketDepth < 0) return null;
       if (braceDepth === 0 && bracketDepth === 0) {
@@ -149,7 +149,7 @@ export const extractWorkflowDraftFromText = (text: string): ExtractedWorkflowDra
   }
 
   for (let i = 0; i < trimmed.length; i += 1) {
-    if (trimmed[i] !== "{" && trimmed[i] !== "[") continue;
+    if (trimmed[i] !== '{' && trimmed[i] !== '[') continue;
 
     const candidate = findBalancedJsonCandidate(trimmed, i);
     if (!candidate) continue;

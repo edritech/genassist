@@ -9,11 +9,12 @@ The server will start on http://localhost:8001
 """
 
 import logging
-from typing import Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, Header, Request
+from typing import Any, Dict, Optional
+
+import uvicorn
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-import uvicorn
 
 logger = logging.getLogger(__name__)
 
@@ -105,9 +106,7 @@ AVAILABLE_TOOLS = [
         "description": "Echoes back the input message",
         "inputSchema": {
             "type": "object",
-            "properties": {
-                "message": {"type": "string", "description": "Message to echo back"}
-            },
+            "properties": {"message": {"type": "string", "description": "Message to echo back"}},
             "required": ["message"],
         },
     },
@@ -146,9 +145,7 @@ async def discover_tools_http(authorization: Optional[str] = Header(None)):
 
 
 @app.post("/tools/call")
-async def execute_tool_http(
-    request: ToolCallRequest, authorization: Optional[str] = Header(None)
-):
+async def execute_tool_http(request: ToolCallRequest, authorization: Optional[str] = Header(None)):
     """
     HTTP-based tool execution endpoint.
     Executes a tool with the provided arguments.
@@ -302,9 +299,7 @@ async def execute_tool(tool_name: str, tool_arguments: Dict[str, Any]) -> Any:
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler"""
     logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
-    return JSONResponse(
-        status_code=500, content={"error": "Internal server error", "message": str(exc)}
-    )
+    return JSONResponse(status_code=500, content={"error": "Internal server error", "message": str(exc)})
 
 
 def main():

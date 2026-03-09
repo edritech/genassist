@@ -1,29 +1,30 @@
-from uuid import UUID
-from injector import inject
 import logging
 from typing import List, Optional
-from croniter import croniter, CroniterBadCronError
+from uuid import UUID
 
+from croniter import CroniterBadCronError, croniter
+from injector import inject
+
+from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
+from app.db.models.ml_model_pipeline import PipelineRunStatus as PipelineRunStatusEnum
 from app.repositories.ml_model_pipeline import (
+    MLModelPipelineArtifactRepository,
     MLModelPipelineConfigRepository,
     MLModelPipelineRunRepository,
-    MLModelPipelineArtifactRepository,
 )
 from app.repositories.ml_models import MLModelsRepository
 from app.repositories.workflow import WorkflowRepository
 from app.schemas.ml_model_pipeline import (
-    MLModelPipelineConfigCreate,
-    MLModelPipelineConfigUpdate,
-    MLModelPipelineConfigRead,
-    MLModelPipelineRunCreate,
-    MLModelPipelineRunRead,
-    MLModelPipelineRunPromote,
-    PipelineRunStatus,
     MLModelPipelineArtifactRead,
+    MLModelPipelineConfigCreate,
+    MLModelPipelineConfigRead,
+    MLModelPipelineConfigUpdate,
+    MLModelPipelineRunCreate,
+    MLModelPipelineRunPromote,
+    MLModelPipelineRunRead,
+    PipelineRunStatus,
 )
-from app.core.exceptions.error_messages import ErrorKey
-from app.core.exceptions.exception_classes import AppException
-from app.db.models.ml_model_pipeline import PipelineRunStatus as PipelineRunStatusEnum
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +58,7 @@ class MLModelPipelineConfigService:
         self.model_repository = model_repository
         self.workflow_repository = workflow_repository
 
-    async def create(
-        self, config_data: MLModelPipelineConfigCreate
-    ) -> MLModelPipelineConfigRead:
+    async def create(self, config_data: MLModelPipelineConfigCreate) -> MLModelPipelineConfigRead:
         """Create a new pipeline configuration."""
         # Validate model exists
         await self.model_repository.get_by_id(config_data.model_id)
@@ -68,9 +67,7 @@ class MLModelPipelineConfigService:
         await self.workflow_repository.get_by_id(config_data.workflow_id)
 
         # Validate cron schedule if provided
-        if config_data.cron_schedule and not validate_cron_expression(
-            config_data.cron_schedule
-        ):
+        if config_data.cron_schedule and not validate_cron_expression(config_data.cron_schedule):
             raise AppException(
                 error_key=ErrorKey.INTERNAL_ERROR,
                 error_detail="Invalid cron expression. Expected format: * * * * * (minute hour day month weekday)",
@@ -113,9 +110,7 @@ class MLModelPipelineConfigService:
             await self.workflow_repository.get_by_id(update_data.workflow_id)
 
         # Validate cron schedule if provided
-        if update_data.cron_schedule is not None and not validate_cron_expression(
-            update_data.cron_schedule
-        ):
+        if update_data.cron_schedule is not None and not validate_cron_expression(update_data.cron_schedule):
             raise AppException(
                 error_key=ErrorKey.INTERNAL_ERROR,
                 error_detail="Invalid cron expression. Expected format: * * * * * (minute hour day month weekday)",
@@ -123,9 +118,7 @@ class MLModelPipelineConfigService:
 
         # If setting as default, unset other defaults for this model
         if update_data.is_default:
-            await self.config_repository.unset_default_for_model(
-                model_id, exclude_config_id=config_id
-            )
+            await self.config_repository.unset_default_for_model(model_id, exclude_config_id=config_id)
 
         updated_config = await self.config_repository.update(config_id, update_data)
         return MLModelPipelineConfigRead.model_validate(updated_config)
@@ -159,9 +152,7 @@ class MLModelPipelineRunService:
         self.model_repository = model_repository
         self.workflow_repository = workflow_repository
 
-    async def create(
-        self, model_id: UUID, run_data: MLModelPipelineRunCreate
-    ) -> MLModelPipelineRunRead:
+    async def create(self, model_id: UUID, run_data: MLModelPipelineRunCreate) -> MLModelPipelineRunRead:
         """Create a new pipeline run."""
         # Validate model exists
         await self.model_repository.get_by_id(model_id)
@@ -211,9 +202,7 @@ class MLModelPipelineRunService:
         )
         return [MLModelPipelineRunRead.model_validate(run) for run in runs]
 
-    async def promote_run(
-        self, model_id: UUID, run_id: UUID, promote_data: MLModelPipelineRunPromote
-    ) -> dict:
+    async def promote_run(self, model_id: UUID, run_id: UUID, promote_data: MLModelPipelineRunPromote) -> dict:
         """Promote a completed pipeline run to update the model."""
         # Validate model exists
         model = await self.model_repository.get_by_id(model_id)
@@ -233,9 +222,7 @@ class MLModelPipelineRunService:
 
         # Get execution_output immediately while session is still active
         # This avoids lazy loading issues when the session expires
-        execution_output = (
-            run.execution_output.get("output", None) if run.execution_output else None
-        )
+        execution_output = run.execution_output.get("output", None) if run.execution_output else None
 
         # Get the pipeline config used by this run
         config = await self.config_repository.get_by_id(run.pipeline_config_id)
@@ -267,9 +254,7 @@ class MLModelPipelineRunService:
                         target_variable=target_column,
                         features=feature_columns,
                     )
-                    await self.model_repository.update(
-                        model_id, update_data.model_dump(exclude_unset=True)
-                    )
+                    await self.model_repository.update(model_id, update_data.model_dump(exclude_unset=True))
                     result["model_updated"] = True
                 except Exception as e:
                     logger.warning(
@@ -298,9 +283,7 @@ class MLModelPipelineArtifactService:
         self.artifact_repository = artifact_repository
         self.run_repository = run_repository
 
-    async def get_by_run_id(
-        self, model_id: UUID, run_id: UUID
-    ) -> List[MLModelPipelineArtifactRead]:
+    async def get_by_run_id(self, model_id: UUID, run_id: UUID) -> List[MLModelPipelineArtifactRead]:
         """Get all artifacts for a pipeline run."""
         # Validate run exists and belongs to model
         run = await self.run_repository.get_by_id(run_id)
@@ -308,14 +291,9 @@ class MLModelPipelineArtifactService:
             raise AppException(error_key=ErrorKey.NOT_FOUND)
 
         artifacts = await self.artifact_repository.get_by_run_id(run_id)
-        return [
-            MLModelPipelineArtifactRead.model_validate(artifact)
-            for artifact in artifacts
-        ]
+        return [MLModelPipelineArtifactRead.model_validate(artifact) for artifact in artifacts]
 
-    async def get_by_id(
-        self, model_id: UUID, run_id: UUID, artifact_id: UUID
-    ) -> MLModelPipelineArtifactRead:
+    async def get_by_id(self, model_id: UUID, run_id: UUID, artifact_id: UUID) -> MLModelPipelineArtifactRead:
         """Get a single artifact by ID."""
         # Validate run exists and belongs to model
         run = await self.run_repository.get_by_id(run_id)

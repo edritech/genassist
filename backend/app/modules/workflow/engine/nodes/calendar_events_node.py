@@ -1,22 +1,22 @@
 """
 Calendar events node implementation using the BaseNode class.
 """
+
+import logging
+from datetime import datetime
+from typing import Any, Dict
 from uuid import UUID
+from zoneinfo import ZoneInfo
+
 from app.core.exceptions.error_messages import ErrorKey, get_error_message
 from app.core.exceptions.exception_classes import AppException
 from app.core.utils.encryption_utils import decrypt_key
 from app.modules.integration.gmail_connector import GmailConnector
 from app.modules.integration.office365_connector import Office365Connector
-from app.services.datasources import DataSourceService
 from app.services.app_settings import AppSettingsService
-
-import logging
-from datetime import datetime
-from zoneinfo import ZoneInfo
-from typing import Any, Dict
+from app.services.datasources import DataSourceService
 
 from ..base_node import BaseNode
-
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +59,7 @@ class CalendarEventsNode(BaseNode):
             tz = ZoneInfo(timezone)
 
             if not data_src or not data_src.source_type:
-                result = {
-                    "result": "Data source type or operation is not supported."}
+                result = {"result": "Data source type or operation is not supported."}
                 return result
 
             # Handle different data source types
@@ -69,15 +68,13 @@ class CalendarEventsNode(BaseNode):
             elif data_src and data_src.source_type and data_src.source_type.lower() == "o365":
                 result = await self._handle_outlook_event(injector, data_src, config, operation, tz)
             else:
-                result = {
-                    "result": "Data source type or operation is not supported."}
+                result = {"result": "Data source type or operation is not supported."}
 
             return {"result": result}
 
         except AppException as e:
             error_msg = get_error_message(e.error_key)
-            logger.error(
-                f"Calendar operation failed with AppException: {error_msg}")
+            logger.error(f"Calendar operation failed with AppException: {error_msg}")
             return {"result": error_msg}
         except Exception as e:
             error_msg = "An error happened while managing the event"
@@ -100,17 +97,15 @@ class CalendarEventsNode(BaseNode):
         gmail = GmailConnector(ds_id)
 
         if op == "create_calendar_event":
-            self._require(node_config, "summary", "start",
-                          "end")  # <‑‑ validation
+            self._require(node_config, "summary", "start", "end")  # <‑‑ validation
             resp = await gmail.create_event(
                 summary=node_config["summary"],
                 start=self._parse_dt(node_config["start"], tz),
                 end=self._parse_dt(node_config["end"], tz),
             )
             return {
-                "message": "Event created successfully" if resp.get("success")
-                else "Failed to create the event",
-                "link": resp.get("htmlLink", "")
+                "message": "Event created successfully" if resp.get("success") else "Failed to create the event",
+                "link": resp.get("htmlLink", ""),
             }
 
         elif op == "search_calendar_events":
@@ -139,8 +134,7 @@ class CalendarEventsNode(BaseNode):
         app_settings = await settings.get_by_id(UUID(app_settings_id))
 
         # Extract values from the values field
-        values = app_settings.values if isinstance(
-            app_settings.values, dict) else {}
+        values = app_settings.values if isinstance(app_settings.values, dict) else {}
         client_id = values.get("microsoft_client_id")
         client_secret = values.get("microsoft_client_secret")
         tenant_id = values.get("microsoft_tenant_id")
@@ -168,10 +162,7 @@ class CalendarEventsNode(BaseNode):
                 start=self._parse_dt(node_config["start"], tz),
                 end=self._parse_dt(node_config["end"], tz),
             )
-            return {
-                "message": "Event created successfully",
-                "link": resp.get("webLink", "")
-            }
+            return {"message": "Event created successfully", "link": resp.get("webLink", "")}
 
         elif op == "search_calendar_events":
             self._require(node_config, "start", "end")
@@ -183,9 +174,7 @@ class CalendarEventsNode(BaseNode):
                 "top": node_config.get("max_results", 100),
                 "timezone": node_config.get("timezone", "UTC"),
             }
-            events = await o365_client.list_calendar_events(
-                **{k: v for k, v in kwargs.items() if v is not None}
-            )
+            events = await o365_client.list_calendar_events(**{k: v for k, v in kwargs.items() if v is not None})
             return {"events": events}
 
         return {"message": "Operation type not supported"}

@@ -1,12 +1,12 @@
 import React from 'react';
 import KnowledgeBaseManager from '../components/KnowledgeBaseManager';
-import { SidebarProvider, SidebarTrigger } from "@/components/sidebar";
-import { AppSidebar } from "@/layout/app-sidebar";
-import { useIsMobile } from "@/hooks/useMobile";
+import { SidebarProvider, SidebarTrigger } from '@/components/sidebar';
+import { AppSidebar } from '@/layout/app-sidebar';
+import { useIsMobile } from '@/hooks/useMobile';
 
 const KnowledgeBase: React.FC = () => {
   const isMobile = useIsMobile();
-  
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full overflow-x-hidden">
@@ -24,4 +24,4 @@ const KnowledgeBase: React.FC = () => {
   );
 };
 
-export default KnowledgeBase; 
+export default KnowledgeBase;

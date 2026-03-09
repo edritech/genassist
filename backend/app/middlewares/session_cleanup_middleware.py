@@ -6,9 +6,11 @@ are properly closed when the request completes, preventing connection leaks.
 """
 
 import logging
+
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.dependencies.injector import injector
 
 logger = logging.getLogger(__name__)

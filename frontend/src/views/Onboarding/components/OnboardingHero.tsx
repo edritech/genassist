@@ -20,7 +20,7 @@ export const OnboardingHero = ({
   <div className="w-full max-w-2xl text-left space-y-2 animate-fade-up">
     <p
       className={`overflow-hidden text-base font-semibold text-[#4f46e5] transition-all duration-200 ease-out ${
-        showCongrats ? "max-h-5 opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-1"
+        showCongrats ? 'max-h-5 opacity-100 translate-y-0' : 'max-h-0 opacity-0 -translate-y-1'
       }`}
     >
       🎉 Congratulations!

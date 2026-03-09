@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Input } from "@/components/input";
-import { Button } from "@/components/button";
-import { Sparkles, ArrowUp } from "lucide-react";
+import React, { useState } from 'react';
+import { Input } from '@/components/input';
+import { Button } from '@/components/button';
+import { Sparkles, ArrowUp } from 'lucide-react';
 
 interface ChatInputBarProps {
   onSendMessage?: (message: string) => void;
@@ -12,19 +12,19 @@ interface ChatInputBarProps {
 const ChatInputBar: React.FC<ChatInputBarProps> = ({
   onSendMessage,
   disabled = false,
-  placeholder = "Ask AI by sending a message...",
+  placeholder = 'Ask AI by sending a message...',
 }) => {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
 
   const handleSend = () => {
     if (message.trim() && onSendMessage) {
       onSendMessage(message.trim());
-      setMessage("");
+      setMessage('');
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }

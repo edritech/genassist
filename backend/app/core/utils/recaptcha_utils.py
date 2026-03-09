@@ -1,22 +1,20 @@
-import os
-import json
 import base64
+import json
 import logging
-from google.cloud import recaptchaenterprise_v1
-from google.oauth2 import service_account
-from app.db.models import AgentModel
+import os
 from typing import Optional
 
+from google.cloud import recaptchaenterprise_v1
+from google.oauth2 import service_account
+
+from app.db.models import AgentModel
 
 logger = logging.getLogger(__name__)
 
 RECAPTCHA_ACTION = "genassist_chat"
 
 
-def verify_recaptcha_token(
-    token: str | None,
-    agent: Optional[AgentModel] = None
-) -> tuple[bool, float, str]:
+def verify_recaptcha_token(token: str | None, agent: Optional[AgentModel] = None) -> tuple[bool, float, str]:
     """
     Verify a reCAPTCHA Enterprise token.
 
@@ -34,8 +32,8 @@ def verify_recaptcha_token(
     # Use agent-specific settings if available, otherwise fall back to global
     if agent:
         # Get security settings from relationship
-        security_settings = agent.security_settings if hasattr(agent, 'security_settings') else None
-        
+        security_settings = agent.security_settings if hasattr(agent, "security_settings") else None
+
         if security_settings:
             # For boolean, check if security_settings has a value, otherwise use global
             if security_settings.recaptcha_enabled is not None:
@@ -59,20 +57,18 @@ def verify_recaptcha_token(
         recaptcha_site_key = os.environ.get("RECAPTCHA_SITE_KEY")
         recaptcha_min_score = os.environ.get("RECAPTCHA_MIN_SCORE")
         gcp_svc_account_base64 = os.environ.get("GCP_SVC_ACCOUNT")
-    
+
     # Convert enabled to boolean if it's a string
     if isinstance(recaptcha_enabled, str):
         recaptcha_enabled = recaptcha_enabled.lower() == "true"
     elif recaptcha_enabled is None:
         recaptcha_enabled = False
-    
-    recaptcha_min_score = float(
-        recaptcha_min_score) if recaptcha_min_score is not None else 0.5
+
+    recaptcha_min_score = float(recaptcha_min_score) if recaptcha_min_score is not None else 0.5
 
     if gcp_svc_account_base64 is not None:
         base64_bytes = gcp_svc_account_base64.encode("ascii")
-        gcp_svc_account_dict = json.loads(
-            base64.b64decode(base64_bytes).decode("utf-8"))
+        gcp_svc_account_dict = json.loads(base64.b64decode(base64_bytes).decode("utf-8"))
     else:
         gcp_svc_account_dict = None
 
@@ -80,18 +76,15 @@ def verify_recaptcha_token(
         return True, 1.0, "reCAPTCHA disabled"
 
     if not recaptcha_project_id or not recaptcha_site_key:
-        logger.warning(
-            "reCAPTCHA enabled but PROJECT_ID or SITE_KEY not configured")
+        logger.warning("reCAPTCHA enabled but PROJECT_ID or SITE_KEY not configured")
         return True, 1.0, "reCAPTCHA not configured"
 
     if not token:
         return False, 0.0, "No reCAPTCHA token provided"
 
     try:
-        credentials = service_account.Credentials.from_service_account_info(
-            gcp_svc_account_dict)
-        client = recaptchaenterprise_v1.RecaptchaEnterpriseServiceClient(
-            credentials=credentials)
+        credentials = service_account.Credentials.from_service_account_info(gcp_svc_account_dict)
+        client = recaptchaenterprise_v1.RecaptchaEnterpriseServiceClient(credentials=credentials)
 
         event = recaptchaenterprise_v1.Event()
         event.site_key = recaptcha_site_key
@@ -117,8 +110,7 @@ def verify_recaptcha_token(
         # Check if the action matches
         if response.token_properties.action != RECAPTCHA_ACTION:
             logger.warning(
-                f"reCAPTCHA action mismatch: expected '{RECAPTCHA_ACTION}', "
-                f"got '{response.token_properties.action}'"
+                f"reCAPTCHA action mismatch: expected '{RECAPTCHA_ACTION}', got '{response.token_properties.action}'"
             )
             return False, 0.0, "Action mismatch"
 
@@ -128,8 +120,7 @@ def verify_recaptcha_token(
         # Check if score meets threshold
         if score < recaptcha_min_score:
             reasons = [str(r) for r in response.risk_analysis.reasons]
-            logger.warning(
-                f"reCAPTCHA score too low: {score}, reasons: {reasons}")
+            logger.warning(f"reCAPTCHA score too low: {score}, reasons: {reasons}")
             return False, score, f"Score too low: {score}"
 
         return True, score, "Verified"

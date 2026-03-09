@@ -1,8 +1,9 @@
-from uuid import UUID
-from pydantic import BaseModel, Field, ConfigDict, field_validator
-from typing import Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.schemas.workflow import Workflow
 
@@ -30,9 +31,7 @@ class MLModelPipelineConfigBase(BaseModel):
         default=False,
         description="Whether this is the default configuration for the model",
     )
-    cron_schedule: Optional[str] = Field(
-        None, max_length=100, description="Cron expression for scheduled execution"
-    )
+    cron_schedule: Optional[str] = Field(None, max_length=100, description="Cron expression for scheduled execution")
 
 
 class MLModelPipelineConfigCreate(MLModelPipelineConfigBase):
@@ -40,12 +39,8 @@ class MLModelPipelineConfigCreate(MLModelPipelineConfigBase):
 
 
 class MLModelPipelineConfigUpdate(BaseModel):
-    workflow_id: Optional[UUID] = Field(
-        None, description="Reference to the training workflow"
-    )
-    is_default: Optional[bool] = Field(
-        None, description="Whether this is the default configuration for the model"
-    )
+    workflow_id: Optional[UUID] = Field(None, description="Reference to the training workflow")
+    is_default: Optional[bool] = Field(None, description="Whether this is the default configuration for the model")
     cron_schedule: Optional[str] = Field(
         None,
         max_length=100,
@@ -75,9 +70,7 @@ class MLModelPipelineConfigRead(MLModelPipelineConfigBase):
 # Pipeline Run Schemas
 class MLModelPipelineRunBase(BaseModel):
     model_id: UUID = Field(..., description="Reference to the ML model")
-    pipeline_config_id: UUID = Field(
-        ..., description="Reference to the pipeline configuration used"
-    )
+    pipeline_config_id: UUID = Field(..., description="Reference to the pipeline configuration used")
     workflow_id: UUID = Field(..., description="Reference to the workflow executed")
 
 
@@ -103,23 +96,15 @@ class MLModelPipelineRunRead(MLModelPipelineRunBase):
 
 
 class MLModelPipelineRunPromote(BaseModel):
-    update_model_file: bool = Field(
-        default=True, description="Whether to update model.pkl_file"
-    )
-    update_metrics: bool = Field(
-        default=True, description="Whether to update model metadata with metrics"
-    )
+    update_model_file: bool = Field(default=True, description="Whether to update model.pkl_file")
+    update_metrics: bool = Field(default=True, description="Whether to update model metadata with metrics")
 
 
 # Pipeline Artifact Schemas
 class MLModelPipelineArtifactBase(BaseModel):
     artifact_type: ArtifactType = Field(..., description="Type of artifact")
-    artifact_path: str = Field(
-        ..., max_length=1000, description="File path or storage location"
-    )
-    artifact_name: str = Field(
-        ..., max_length=500, description="Display name for the artifact"
-    )
+    artifact_path: str = Field(..., max_length=1000, description="File path or storage location")
+    artifact_name: str = Field(..., max_length=500, description="Display name for the artifact")
     file_size: Optional[int] = Field(None, description="File size in bytes")
 
 

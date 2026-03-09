@@ -15,7 +15,11 @@ const ServerStatusBanner: React.FC = () => {
         <AlertDescription className="flex items-center justify-between">
           <span className="font-medium">Server connection error.</span>
           <button
-            onClick={async () => { setPending(true); await probeApiHealth(); setPending(false); }}
+            onClick={async () => {
+              setPending(true);
+              await probeApiHealth();
+              setPending(false);
+            }}
             disabled={pending}
             className="ml-4 inline-flex items-center rounded-md bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
           >
@@ -28,4 +32,3 @@ const ServerStatusBanner: React.FC = () => {
 };
 
 export default ServerStatusBanner;
-

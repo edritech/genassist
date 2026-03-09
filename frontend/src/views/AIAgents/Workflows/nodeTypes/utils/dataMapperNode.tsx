@@ -1,19 +1,15 @@
-import React, { useState } from "react";
-import { NodeProps } from "reactflow";
-import { getNodeColor } from "../../utils/nodeColors";
-import { DataMapperDialog } from "../../nodeDialogs/DataMapperDialog";
-import { DataMapperNodeData } from "../../types/nodes";
-import BaseNodeContainer from "../BaseNodeContainer";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
-import { extractDynamicVariablesAsRecord } from "../../utils/helpers";
+import React, { useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { getNodeColor } from '../../utils/nodeColors';
+import { DataMapperDialog } from '../../nodeDialogs/DataMapperDialog';
+import { DataMapperNodeData } from '../../types/nodes';
+import BaseNodeContainer from '../BaseNodeContainer';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
+import { extractDynamicVariablesAsRecord } from '../../utils/helpers';
 
-export const DATA_MAPPER_NODE_TYPE = "dataMapperNode";
-const DataMapperNode: React.FC<NodeProps<DataMapperNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+export const DATA_MAPPER_NODE_TYPE = 'dataMapperNode';
+const DataMapperNode: React.FC<NodeProps<DataMapperNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(DATA_MAPPER_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -30,12 +26,12 @@ const DataMapperNode: React.FC<NodeProps<DataMapperNodeData>> = ({
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Python Script",
+      label: 'Python Script',
       value: data.pythonScript,
       isCode: true,
     },
     {
-      label: "Variables",
+      label: 'Variables',
       value: extractDynamicVariablesAsRecord(JSON.stringify(data)),
       areDynamicVars: true,
     },

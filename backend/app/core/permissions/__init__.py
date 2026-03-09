@@ -3,8 +3,10 @@ Permission management module.
 
 Provides automatic permission discovery, constants, and database synchronization.
 """
+
 import logging
 from typing import Optional, Set
+
 from app.core.permissions.constants import get_all_permission_constants
 
 logger = logging.getLogger(__name__)
@@ -29,9 +31,9 @@ async def sync_permissions_on_startup() -> None:
     logger.info("Starting permission synchronization...")
 
     try:
+        from app.core.config.settings import settings
         from app.core.permissions.sync import sync_permissions_to_db
         from app.db.multi_tenant_session import multi_tenant_manager
-        from app.core.config.settings import settings
 
         # Discover all permissions from routes and constants
         all_permissions = discover_all_permissions()
@@ -41,11 +43,7 @@ async def sync_permissions_on_startup() -> None:
         logger.info("Syncing permissions to MASTER database...")
         master_session_factory = multi_tenant_manager.get_tenant_session_factory("master")
         async with master_session_factory() as session:
-            master_stats = await sync_permissions_to_db(
-                session,
-                all_permissions,
-                update_existing=False
-            )
+            master_stats = await sync_permissions_to_db(session, all_permissions, update_existing=False)
 
         logger.info(
             f"✓ Master database sync complete: "
@@ -84,9 +82,7 @@ async def _sync_permissions_to_all_tenants(all_permissions: set, multi_tenant_ma
         # Get all active tenants from master database
         master_session_factory = multi_tenant_manager.get_tenant_session_factory("master")
         async with master_session_factory() as session:
-            result = await session.execute(
-                text("SELECT slug, name FROM tenants WHERE is_active = true")
-            )
+            result = await session.execute(text("SELECT slug, name FROM tenants WHERE is_active = true"))
             tenants = result.fetchall()
 
         if not tenants:
@@ -114,9 +110,7 @@ async def _sync_permissions_to_all_tenants(all_permissions: set, multi_tenant_ma
                 logger.error(f"  ✗ Failed to sync permissions to tenant {tenant_slug}: {e}")
                 failed_count += 1
 
-        logger.info(
-            f"Tenant sync complete: {success_count} successful, {failed_count} failed"
-        )
+        logger.info(f"Tenant sync complete: {success_count} successful, {failed_count} failed")
 
     except Exception as e:
         logger.error(f"Error syncing permissions to tenants: {e}", exc_info=True)
@@ -166,9 +160,7 @@ async def sync_permissions_for_tenant(
         )
 
     logger.info(
-        f"  ✓ Tenant {tenant_slug}: "
-        f"{stats['added']} added, {stats['updated']} updated, "
-        f"{stats['orphaned']} orphaned"
+        f"  ✓ Tenant {tenant_slug}: {stats['added']} added, {stats['updated']} updated, {stats['orphaned']} orphaned"
     )
 
     return stats

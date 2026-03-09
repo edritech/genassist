@@ -7,7 +7,7 @@ from .base import Chunker
 
 nltk.download("punkt", quiet=True)
 
-__all__ = ['SentenceChunker', 'CharChunker', 'RecursiveChunker']
+__all__ = ["SentenceChunker", "CharChunker", "RecursiveChunker"]
 
 
 class SentenceChunker(Chunker):
@@ -33,7 +33,7 @@ class SentenceChunker(Chunker):
         chunks: List[str] = []
 
         for i in range(0, len(sents), self.chunk_size):
-            chunk = " ".join(sents[i: i + self.chunk_size])
+            chunk = " ".join(sents[i : i + self.chunk_size])
             chunks.append(chunk)
         return chunks
 
@@ -55,7 +55,7 @@ class CharChunker(Chunker):
     def _chunk_single(self, text: str) -> List[str]:
         chunks: List[str] = []
         for i in range(0, len(text), self.max_chars):
-            chunks.append(text[i: i + self.max_chars])
+            chunks.append(text[i : i + self.max_chars])
         return chunks
 
 

@@ -1,14 +1,14 @@
-import type { FineTuneJob } from "@/interfaces/fineTune.interface";
-import type { AccuracyPoint } from "@/views/FineTune/types";
+import type { FineTuneJob } from '@/interfaces/fineTune.interface';
+import type { AccuracyPoint } from '@/views/FineTune/types';
 
-export const inProgressStatuses = new Set(["running", "queued", "validating_files"]);
+export const inProgressStatuses = new Set(['running', 'queued', 'validating_files']);
 
 export const formatStatusLabel = (status: string) => {
-  if (!status) return "Unknown";
+  if (!status) return 'Unknown';
   return status
-    .split("_")
+    .split('_')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+    .join(' ');
 };
 
 export const normalizePercent = (value: unknown): number | null => {
@@ -33,7 +33,7 @@ export const normalizeSeconds = (value: unknown): number | null => {
 };
 
 export const formatNumber = (value: unknown): string => {
-  if (value === undefined || value === null || isNaN(Number(value))) return "—";
+  if (value === undefined || value === null || isNaN(Number(value))) return '—';
   return new Intl.NumberFormat().format(Number(value));
 };
 
@@ -51,29 +51,29 @@ const toDate = (value: unknown): Date | null => {
 
 export const formatDate = (value: unknown): string => {
   const date = toDate(value);
-  if (!date) return "—";
+  if (!date) return '—';
   return date.toLocaleString(undefined, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
   });
 };
 
 const inProgressAccuracyFields = [
-  "valid_mean_token_accuracy",
-  "train_mean_token_accuracy",
-  "full_valid_mean_token_accuracy",
-  "full_valid_loss",
+  'valid_mean_token_accuracy',
+  'train_mean_token_accuracy',
+  'full_valid_mean_token_accuracy',
+  'full_valid_loss',
 ] as const;
 
 const completedAccuracyFields = [
-  "full_valid_mean_token_accuracy",
-  "valid_mean_token_accuracy",
-  "train_mean_token_accuracy",
-  "full_valid_loss",
+  'full_valid_mean_token_accuracy',
+  'valid_mean_token_accuracy',
+  'train_mean_token_accuracy',
+  'full_valid_loss',
 ] as const;
 
 export const getAccuracyFromMetrics = (
@@ -87,7 +87,7 @@ export const getAccuracyFromMetrics = (
     const v = metrics[key];
     const num = Number(v);
     if (!isNaN(num)) {
-      if (key.includes("loss")) {
+      if (key.includes('loss')) {
         return Math.max(0, Math.min(100, Math.round((1 - num) * 100)));
       }
       return Math.round(num * (num <= 1 ? 100 : 1));
@@ -113,9 +113,7 @@ export const buildAccuracySeries = (
     counter += 1;
     const percent = Math.round(val * (val <= 1 ? 100 : 1));
     const stepNumber =
-      Number.isFinite(e.metrics?.step) && Number(e.metrics?.step) > 0
-        ? Number(e.metrics?.step)
-        : counter;
+      Number.isFinite(e.metrics?.step) && Number(e.metrics?.step) > 0 ? Number(e.metrics?.step) : counter;
 
     acc.push({
       label: `Step ${stepNumber}`,

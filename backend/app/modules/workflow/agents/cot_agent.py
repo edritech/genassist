@@ -1,19 +1,20 @@
-from typing import Optional, List, Dict, Any
-from langchain_core.language_models import BaseChatModel
-from app.modules.workflow.agents.memory import ConversationMemory
+import logging
+from typing import Any, Dict, List, Optional
 
-from app.modules.workflow.agents.agent_utils import (
-    create_error_response,
-    extract_thought,
-    create_success_response,
-)
+from langchain_core.language_models import BaseChatModel
 
 from app.modules.workflow.agents.agent_prompts import (
     create_chain_of_thought_prompt,
+)
+from app.modules.workflow.agents.agent_prompts import (
     create_conversation_context as build_conversation_context,
 )
-
-import logging
+from app.modules.workflow.agents.agent_utils import (
+    create_error_response,
+    create_success_response,
+    extract_thought,
+)
+from app.modules.workflow.agents.memory import ConversationMemory
 
 logger = logging.getLogger(__name__)
 
@@ -46,21 +47,19 @@ class ChainOfThoughtAgent:
 
     def _extract_response_content(self, response) -> str:
         # Modern approach: Use content_blocks for standardized access (LangChain 1.0+)
-        if hasattr(response, 'content_blocks'):
+        if hasattr(response, "content_blocks"):
             text_parts = []
             for block in response.content_blocks:
                 # Extract from TextContentBlock
-                if block.get('type') == 'text' and 'text' in block:
-                    text_parts.append(block['text'])
+                if block.get("type") == "text" and "text" in block:
+                    text_parts.append(block["text"])
 
             if text_parts:
-                return '\n'.join(text_parts)
+                return "\n".join(text_parts)
         # fallback old version
-        return response.content if hasattr(response, 'content') else str(response)
+        return response.content if hasattr(response, "content") else str(response)
 
-    async def invoke(
-        self, query: str, chat_history: Optional[List] = None
-    ) -> Dict[str, Any]:
+    async def invoke(self, query: str, chat_history: Optional[List] = None) -> Dict[str, Any]:
         """Execute a query using available tools"""
         chat_history = chat_history or []
         result = await self._run_chain_of_thought(query, chat_history)
@@ -75,32 +74,22 @@ class ChainOfThoughtAgent:
             logger.error(f"Error streaming Chain-of-Thought query: {str(e)}")
             yield create_error_response(str(e), "ChainOfThoughtAgent")
 
-    async def _run_chain_of_thought(
-        self, query: str, chat_history: List[Dict[str, str]]
-    ) -> Dict[str, Any]:
+    async def _run_chain_of_thought(self, query: str, chat_history: List[Dict[str, str]]) -> Dict[str, Any]:
         """Run the chain-of-thought reasoning cycle with enhanced workflow"""
         logger.debug(f"Running Chain-of-Thought for query: {query}")
         context = build_conversation_context(chat_history)
-        examples = (
-            create_task_specific_cot_examples()
-            + create_commonsense_cot_examples()
-            + create_math_cot_examples()
-        )
+        examples = create_task_specific_cot_examples() + create_commonsense_cot_examples() + create_math_cot_examples()
         current_prompt = create_chain_of_thought_prompt("", context, query, examples)
 
         reasoning_steps = []
 
         for iteration in range(self.max_iterations):
             try:
-                response = await self.llm_model.ainvoke(
-                    [{"role": "user", "content": current_prompt}]
-                )
+                response = await self.llm_model.ainvoke([{"role": "user", "content": current_prompt}])
                 response_content = self._extract_response_content(response)
 
                 if self.verbose:
-                    logger.debug(
-                        f"Chain-of-Thought iteration {iteration + 1}: {response_content}"
-                    )
+                    logger.debug(f"Chain-of-Thought iteration {iteration + 1}: {response_content}")
 
                 # Record reasoning step
                 thought = extract_thought(response_content)
@@ -126,9 +115,7 @@ class ChainOfThoughtAgent:
                     )
 
             except Exception as e:
-                logger.error(
-                    f"Error in Chain-of-Thought cycle iteration {iteration}: {str(e)}"
-                )
+                logger.error(f"Error in Chain-of-Thought cycle iteration {iteration}: {str(e)}")
                 return create_error_response(
                     f"Error in iteration {iteration}: {str(e)}",
                     "ChainOfThoughtAgent",
@@ -142,9 +129,7 @@ class ChainOfThoughtAgent:
             reasoning_steps=reasoning_steps,
         )
 
-    def _build_context_from_search_results(
-        self, search_results: List[Dict], max_length: int
-    ) -> str:
+    def _build_context_from_search_results(self, search_results: List[Dict], max_length: int) -> str:
         """
         Build context string from RAG search results.
 
@@ -185,9 +170,7 @@ class ChainOfThoughtAgent:
             # Check if we have room for this content
             if current_length + len(content_text) > max_length:
                 # Try to add a truncated version
-                remaining_space = (
-                    max_length - current_length - 20
-                )  # Leave space for "..."
+                remaining_space = max_length - current_length - 20  # Leave space for "..."
                 if remaining_space > 100:  # Only if we have meaningful space
                     truncated_content = content_text[:remaining_space] + "...\n"
                     context_parts.append(truncated_content)
@@ -230,9 +213,7 @@ class ChainOfThoughtAgent:
         if metadata.get("is_chunked", False):
             chunk_index = metadata.get("chunk_index", 0)
             total_chunks = metadata.get("total_chunks", 1)
-            formatted_content = (
-                f"[Chunk {chunk_index + 1}/{total_chunks}] {formatted_content}"
-            )
+            formatted_content = f"[Chunk {chunk_index + 1}/{total_chunks}] {formatted_content}"
 
         return f"{formatted_content}\n\n"
 

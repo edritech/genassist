@@ -3,13 +3,15 @@ Zendesk tool node implementation using the BaseNode class.
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 from uuid import UUID
 
-from ..base_node import BaseNode
+from app.dependencies.injector import injector
 from app.modules.integration.zendesk import ZendeskConnector
 from app.services.app_settings import AppSettingsService
-from app.dependencies.injector import injector
+
+from ..base_node import BaseNode
+
 logger = logging.getLogger(__name__)
 
 
@@ -50,14 +52,11 @@ class ZendeskToolNode(BaseNode):
             app_settings = await app_settings_service.get_by_id(UUID(app_settings_id))
 
             # Extract subdomain, email, and api_token from app settings values
-            values = (
-                app_settings.values if isinstance(app_settings.values, dict) else {}
-            )
+            values = app_settings.values if isinstance(app_settings.values, dict) else {}
             subdomain = str(values.get("zendesk_subdomain"))
             email = str(values.get("zendesk_email"))
             api_token = str(values.get("zendesk_api_token"))
-            zendesk_connector = ZendeskConnector(
-                subdomain=subdomain, email=email, api_token=api_token)
+            zendesk_connector = ZendeskConnector(subdomain=subdomain, email=email, api_token=api_token)
             # Create the Zendesk ticket
             result = await zendesk_connector.create_ticket(
                 subject=subject,

@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
-import { Switch } from "@/components/switch";
-import { Label } from "@/components/label";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/collapsible";
-import { ChevronDown, ChevronRight, Settings } from "lucide-react";
-import { getRagFromSchema } from "@/services/api";
-import { finalizeKnowledgeItem } from "@/services/api";
-import { toast } from "react-hot-toast";
-import { DynamicRagField } from "./DynamicRagField";
-import { DynamicFormSchema } from "@/interfaces/dynamicFormSchemas.interface";
-import { RagConfigValues } from "../types/ragSchema";
-
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/card';
+import { Switch } from '@/components/switch';
+import { Label } from '@/components/label';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/collapsible';
+import { ChevronDown, ChevronRight, Settings } from 'lucide-react';
+import { getRagFromSchema } from '@/services/api';
+import { finalizeKnowledgeItem } from '@/services/api';
+import { toast } from 'react-hot-toast';
+import { DynamicRagField } from './DynamicRagField';
+import { DynamicFormSchema } from '@/interfaces/dynamicFormSchemas.interface';
+import { RagConfigValues } from '../types/ragSchema';
 
 interface DynamicRagConfigSectionProps {
   ragConfig?: RagConfigValues;
@@ -34,9 +29,7 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
 }) => {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [isInitialized, setIsInitialized] = useState(false);
-  const [showOptionalFields, setShowOptionalFields] = useState(
-    !showOnlyRequired
-  );
+  const [showOptionalFields, setShowOptionalFields] = useState(!showOnlyRequired);
   const [legraFinalize, setLegraFinalize] = useState<boolean>(Boolean(initialLegraFinalize));
   const [isFinalizing, setIsFinalizing] = useState<boolean>(false);
 
@@ -45,7 +38,7 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
     isLoading,
     error,
   } = useQuery<DynamicFormSchema>({
-    queryKey: ["ragConfigSchema"],
+    queryKey: ['ragConfigSchema'],
     queryFn: getRagFromSchema,
   });
 
@@ -75,17 +68,15 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
           // Initialize conditional fields defaults based on current values
           if (section.conditional_fields) {
             // Find the controlling field (field whose options match conditional_fields keys)
-            const controllingField = section.fields.find(field => {
+            const controllingField = section.fields.find((field) => {
               if (!field.options || !section.conditional_fields) return false;
-              return field.options.some(option => 
-                Object.keys(section.conditional_fields!).includes(option.value)
-              );
+              return field.options.some((option) => Object.keys(section.conditional_fields!).includes(option.value));
             });
-            
+
             if (controllingField) {
               const controlValue = initialConfig[ragType][controllingField.name] || controllingField.default;
               const conditionalFields = section.conditional_fields[controlValue as string];
-              
+
               if (conditionalFields) {
                 conditionalFields.forEach((field) => {
                   if (field.default !== undefined && initialConfig[ragType][field.name] === undefined) {
@@ -124,11 +115,7 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
     onChange(updatedConfig);
   };
 
-  const handleFieldChange = (
-    ragType: string,
-    fieldName: string,
-    value: unknown
-  ) => {
+  const handleFieldChange = (ragType: string, fieldName: string, value: unknown) => {
     const updatedConfig = {
       ...ragConfig,
       [ragType]: {
@@ -141,16 +128,16 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
     if (schema) {
       const typeSchema = schema[ragType];
       // Find which section this field belongs to for conditional field logic
-      const section = typeSchema?.sections.find(s => 
-        s.fields.some(f => f.name === fieldName) ||
-        (s.conditional_fields && Object.values(s.conditional_fields).some(fields => 
-          fields.some(f => f.name === fieldName)
-        ))
+      const section = typeSchema?.sections.find(
+        (s) =>
+          s.fields.some((f) => f.name === fieldName) ||
+          (s.conditional_fields &&
+            Object.values(s.conditional_fields).some((fields) => fields.some((f) => f.name === fieldName)))
       );
-      
+
       if (section?.conditional_fields && section.conditional_fields[value as string]) {
         const conditionalFields = section.conditional_fields[value as string];
-        
+
         conditionalFields.forEach((field) => {
           if (field.default !== undefined && updatedConfig[ragType][field.name] === undefined) {
             updatedConfig[ragType][field.name] = field.default;
@@ -162,10 +149,7 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
     onChange(updatedConfig);
   };
 
-  const getFieldValue = (
-    ragType: string,
-    fieldName: string
-  ): unknown => {
+  const getFieldValue = (ragType: string, fieldName: string): unknown => {
     return ragConfig[ragType]?.[fieldName];
   };
 
@@ -177,9 +161,9 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
       setIsFinalizing(true);
       await finalizeKnowledgeItem(knowledgeId);
       setLegraFinalize(true);
-      toast.success("Finalized successfully.");
+      toast.success('Finalized successfully.');
     } catch (err) {
-      toast.error("Failed to finalize.");
+      toast.error('Failed to finalize.');
     } finally {
       setIsFinalizing(false);
     }
@@ -191,9 +175,7 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
         <div className="grid grid-cols-3 gap-6">
           <div>
             <h3 className="text-lg font-semibold">RAG Configuration</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              Loading configuration options...
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Loading configuration options...</p>
           </div>
           <div className="col-span-2">
             <div className="animate-pulse space-y-4">
@@ -213,14 +195,10 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
         <div className="grid grid-cols-3 gap-6">
           <div>
             <h3 className="text-lg font-semibold">RAG Configuration</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              Configure Retrieval Augmented Generation settings
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Configure Retrieval Augmented Generation settings</p>
           </div>
           <div className="col-span-2">
-            <div className="text-red-500 text-sm">
-              Failed to load RAG configuration schema. Please try again.
-            </div>
+            <div className="text-red-500 text-sm">Failed to load RAG configuration schema. Please try again.</div>
           </div>
         </div>
       </div>
@@ -238,9 +216,7 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">RAG Configuration</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Configure Retrieval Augmented Generation settings
-              </p>
+              <p className="text-sm text-gray-500 mt-1">Configure Retrieval Augmented Generation settings</p>
             </div>
             {/* <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
               <Settings className="h-4 w-4 text-gray-500" />
@@ -265,12 +241,8 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-base">
-                        {typeSchema.name}
-                      </CardTitle>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {typeSchema.description}
-                      </p>
+                      <CardTitle className="text-base">{typeSchema.name}</CardTitle>
+                      <p className="text-sm text-gray-500 mt-1">{typeSchema.description}</p>
                     </div>
                     <div className="flex items-center space-x-2 ml-4">
                       <Label htmlFor={`${ragType}-enabled`} className="text-sm">
@@ -279,9 +251,7 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
                       <Switch
                         id={`${ragType}-enabled`}
                         checked={isEnabled}
-                        onCheckedChange={(checked) =>
-                          handleRagTypeToggle(ragType, checked)
-                        }
+                        onCheckedChange={(checked) => handleRagTypeToggle(ragType, checked)}
                       />
                     </div>
                   </div>
@@ -291,15 +261,10 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
                   <CardContent className="pt-0">
                     <div className="space-y-4">
                       {typeSchema.sections
-                        .filter(
-                          (section) =>
-                            showOptionalFields ||
-                            section.fields.some((field) => field.required)
-                        )
+                        .filter((section) => showOptionalFields || section.fields.some((field) => field.required))
                         .map((section) => {
                           const sectionKey = `${ragType}-${section.name}`;
-                          const isSectionOpen =
-                            openSections[sectionKey] ?? false;
+                          const isSectionOpen = openSections[sectionKey] ?? false;
 
                           return (
                             <Collapsible
@@ -308,9 +273,7 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
                               onOpenChange={() => toggleSection(sectionKey)}
                             >
                               <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                <h4 className="text-sm font-medium">
-                                  {section.label}
-                                </h4>
+                                <h4 className="text-sm font-medium">{section.label}</h4>
                                 {isSectionOpen ? (
                                   <ChevronDown className="h-4 w-4" />
                                 ) : (
@@ -336,17 +299,18 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
                                           />
                                         );
 
-                                        const isLegra = ragType.toLowerCase() === "legra" ||
-                                          (typeSchema?.name || "").toLowerCase().includes("legra");
-                                        const sectionLabelLc = (section.label || "").trim().toLowerCase();
-                                        const sectionNameLc = (section.name || "").trim().toLowerCase();
+                                        const isLegra =
+                                          ragType.toLowerCase() === 'legra' ||
+                                          (typeSchema?.name || '').toLowerCase().includes('legra');
+                                        const sectionLabelLc = (section.label || '').trim().toLowerCase();
+                                        const sectionNameLc = (section.name || '').trim().toLowerCase();
                                         const isLegraEmbeddingSection =
-                                          sectionLabelLc === "embedding configuration" ||
-                                          sectionLabelLc.includes("embedding") ||
-                                          sectionNameLc.includes("embedding");
+                                          sectionLabelLc === 'embedding configuration' ||
+                                          sectionLabelLc.includes('embedding') ||
+                                          sectionNameLc.includes('embedding');
                                         const isEmbeddingModelField =
-                                          field.name === "embedding_model" ||
-                                          (field.label || "").toLowerCase() === "embedding model";
+                                          field.name === 'embedding_model' ||
+                                          (field.label || '').toLowerCase() === 'embedding model';
                                         if (isLegra && isLegraEmbeddingSection && isEmbeddingModelField) {
                                           nodes.push(
                                             <div key="legra-embedding-finalize" className="space-y-2">
@@ -362,10 +326,16 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
                                                     onCheckedChange={handleLegraFinalizeToggle}
                                                   />
                                                   <span className="text-sm text-gray-500">
-                                                    {legraFinalize ? "Finalized" : (!knowledgeId ? "Save first to enable" : "Finalize to lock and build graph")}
+                                                    {legraFinalize
+                                                      ? 'Finalized'
+                                                      : !knowledgeId
+                                                        ? 'Save first to enable'
+                                                        : 'Finalize to lock and build graph'}
                                                   </span>
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-2">This action cannot be undone.</p>
+                                                <p className="text-xs text-gray-500 mt-2">
+                                                  This action cannot be undone.
+                                                </p>
                                               </div>
                                             </div>
                                           );
@@ -373,51 +343,39 @@ const DynamicRagConfigSection: React.FC<DynamicRagConfigSectionProps> = ({
                                       });
                                     return nodes;
                                   })()}
-                                  
+
                                   {/* Conditional fields */}
-                                  {section.conditional_fields && (() => {
-                                    // Find the controlling field value
-                                    const controllingField = section.fields.find(field => {
-                                      if (!field.options || !section.conditional_fields) return false;
-                                      return field.options.some(option => 
-                                        Object.keys(section.conditional_fields!).includes(option.value)
-                                      );
-                                    });
-                                    
-                                    if (!controllingField) return null;
-                                    
-                                    const controlValue = getFieldValue(
-                                      ragType,
-                                      controllingField.name
-                                    ) as string;
-                                    
-                                    const conditionalFields = section.conditional_fields[controlValue];
-                                    
-                                    if (!conditionalFields) return null;
-                                    
-                                    return conditionalFields
-                                      .filter(
-                                        (field) =>
-                                          showOptionalFields || field.required
-                                      )
-                                      .map((field) => (
-                                        <DynamicRagField
-                                          key={`conditional-${field.name}`}
-                                          field={field}
-                                          value={getFieldValue(
-                                            ragType,
-                                            field.name
-                                          )}
-                                          onChange={(fieldName, value) =>
-                                            handleFieldChange(
-                                              ragType,
-                                              fieldName,
-                                              value
-                                            )
-                                          }
-                                        />
-                                      ));
-                                  })()}
+                                  {section.conditional_fields &&
+                                    (() => {
+                                      // Find the controlling field value
+                                      const controllingField = section.fields.find((field) => {
+                                        if (!field.options || !section.conditional_fields) return false;
+                                        return field.options.some((option) =>
+                                          Object.keys(section.conditional_fields!).includes(option.value)
+                                        );
+                                      });
+
+                                      if (!controllingField) return null;
+
+                                      const controlValue = getFieldValue(ragType, controllingField.name) as string;
+
+                                      const conditionalFields = section.conditional_fields[controlValue];
+
+                                      if (!conditionalFields) return null;
+
+                                      return conditionalFields
+                                        .filter((field) => showOptionalFields || field.required)
+                                        .map((field) => (
+                                          <DynamicRagField
+                                            key={`conditional-${field.name}`}
+                                            field={field}
+                                            value={getFieldValue(ragType, field.name)}
+                                            onChange={(fieldName, value) =>
+                                              handleFieldChange(ragType, fieldName, value)
+                                            }
+                                          />
+                                        ));
+                                    })()}
                                 </div>
                               </CollapsibleContent>
                             </Collapsible>

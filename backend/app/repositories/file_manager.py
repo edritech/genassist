@@ -1,16 +1,18 @@
-from uuid import UUID
-from injector import inject
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
 from typing import List, Optional
+from uuid import UUID
+
+from fastapi_cache import FastAPICache
+from injector import inject
+from redis.exceptions import ResponseError
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette_context import context
+
+from app.cache.redis_cache import make_key_builder
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.file import FileModel
 from app.schemas.file import FileBase
-from app.cache.redis_cache import make_key_builder
-from starlette_context import context
-from fastapi_cache import FastAPICache
-from redis.exceptions import ResponseError
 
 file_manager_key_builder = make_key_builder("file_manager")
 
@@ -48,9 +50,7 @@ class FileManagerRepository:
 
     async def get_file_by_id(self, file_id: UUID) -> Optional[FileModel]:
         """Fetch file by ID."""
-        query = select(FileModel).where(
-            and_(FileModel.id == file_id, FileModel.is_deleted == 0)
-        )
+        query = select(FileModel).where(and_(FileModel.id == file_id, FileModel.is_deleted == 0))
         result = await self.db.execute(query)
         file = result.scalars().first()
 
@@ -61,15 +61,10 @@ class FileManagerRepository:
 
     async def get_file_by_path(self, path: str, user_id: Optional[UUID] = None) -> Optional[FileModel]:
         """Fetch file by path."""
-        query = select(FileModel).where(
-            and_(
-                FileModel.path == path,
-                FileModel.is_deleted == 0
-            )
-        )
+        query = select(FileModel).where(and_(FileModel.path == path, FileModel.is_deleted == 0))
         if user_id:
             query = query.where(FileModel.user_id == user_id)
-        
+
         result = await self.db.execute(query)
         return result.scalars().first()
 
@@ -78,7 +73,7 @@ class FileManagerRepository:
         user_id: Optional[UUID] = None,
         storage_provider: Optional[str] = None,
         limit: Optional[int] = None,
-        offset: Optional[int] = None
+        offset: Optional[int] = None,
     ) -> List[FileModel]:
         """List files with optional filtering."""
         query = select(FileModel).where(FileModel.is_deleted == 0)
@@ -101,15 +96,15 @@ class FileManagerRepository:
     async def update_file(self, file_id: UUID, update_data: FileBase) -> FileModel:
         """Update file metadata."""
         file = await self.get_file_by_id(file_id)
-        
+
         update_dict = update_data.model_dump(exclude_unset=True)
         for key, value in update_dict.items():
             setattr(file, key, value)
-        
+
         file.updated_by = context.get("user_id")
         await self.db.commit()
         await self.db.refresh(file)
-        
+
         # Invalidate cache (safe for Redis Cluster: Lua scripts without keys not supported)
         cache_key = f"file_manager:file:{file_id}"
         try:
@@ -127,7 +122,7 @@ class FileManagerRepository:
         file.is_deleted = 1
         file.updated_by = context.get("user_id")
         await self.db.commit()
-        
+
         # Invalidate cache (safe for Redis Cluster: Lua scripts without keys not supported)
         cache_key = f"file_manager:file:{file_id}"
         try:

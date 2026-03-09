@@ -1,20 +1,18 @@
-import { useEffect, useState } from "react";
-import { getAllAppSettings, deleteAppSetting } from "@/services/appSettings";
-import { PageLayout } from "@/components/PageLayout";
-import { PageHeader } from "@/components/PageHeader";
-import { AppSettingsCard } from "@/views/AppSettings/components/AppSettingsCard";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { AppSettingDialog } from "../components/AppSettingDialog";
-import { toast } from "react-hot-toast";
+import { useEffect, useState } from 'react';
+import { getAllAppSettings, deleteAppSetting } from '@/services/appSettings';
+import { PageLayout } from '@/components/PageLayout';
+import { PageHeader } from '@/components/PageHeader';
+import { AppSettingsCard } from '@/views/AppSettings/components/AppSettingsCard';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { AppSettingDialog } from '../components/AppSettingDialog';
+import { toast } from 'react-hot-toast';
 
 export default function AppSettings() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [settingToEdit, setSettingToEdit] = useState<AppSetting | null>(
-    null
-  );
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [settingToEdit, setSettingToEdit] = useState<AppSetting | null>(null);
 
   const [appSettings, setAppSettings] = useState<AppSetting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,13 +38,13 @@ export default function AppSettings() {
   };
 
   const handleCreateSetting = () => {
-    setDialogMode("create");
+    setDialogMode('create');
     setSettingToEdit(null);
     setIsDialogOpen(true);
   };
 
   const handleEditSetting = (setting: AppSetting) => {
-    setDialogMode("edit");
+    setDialogMode('edit');
     setSettingToEdit(setting);
     setIsDialogOpen(true);
   };
@@ -56,7 +54,7 @@ export default function AppSettings() {
       await deleteAppSetting(id);
       setRefreshKey((prev) => prev + 1);
     } catch (error) {
-      toast.error("Failed to delete app setting.");
+      toast.error('Failed to delete app setting.');
     }
   };
 
@@ -89,4 +87,4 @@ export default function AppSettings() {
       />
     </PageLayout>
   );
-} 
+}

@@ -3,23 +3,24 @@ import fnmatch
 import os
 import shutil
 from pathlib import Path
-from typing import List, Optional, Union, Tuple
+from typing import List, Optional, Tuple, Union
 
 import aiofiles
 
 # High-level convenience layer that ships with smbprotocol
 # Installed via `pip install smbprotocol`
 from smbclient import (
-    register_session,
-    reset_connection_cache,
-    open_file,
-    scandir,
-    mkdir,
-    rmdir,
-    remove,
-    path as smbpath,
-    stat as smbstat,
     SMBDirEntry,
+    mkdir,
+    open_file,
+    register_session,
+    remove,
+    reset_connection_cache,
+    rmdir,
+    scandir,
+)
+from smbclient import (
+    path as smbpath,
 )
 
 
@@ -139,7 +140,8 @@ class SMBShareFSService:
         # First join \\HOST\SHARE
         root = f"\\\\{self.smb_host}\\{self.smb_share}"
         # return smbpath.join(root, subpath) if subpath else root
-        return root +"\\"+subpath if subpath else root
+        return root + "\\" + subpath if subpath else root
+
     async def _smb_exists(self, abs_unc: str) -> bool:
         return await asyncio.to_thread(smbpath.exists, abs_unc)
 
@@ -317,13 +319,14 @@ class SMBShareFSService:
             # List entries
             def _listdir():
                 return list(scandir(unc))
+
             try:
                 entries = await asyncio.to_thread(_listdir)
             except FileNotFoundError:
                 return
 
             for de in entries:
-                child = unc + "\\" + de.name # smbpath.join(unc, de.name)
+                child = unc + "\\" + de.name  # smbpath.join(unc, de.name)
                 if de.is_dir():
                     await _rm_tree(child)
                     await asyncio.to_thread(rmdir, child)
@@ -339,7 +342,6 @@ class SMBShareFSService:
             return self._local_abspath(path).exists()
         abs_unc = self._smb_abspath(path)
         return await self._smb_exists(abs_unc)
-
 
     async def get_unc_subpath(self, unc_path: str) -> Tuple[str, str]:
         """

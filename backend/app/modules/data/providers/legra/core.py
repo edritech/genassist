@@ -27,7 +27,7 @@ from .utils import get_logger
 _logger = get_logger(__name__)
 
 __all__ = [
-    'Legra',
+    "Legra",
 ]
 
 
@@ -67,9 +67,7 @@ class Legra:
         self.embedder = embedder
         self.indexer = indexer
         self.max_tokens = max_tokens
-        self.graph_builder = graph_builder or KNNGraphBuilder(
-            n_neighbors=n_neighbors, metric=metric
-        )
+        self.graph_builder = graph_builder or KNNGraphBuilder(n_neighbors=n_neighbors, metric=metric)
         self.clusterer = clusterer
         self.retriever = retriever  # may fill after indexing
         self.generator = generator
@@ -111,14 +109,10 @@ class Legra:
         for file in files:
             content = file.file.read()  # read the file contents as bytes
             text = content.decode("utf-8", errors="ignore")  # decode to string
-            docs.append({
-                "doc_id": file.filename,
-                "text": text
-                })
+            docs.append({"doc_id": file.filename, "text": text})
 
         _logger.info(f"Loaded {len(docs)} documents from {self.doc_folder}")
         return docs
-
 
     def add_document(self, doc_id: str, extracted_text: str, metadata: dict) -> None:
         """
@@ -165,18 +159,15 @@ class Legra:
                 "chunk_ix": ix,
                 "text": txt,
                 "embedding": emb,  # kept in RAM, stripped before save()
-                }
+            }
             for ix, (txt, emb) in enumerate(zip(chunks, new_embs))
-            ]
+        ]
 
         # ------------------------------------------------------------------ #
         # 4. Concatenate with previous corpus                                #
         # ------------------------------------------------------------------ #
         self.docs_meta = existing_meta + new_meta
-        self.emb_matrix = (
-            new_embs if existing_embs.size == 0
-            else np.vstack([existing_embs, new_embs])
-        )
+        self.emb_matrix = new_embs if existing_embs.size == 0 else np.vstack([existing_embs, new_embs])
 
         _logger.info(f"KB {kb_id} now has {len(self.docs_meta)} chunks total.")
 
@@ -189,10 +180,9 @@ class Legra:
 
             self.complete_index_graph(kb_id)
             self.save(kb_id, full=True)
-        else :
+        else:
             self.save(kb_id, full=False)  # writes docs_meta.json + emb_matrix.npy
             _logger.info("Embeddings saved.")
-
 
     def delete_document(self, doc_id: str) -> bool:
         """
@@ -205,7 +195,7 @@ class Legra:
         True  – deletion succeeded (or doc_id not present)
         False – I/O or JSON errors occurred
         """
-        kb_id = (doc_id.split("#", 1)[0])[3:] # remove part after # and remove 'KB:' to extract kb_id
+        kb_id = (doc_id.split("#", 1)[0])[3:]  # remove part after # and remove 'KB:' to extract kb_id
 
         kb_dir = Path("legra_data") / kb_id
         if not kb_dir.exists():
@@ -238,16 +228,14 @@ class Legra:
                 import shutil
 
                 shutil.rmtree(kb_dir)
-                _logger.info(f"delete_document: removed last document; "
-                             f"KB {kb_id} directory deleted.")
+                _logger.info(f"delete_document: removed last document; KB {kb_id} directory deleted.")
                 return True
 
             # -----------------------------------------------------------------
             # 3. Save stripped corpus back to disk
             # -----------------------------------------------------------------
             # Strip embeddings before saving docs_meta.json
-            meta_for_save = [{k: v for k, v in m.items() if k != "embedding"}
-                             for m in new_meta]
+            meta_for_save = [{k: v for k, v in m.items() if k != "embedding"} for m in new_meta]
 
             with open(kb_dir / "docs_meta.json", "w", encoding="utf-8") as f:
                 json.dump(meta_for_save, f, ensure_ascii=False, indent=2)
@@ -257,8 +245,7 @@ class Legra:
             # -----------------------------------------------------------------
             # 4. Remove stale index / graph files
             # -----------------------------------------------------------------
-            for stale in ("faiss_index.bin", "graph.graphml",
-                          "community_summaries.json"):
+            for stale in ("faiss_index.bin", "graph.graphml", "community_summaries.json"):
                 p = kb_dir / stale
                 if p.exists():
                     p.unlink()
@@ -275,14 +262,12 @@ class Legra:
             self.graph = None
             self.community_labels = None
 
-            _logger.info(f"delete_document: removed {doc_id} from KB {kb_id}. "
-                         f"{len(new_meta)} chunks remain.")
+            _logger.info(f"delete_document: removed {doc_id} from KB {kb_id}. {len(new_meta)} chunks remain.")
             return True
 
         except Exception as e:
             _logger.exception(f"delete_document failed: {e}")
             return False
-
 
     def complete_index_graph(self, kb_id: str):
         # 1. Build index
@@ -307,15 +292,11 @@ class Legra:
         if self.retriever is None:
             from .retrieval.neighbor_retriever import NeighborRetriever
 
-            self.retriever = NeighborRetriever(
-                    embedder=self.embedder, indexer=self.indexer, docs_meta=self.docs_meta
-                    )
+            self.retriever = NeighborRetriever(embedder=self.embedder, indexer=self.indexer, docs_meta=self.docs_meta)
         _logger.info("Vector index completed.")
         _logger.info("Saving full indexed graph...")
         self.save(kb_id, True)
         _logger.info("Saving completed.")
-
-
 
     def index(self, files: list[UploadFile]) -> None:
         """
@@ -375,9 +356,7 @@ class Legra:
         if self.retriever is None:
             from .retrieval.neighbor_retriever import NeighborRetriever
 
-            self.retriever = NeighborRetriever(
-                embedder=self.embedder, indexer=self.indexer, docs_meta=self.docs_meta
-            )
+            self.retriever = NeighborRetriever(embedder=self.embedder, indexer=self.indexer, docs_meta=self.docs_meta)
 
         _logger.info("Indexing pipeline completed.")
 
@@ -445,7 +424,7 @@ class Legra:
         chunks until they fit the context length.
         """
         if tokenizer is None:
-            if not hasattr(generator, 'tokenizer'):
+            if not hasattr(generator, "tokenizer"):
                 raise ValueError(
                     f"Generator of type {generator.__class__.__name__} "
                     "does not have a tokenizer. Please pass one explicitly."
@@ -527,8 +506,7 @@ class Legra:
 
         with open(path / "embedder.json", "w", encoding="utf-8") as f:
             json.dump(
-                {"class": self.embedder.__class__.__name__,
-                 "model_name": self.embedder.model_name},
+                {"class": self.embedder.__class__.__name__, "model_name": self.embedder.model_name},
                 f,
             )
 
@@ -539,7 +517,7 @@ class Legra:
                 "model_name": self.generator.model_name,
                 "device": self.generator.device,
                 "truncate_context_size": self.generator.truncate_context_size,
-                }
+            }
             with open(path / "generator.json", "w", encoding="utf-8") as f:
                 json.dump(gen_config, f, ensure_ascii=False, indent=2)
 
@@ -547,7 +525,7 @@ class Legra:
         if self.retriever is not None:
             retriever_config = {
                 "class": self.retriever.__class__.__name__,
-                }
+            }
             with open(path / "retriever.json", "w", encoding="utf-8") as f:
                 json.dump(retriever_config, f, ensure_ascii=False, indent=2)
 
@@ -567,7 +545,6 @@ class Legra:
             if self.community_summaries:
                 with open(path / "community_summaries.json", "w", encoding="utf-8") as f:
                     json.dump(self.community_summaries, f, ensure_ascii=False, indent=2)
-
 
     @classmethod
     def load(cls, path: str | Path, load_reason: str = "search") -> "Legra":
@@ -593,9 +570,7 @@ class Legra:
 
         # 2. (optional) graph  ------------------------------------------
         graph_file = kb_path / "graph.graphml"
-        graph: Optional[ig.Graph] = (
-            ig.Graph.Read_GraphML(str(graph_file)) if graph_file.exists() else None
-        )
+        graph: Optional[ig.Graph] = ig.Graph.Read_GraphML(str(graph_file)) if graph_file.exists() else None
 
         # 3. embedder  ---------------------------------------------------
         with open(kb_path / "embedder.json", encoding="utf-8") as f:
@@ -613,10 +588,10 @@ class Legra:
                 gconf = json.load(f)
             generator_cls = getattr(hf_generation, gconf["class"])
             generator = generator_cls(
-                    model_name=gconf["model_name"],
-                    device=gconf["device"],
-                    truncate_context_size=gconf["truncate_context_size"],
-                    )
+                model_name=gconf["model_name"],
+                device=gconf["device"],
+                truncate_context_size=gconf["truncate_context_size"],
+            )
 
         # 5. indexer  (reuse if stored, else build) ----------------------
         from .index.faiss_index import FaissFlatIndexer as _FFI
@@ -640,11 +615,7 @@ class Legra:
             with open(retriever_file, encoding="utf-8") as f:
                 rconf = json.load(f)
             retriever_cls = getattr(neighbor_retriever, rconf["class"])
-            retriever = retriever_cls(
-                    embedder=embedder,
-                    indexer=indexer,
-                    docs_meta=docs_meta
-                    )
+            retriever = retriever_cls(embedder=embedder, indexer=indexer, docs_meta=docs_meta)
         else:
             retriever = None
 
@@ -665,23 +636,22 @@ class Legra:
 
         # 9. create instance & inject loaded state -----------------------
         return cls(
-                doc_folder=Path(),  # original disk source no longer needed
-                chunker=None,  # chunker only used for *new* docs
-                max_tokens=max_tokens,
-                embedder=embedder,
-                indexer=indexer,
-                graph_builder=None,
-                clusterer=None,
-                retriever=retriever,
-                generator=generator,
-                )._finalize_load(
-                docs_meta=docs_meta,
-                emb_matrix=emb_matrix,
-                graph=graph,  # may be None
-                community_labels=community_labels,
-                community_summaries=community_summaries,
-                )
-
+            doc_folder=Path(),  # original disk source no longer needed
+            chunker=None,  # chunker only used for *new* docs
+            max_tokens=max_tokens,
+            embedder=embedder,
+            indexer=indexer,
+            graph_builder=None,
+            clusterer=None,
+            retriever=retriever,
+            generator=generator,
+        )._finalize_load(
+            docs_meta=docs_meta,
+            emb_matrix=emb_matrix,
+            graph=graph,  # may be None
+            community_labels=community_labels,
+            community_summaries=community_summaries,
+        )
 
     def _finalize_load(
         self,
@@ -691,13 +661,12 @@ class Legra:
         community_labels: Optional[List[int]],
         community_summaries: Dict[int, str],
     ) -> "Legra":
-        self.docs_meta            = docs_meta
-        self.emb_matrix           = emb_matrix
-        self.graph                = graph
-        self.community_labels     = community_labels
-        self.community_summaries  = community_summaries
+        self.docs_meta = docs_meta
+        self.emb_matrix = emb_matrix
+        self.graph = graph
+        self.community_labels = community_labels
+        self.community_summaries = community_summaries
         return self
-
 
     def query(self, query_text: str, top_k: int = 5, generate: bool = True, **gen_kwargs) -> str:
         """

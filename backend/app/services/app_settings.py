@@ -1,22 +1,23 @@
-from typing import List, Optional, Dict, Any
-from uuid import UUID
-from injector import inject
 import logging
+from typing import Any, Dict, List, Optional
+from uuid import UUID
 
+from injector import inject
+
+from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
+from app.core.utils.encryption_utils import decrypt_key, encrypt_key
 from app.repositories.app_settings import AppSettingsRepository
 from app.schemas.app_settings import (
     AppSettingsCreate,
-    AppSettingsUpdate,
     AppSettingsRead,
+    AppSettingsUpdate,
 )
 from app.schemas.dynamic_form_schemas import (
-    get_schema_for_type,
-    get_encrypted_fields_for_type,
     APP_SETTINGS_SCHEMAS_DICT,
+    get_encrypted_fields_for_type,
+    get_schema_for_type,
 )
-from app.core.exceptions.exception_classes import AppException
-from app.core.exceptions.error_messages import ErrorKey
-from app.core.utils.encryption_utils import encrypt_key, decrypt_key
 
 logger = logging.getLogger(__name__)
 
@@ -33,14 +34,10 @@ class AppSettingsService:
     async def get_by_id(self, id: UUID) -> AppSettingsRead:
         row = await self.repo.get_by_id(id)
         if not row:
-            raise AppException(
-                status_code=404, error_key=ErrorKey.APP_SETTINGS_NOT_FOUND
-            )
+            raise AppException(status_code=404, error_key=ErrorKey.APP_SETTINGS_NOT_FOUND)
         return AppSettingsRead.model_validate(row, from_attributes=True)
 
-    async def get_by_type_and_name(
-        self, setting_type: str, name: str
-    ) -> Optional[AppSettingsRead]:
+    async def get_by_type_and_name(self, setting_type: str, name: str) -> Optional[AppSettingsRead]:
         """Get app setting by type and name."""
         row = await self.repo.get_by_type_and_name(setting_type, name)
         if not row:
@@ -77,15 +74,11 @@ class AppSettingsService:
             try:
                 value = decrypt_key(value)
             except Exception as e:
-                logger.error(
-                    f"Error decrypting field '{field_name}' for type '{setting_type}': {e}"
-                )
+                logger.error(f"Error decrypting field '{field_name}' for type '{setting_type}': {e}")
 
         return value
 
-    async def validate_and_encrypt_values(
-        self, setting_type: str, values: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def validate_and_encrypt_values(self, setting_type: str, values: Dict[str, Any]) -> Dict[str, Any]:
         """Validate values against schema and encrypt sensitive fields."""
         # For "Other" type, no validation needed
         if setting_type == "Other":
@@ -101,11 +94,7 @@ class AppSettingsService:
 
         # Validate required fields
         required_fields = [field.name for field in schema.fields if field.required]
-        missing_fields = [
-            field
-            for field in required_fields
-            if field not in values or values[field] is None
-        ]
+        missing_fields = [field for field in required_fields if field not in values or values[field] is None]
         if missing_fields:
             raise AppException(
                 status_code=400,
@@ -174,9 +163,7 @@ class AppSettingsService:
     async def update(self, id: UUID, dto: AppSettingsUpdate) -> AppSettingsRead:
         existing = await self.repo.get_by_id(id)
         if not existing:
-            raise AppException(
-                status_code=404, error_key=ErrorKey.APP_SETTINGS_NOT_FOUND
-            )
+            raise AppException(status_code=404, error_key=ErrorKey.APP_SETTINGS_NOT_FOUND)
 
         # If values are being updated, validate and encrypt them
         update_dict = dto.model_dump(exclude_unset=True)
@@ -184,9 +171,7 @@ class AppSettingsService:
         if "values" in update_dict:
             # Get the type (either from update or existing)
             setting_type = update_dict.get("type", existing.type)
-            encrypted_values = await self.validate_and_encrypt_values(
-                setting_type, update_dict["values"]
-            )
+            encrypted_values = await self.validate_and_encrypt_values(setting_type, update_dict["values"])
             update_dict["values"] = encrypted_values
 
         # Create update DTO
@@ -197,9 +182,7 @@ class AppSettingsService:
     async def delete(self, id: UUID):
         existing = await self.repo.get_by_id(id)
         if not existing:
-            raise AppException(
-                status_code=404, error_key=ErrorKey.APP_SETTINGS_NOT_FOUND
-            )
+            raise AppException(status_code=404, error_key=ErrorKey.APP_SETTINGS_NOT_FOUND)
         await self.repo.delete(id)
 
     async def get_schemas(self) -> Dict[str, Any]:

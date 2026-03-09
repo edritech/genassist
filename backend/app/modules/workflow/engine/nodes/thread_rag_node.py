@@ -8,10 +8,10 @@ This node allows workflows to:
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from app.modules.workflow.engine.base_node import BaseNode
 from app.modules.workflow.agents.rag import ThreadScopedRAG
+from app.modules.workflow.engine.base_node import BaseNode
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,10 @@ class ThreadRAGNode(BaseNode):
             return {"error": error_msg}
 
     async def _add_message(
-        self, thread_rag: ThreadScopedRAG, chat_id: str, config: Dict[str, Any],
+        self,
+        thread_rag: ThreadScopedRAG,
+        chat_id: str,
+        config: Dict[str, Any],
         rag_config_overrides: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Add a message to chat history"""
@@ -116,7 +119,10 @@ class ThreadRAGNode(BaseNode):
         }
 
     async def _retrieve(
-        self, thread_rag: ThreadScopedRAG, chat_id: str, config: Dict[str, Any],
+        self,
+        thread_rag: ThreadScopedRAG,
+        chat_id: str,
+        config: Dict[str, Any],
         rag_config_overrides: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Retrieve relevant context from chat history"""
@@ -127,7 +133,9 @@ class ThreadRAGNode(BaseNode):
         top_k = config.get("top_k", 5)
 
         results = await thread_rag.retrieve(
-            chat_id=chat_id, query=query, top_k=top_k,
+            chat_id=chat_id,
+            query=query,
+            top_k=top_k,
             config_overrides=rag_config_overrides,
         )
 
@@ -141,7 +149,10 @@ class ThreadRAGNode(BaseNode):
         }
 
     async def _add_file(
-        self, thread_rag: ThreadScopedRAG, chat_id: str, config: Dict[str, Any],
+        self,
+        thread_rag: ThreadScopedRAG,
+        chat_id: str,
+        config: Dict[str, Any],
         rag_config_overrides: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Add file content to chat history"""

@@ -1,3 +1,3 @@
-import AuditLogs from "./pages/AuditLogs";
+import AuditLogs from './pages/AuditLogs';
 
-export default AuditLogs; 
+export default AuditLogs;

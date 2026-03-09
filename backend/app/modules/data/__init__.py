@@ -12,35 +12,34 @@ from .config import (
     KbRAGConfig,
 )
 
-
-from .providers import SearchResult, BaseDataProvider, FinalizableProvider, LegraProvider, VectorProvider, LightRAGProvider
-from .providers.models import DataProviderInterface
-
-from .service import AgentRAGService
-
 # Singleton manager
 from .manager import AgentRAGServiceManager
-
+from .providers import (
+    BaseDataProvider,
+    FinalizableProvider,
+    LegraProvider,
+    LightRAGProvider,
+    SearchResult,
+    VectorProvider,
+)
+from .providers.models import DataProviderInterface
+from .service import AgentRAGService
 
 __all__ = [
     # Main service classes
     "AgentRAGService",
     # Tenant-aware singleton manager
     "AgentRAGServiceManager",
-
     # Provider interfaces
     "BaseDataProvider",
     "FinalizableProvider",
-
     # Provider classes
     "VectorProvider",
     "LegraProvider",
     "LightRAGProvider",
-
     # Configuration classes
     "AgentRAGConfig",
     "KbRAGConfig",
-
     # Data classes
     "SearchResult",
     "DataProviderInterface",

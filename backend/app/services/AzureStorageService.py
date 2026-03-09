@@ -3,8 +3,9 @@
 ###############################################
 
 import os
-from typing import Optional, List
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+from typing import List, Optional
+
+from azure.storage.blob import BlobServiceClient, ContainerClient
 
 
 class AzureStorageService:
@@ -163,7 +164,7 @@ class AzureStorageService:
         dst_blob = container.get_blob_client(dst_blob_name)
 
         dst_blob.start_copy_from_url(src_blob.url)  # copy
-        container.delete_blob(src_blob_name)        # delete original
+        container.delete_blob(src_blob_name)  # delete original
 
         print(f"OK - Moved {src_blob.url} → {dst_blob.url}")
         return dst_blob.url
@@ -179,6 +180,7 @@ class AzureStorageService:
         except Exception as e:
             print(f"XX - Error listing files: {e}")
             return []
+
 
 #############################################
 ## Usage

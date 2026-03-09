@@ -5,11 +5,14 @@ TODO: Implement full Azure Blob Storage operations using azure-storage-blob.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
+from azure.storage.blob import BlobServiceClient
+
+from app.core.config.settings import file_storage_settings
 
 from ..base import BaseStorageProvider
-from app.core.config.settings import file_storage_settings
-from azure.storage.blob import BlobServiceClient
+
 logger = logging.getLogger(__name__)
 
 
@@ -71,10 +74,7 @@ class AzureStorageProvider(BaseStorageProvider):
             raise RuntimeError("AzureStorageProvider must be initialized before use. Call initialize() first.")
 
     async def upload_file(
-        self,
-        file_content: bytes,
-        storage_path: str,
-        file_metadata: Optional[Dict[str, Any]] = None
+        self, file_content: bytes, storage_path: str, file_metadata: Optional[Dict[str, Any]] = None
     ) -> bool:
         """Upload a file to Azure Blob Storage."""
         self._ensure_initialized()
@@ -104,11 +104,7 @@ class AzureStorageProvider(BaseStorageProvider):
         blob_client = self.container_client.get_blob_client(name=storage_path)
         return blob_client.exists()
 
-    async def list_files(
-        self,
-        prefix: Optional[str] = None,
-        limit: Optional[int] = None
-    ) -> List[str]:
+    async def list_files(self, prefix: Optional[str] = None, limit: Optional[int] = None) -> List[str]:
         """List files in Azure Blob Storage container."""
         self._ensure_initialized()
         blobs = []

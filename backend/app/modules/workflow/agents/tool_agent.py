@@ -1,30 +1,31 @@
-from typing import List, Dict, Any, Optional
-import logging
 import json
+import logging
+from typing import Any, Dict, List, Optional
+
 from langchain_core.language_models import BaseChatModel
 
-from app.modules.workflow.agents.base_tool import BaseTool
-from app.modules.workflow.agents.base_tool_agent import BaseToolAgent
+from app.modules.workflow.agents.agent_prompts import create_conversation_context as build_conversation_context
+from app.modules.workflow.agents.agent_prompts import (
+    create_tool_agent_iteration_continuation_prompt,
+    create_tool_agent_no_tools_prompt,
+    create_tool_agent_no_tools_query_prompt,
+    create_tool_agent_tools_available_prompt,
+    create_tool_agent_tools_query_prompt,
+    create_tool_selection_prompt,
+)
 from app.modules.workflow.agents.agent_utils import (
-    validate_tool_parameters,
-    format_tool_parameters,
-    create_tool_descriptions,
     create_error_response,
     create_success_response,
+    create_tool_descriptions,
+    extract_direct_response,
+    format_tool_parameters,
     handle_parameter_validation_error,
     handle_tool_execution_error,
     parse_json_response,
-    extract_direct_response
+    validate_tool_parameters,
 )
-from app.modules.workflow.agents.agent_prompts import (
-    create_tool_agent_tools_available_prompt,
-    create_tool_agent_no_tools_prompt,
-    create_tool_agent_no_tools_query_prompt,
-    create_tool_agent_tools_query_prompt,
-    create_tool_agent_iteration_continuation_prompt,
-    create_tool_selection_prompt,
-    create_conversation_context as build_conversation_context
-)
+from app.modules.workflow.agents.base_tool import BaseTool
+from app.modules.workflow.agents.base_tool_agent import BaseToolAgent
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class ToolAgent(BaseToolAgent):
         system_prompt: str,
         tools: List[BaseTool],
         verbose: bool = False,
-        max_iterations: int = 6
+        max_iterations: int = 6,
     ):
         """Initialize a Tool agent
 
@@ -49,8 +50,7 @@ class ToolAgent(BaseToolAgent):
             verbose: Whether to enable verbose logging of tool execution
             max_iterations: Maximum number of tool execution iterations
         """
-        super().__init__(llm_model, system_prompt, tools,
-                         verbose=verbose, max_iterations=max_iterations)
+        super().__init__(llm_model, system_prompt, tools, verbose=verbose, max_iterations=max_iterations)
 
     # ==================== PROMPT GENERATION ====================
 
@@ -66,17 +66,17 @@ class ToolAgent(BaseToolAgent):
 
     def _extract_response_content(self, response: Any) -> str:
         # Modern approach: Use content_blocks for standardized access (LangChain 1.0+)
-        if hasattr(response, 'content_blocks'):
+        if hasattr(response, "content_blocks"):
             text_parts = []
             for block in response.content_blocks:
                 # Extract from TextContentBlock
-                if block.get('type') == 'text' and 'text' in block:
-                    text_parts.append(block['text'])
+                if block.get("type") == "text" and "text" in block:
+                    text_parts.append(block["text"])
 
             if text_parts:
-                return '\n'.join(text_parts)
+                return "\n".join(text_parts)
         # fallback old version
-        return response.content if hasattr(response, 'content') else str(response)
+        return response.content if hasattr(response, "content") else str(response)
 
     def _parse_tool_call(self, response: str) -> Optional[Dict[str, Any]]:
         """Parse tool call from LLM response with JSON format support"""
@@ -96,24 +96,28 @@ class ToolAgent(BaseToolAgent):
             tool_name = parsed_response.get("tool_name")
 
             # Handle different action types that should be treated as tool calls
-            if action in ["tool_call", "knowledge_base", "search", "query"] or tool_name or (action and action != "direct_response" and action.strip()):
+            if (
+                action in ["tool_call", "knowledge_base", "search", "query"]
+                or tool_name
+                or (action and action != "direct_response" and action.strip())
+            ):
                 # For tool_call, use tool_name; for others, use the action as the tool name
                 final_tool_name = tool_name or action
                 return {
                     "tool": final_tool_name,
                     "args": parsed_response.get("parameters", {}),
-                    "reasoning": parsed_response.get("reasoning", "")
+                    "reasoning": parsed_response.get("reasoning", ""),
                 }
         return None
 
     def _parse_legacy_response(self, response: str) -> Optional[Dict[str, Any]]:
         """Parse legacy text format for backward compatibility"""
-        lines = response.split('\n')
+        lines = response.split("\n")
 
         for i, line in enumerate(lines):
             line = line.strip()
-            if line.startswith('TOOL:') or line.startswith('Tool:'):
-                tool_name = line.split(':', 1)[1].strip()
+            if line.startswith("TOOL:") or line.startswith("Tool:"):
+                tool_name = line.split(":", 1)[1].strip()
                 args = self._extract_legacy_args(lines, i)
                 return {"tool": tool_name, "args": args}
 
@@ -124,12 +128,12 @@ class ToolAgent(BaseToolAgent):
         args = {}
         for j in range(start_index + 1, min(start_index + 10, len(lines))):
             arg_line = lines[j].strip()
-            if arg_line.startswith('ARGS:') or arg_line.startswith('Args:'):
-                args_text = arg_line.split(':', 1)[1].strip()
+            if arg_line.startswith("ARGS:") or arg_line.startswith("Args:"):
+                args_text = arg_line.split(":", 1)[1].strip()
                 try:
                     args = json.loads(args_text)
                 except json.JSONDecodeError:
-                    if '=' in args_text:
+                    if "=" in args_text:
                         args = self._parse_key_value_pairs(args_text)
                     else:
                         args = {"input": args_text}
@@ -139,10 +143,10 @@ class ToolAgent(BaseToolAgent):
     def _parse_key_value_pairs(self, args_text: str) -> Dict[str, str]:
         """Parse key=value pairs from text"""
         args = {}
-        pairs = args_text.split(',')
+        pairs = args_text.split(",")
         for pair in pairs:
-            if '=' in pair:
-                key, value = pair.split('=', 1)
+            if "=" in pair:
+                key, value = pair.split("=", 1)
                 args[key.strip()] = value.strip().strip('"').strip("'")
         return args
 
@@ -159,12 +163,10 @@ class ToolAgent(BaseToolAgent):
         """Handle workflow when no tools are available"""
         enhanced_prompt = self._create_enhanced_system_prompt()
         context = build_conversation_context(chat_history)
-        prompt = create_tool_agent_no_tools_query_prompt(
-            enhanced_prompt, context, query)
+        prompt = create_tool_agent_no_tools_query_prompt(enhanced_prompt, context, query)
 
         try:
-            response = await self.llm_model.ainvoke(
-                [{"role": "user", "content": prompt}])
+            response = await self.llm_model.ainvoke([{"role": "user", "content": prompt}])
             response_content = self._extract_response_content(response)
             logger.debug(f"Response: {response}")
             direct_response = extract_direct_response(response_content)
@@ -175,34 +177,28 @@ class ToolAgent(BaseToolAgent):
             return create_success_response(
                 final_response,
                 self._get_agent_name(),
-                steps=[{"step": 1, "response": response_content,
-                        "note": "Direct response - no tools available"}],
+                steps=[{"step": 1, "response": response_content, "note": "Direct response - no tools available"}],
                 tools_used=[],
-                no_tools_available=True
+                no_tools_available=True,
             )
         except Exception as e:
             logger.error(f"Error generating direct response: {str(e)}")
             return create_error_response(
-                f"Error generating response: {str(e)}",
-                self._get_agent_name(),
-                no_tools_available=True
+                f"Error generating response: {str(e)}", self._get_agent_name(), no_tools_available=True
             )
 
     async def _handle_tools_workflow(self, query: str, chat_history: List[Dict[str, str]]) -> Dict[str, Any]:
         """Handle workflow when tools are available"""
         enhanced_prompt = self._create_enhanced_system_prompt()
         context = build_conversation_context(chat_history)
-        prompt = create_tool_agent_tools_query_prompt(
-            enhanced_prompt, context, query)
+        prompt = create_tool_agent_tools_query_prompt(enhanced_prompt, context, query)
 
         workflow_steps: List[Dict[str, Any]] = []
         tools_used: List[Dict[str, Any]] = []
 
         for iteration in range(self.max_iterations):
             try:
-                result = await self._execute_workflow_iteration(
-                    prompt, iteration, workflow_steps, tools_used
-                )
+                result = await self._execute_workflow_iteration(prompt, iteration, workflow_steps, tools_used)
 
                 if result is not None:
                     return result
@@ -211,43 +207,33 @@ class ToolAgent(BaseToolAgent):
                 if tools_used:
                     last_tool = tools_used[-1]
                     continuation_prompt = create_tool_agent_iteration_continuation_prompt(
-                        last_tool['tool_name'],
-                        last_tool['result']
+                        last_tool["tool_name"], last_tool["result"]
                     )
                     prompt += continuation_prompt
 
             except Exception as e:
-                logger.error(
-                    f"Error in tool workflow iteration {iteration}: {str(e)}")
+                logger.error(f"Error in tool workflow iteration {iteration}: {str(e)}")
                 return create_error_response(
-                    f"Error in iteration {iteration}: {str(e)}",
-                    self._get_agent_name(),
-                    steps=workflow_steps
+                    f"Error in iteration {iteration}: {str(e)}", self._get_agent_name(), steps=workflow_steps
                 )
 
         return create_error_response(
             f"Max iterations ({self.max_iterations}) reached",
             self._get_agent_name(),
             steps=workflow_steps,
-            tools_used=tools_used
+            tools_used=tools_used,
         )
 
     async def _execute_workflow_iteration(
-        self,
-        prompt: str,
-        iteration: int,
-        workflow_steps: List[Dict],
-        tools_used: List[Dict]
+        self, prompt: str, iteration: int, workflow_steps: List[Dict], tools_used: List[Dict]
     ) -> Optional[Dict[str, Any]]:
         """Execute a single workflow iteration"""
         response = await self.llm_model.ainvoke([{"role": "user", "content": prompt}])
         response_content = self._extract_response_content(response)
-        workflow_steps.append(
-            {"step": iteration + 1, "response": response_content})
+        workflow_steps.append({"step": iteration + 1, "response": response_content})
 
         if self.verbose:
-            logger.debug(
-                f"Tool workflow step {iteration + 1}: {response_content}")
+            logger.debug(f"Tool workflow step {iteration + 1}: {response_content}")
 
         tool_call = self._parse_tool_call(response_content)
 
@@ -259,21 +245,14 @@ class ToolAgent(BaseToolAgent):
             # If it returns a string (even empty), use it as it was extracted from JSON
             final_response = direct_response if direct_response is not None else response_content
             return create_success_response(
-                final_response,
-                self._get_agent_name(),
-                steps=workflow_steps,
-                tools_used=tools_used
+                final_response, self._get_agent_name(), steps=workflow_steps, tools_used=tools_used
             )
 
         # Execute the tool
         return await self._execute_single_tool(tool_call, workflow_steps, tools_used, iteration)
 
     async def _execute_single_tool(
-        self,
-        tool_call: Dict[str, Any],
-        workflow_steps: List[Dict],
-        tools_used: List[Dict],
-        iteration: int
+        self, tool_call: Dict[str, Any], workflow_steps: List[Dict], tools_used: List[Dict], iteration: int
     ) -> Optional[Dict[str, Any]]:
         """Execute a single tool and handle the result"""
         tool_name = tool_call["tool"]
@@ -282,11 +261,7 @@ class ToolAgent(BaseToolAgent):
 
         if tool_name not in self.tool_map:
             error_msg = f"Tool '{tool_name}' not found. Available tools: {list(self.tool_map.keys())}"
-            return create_error_response(
-                error_msg,
-                self._get_agent_name(),
-                available_tools=list(self.tool_map.keys())
-            )
+            return create_error_response(error_msg, self._get_agent_name(), available_tools=list(self.tool_map.keys()))
 
         try:
             tool = self.tool_map[tool_name]
@@ -301,22 +276,18 @@ class ToolAgent(BaseToolAgent):
                 "tool": tool_name,
                 "args": validated_args,
                 "reasoning": tool_reasoning,
-                "result": tool_result
+                "result": tool_result,
             }
             workflow_steps.append(tool_execution_info)
-            tools_used.append({
-                "tool_name": tool_name,
-                "args": validated_args,
-                "reasoning": tool_reasoning,
-                "result": tool_result
-            })
+            tools_used.append(
+                {"tool_name": tool_name, "args": validated_args, "reasoning": tool_reasoning, "result": tool_result}
+            )
 
             if self.verbose:
-                logger.debug(
-                    f"Tool {tool_name} executed successfully with args {validated_args}")
+                logger.debug(f"Tool {tool_name} executed successfully with args {validated_args}")
 
             # Check if tool has return_direct=True
-            if hasattr(tool, 'return_direct') and tool.return_direct:
+            if hasattr(tool, "return_direct") and tool.return_direct:
                 # Return tool result directly, ending the workflow
                 return create_success_response(
                     str(tool_result),
@@ -325,20 +296,23 @@ class ToolAgent(BaseToolAgent):
                     tools_used=tools_used,
                     return_direct=True,
                     tool=tool_name,
-                    parameters=validated_args
+                    parameters=validated_args,
                 )
 
             return None  # Continue workflow
 
         except ValueError as e:
             return handle_parameter_validation_error(
-                e, tool_name, self.tool_map[tool_name], self._get_agent_name(),
-                steps=workflow_steps, iteration=iteration
+                e,
+                tool_name,
+                self.tool_map[tool_name],
+                self._get_agent_name(),
+                steps=workflow_steps,
+                iteration=iteration,
             )
         except Exception as e:
             return handle_tool_execution_error(
-                e, tool_name, self._get_agent_name(),
-                steps=workflow_steps, iteration=iteration
+                e, tool_name, self._get_agent_name(), steps=workflow_steps, iteration=iteration
             )
 
     # ==================== PUBLIC API ====================
@@ -368,15 +342,13 @@ class ToolAgent(BaseToolAgent):
                     recommendation="No tools are available. I can only provide direct responses based on my knowledge.",
                     available_tools=[],
                     tool_parameters={},
-                    no_tools_available=True
+                    no_tools_available=True,
                 )
 
             tool_descriptions = self._create_tool_descriptions_for_selection()
-            selection_prompt = create_tool_selection_prompt(
-                query, tool_descriptions)
+            selection_prompt = create_tool_selection_prompt(query, tool_descriptions)
 
-            response = await self.llm_model.ainvoke(
-                [{"role": "user", "content": selection_prompt}])
+            response = await self.llm_model.ainvoke([{"role": "user", "content": selection_prompt}])
             response_content = self._extract_response_content(response)
 
             return create_success_response(
@@ -384,8 +356,7 @@ class ToolAgent(BaseToolAgent):
                 self._get_agent_name(),
                 recommendation=response_content,
                 available_tools=[tool.name for tool in self.tools],
-                tool_parameters={tool.name: tool.parameters for tool in self.tools if hasattr(
-                    tool, 'parameters')}
+                tool_parameters={tool.name: tool.parameters for tool in self.tools if hasattr(tool, "parameters")},
             )
 
         except Exception as e:

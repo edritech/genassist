@@ -1,7 +1,7 @@
-from typing import List
-from sqlalchemy import Column, String, Integer, ForeignKey, Index, UniqueConstraint
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy import Column, ForeignKey, Index, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base
 
 
@@ -13,9 +13,9 @@ class MCPServerModel(Base):
 
     __tablename__ = "mcp_servers"
     __table_args__ = (
-        UniqueConstraint('name', 'user_id', name='unique_name_user'),
-        Index('idx_api_key_hash', 'api_key_hash'),
-        Index('idx_user_active', 'user_id', 'is_active', 'is_deleted'),
+        UniqueConstraint("name", "user_id", name="unique_name_user"),
+        Index("idx_api_key_hash", "api_key_hash"),
+        Index("idx_user_active", "user_id", "is_active", "is_deleted"),
     )
 
     name = Column(String(255), nullable=False)
@@ -27,11 +27,7 @@ class MCPServerModel(Base):
 
     # Relationships
     user = relationship("UserModel", back_populates="mcp_servers")
-    workflows = relationship(
-        "MCPServerWorkflowModel",
-        back_populates="mcp_server",
-        cascade="all, delete-orphan"
-    )
+    workflows = relationship("MCPServerWorkflowModel", back_populates="mcp_server", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<MCPServerModel(id='{self.id}', name='{self.name}', user_id='{self.user_id}')>"
@@ -45,8 +41,8 @@ class MCPServerWorkflowModel(Base):
 
     __tablename__ = "mcp_server_workflows"
     __table_args__ = (
-        UniqueConstraint('mcp_server_id', 'tool_name', name='unique_server_tool_name'),
-        Index('idx_workflow', 'workflow_id'),
+        UniqueConstraint("mcp_server_id", "tool_name", name="unique_server_tool_name"),
+        Index("idx_workflow", "workflow_id"),
     )
 
     mcp_server_id: Mapped[UUID] = mapped_column(
@@ -61,5 +57,6 @@ class MCPServerWorkflowModel(Base):
     workflow = relationship("WorkflowModel", uselist=False)
 
     def __repr__(self):
-        return f"<MCPServerWorkflowModel(id='{self.id}', tool_name='{self.tool_name}', workflow_id='{self.workflow_id}')>"
-
+        return (
+            f"<MCPServerWorkflowModel(id='{self.id}', tool_name='{self.tool_name}', workflow_id='{self.workflow_id}')>"
+        )

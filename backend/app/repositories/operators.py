@@ -1,15 +1,15 @@
+from typing import List, Optional
 from uuid import UUID
+
 from injector import inject
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
 from sqlalchemy.future import select
-from typing import List
+from sqlalchemy.orm import joinedload
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.operator import OperatorModel
-from typing import Optional
 
-from sqlalchemy.ext.asyncio import async_sessionmaker
 
 @inject
 class OperatorRepository:
@@ -17,6 +17,7 @@ class OperatorRepository:
 
     def __init__(self, db: AsyncSession):
         self.db = db
+
     # def __init__(self, session_factory: async_sessionmaker):
     #     self.session_factory = session_factory
 
@@ -31,7 +32,6 @@ class OperatorRepository:
         #     await session.refresh(operator, ["operator_statistics", "user"])
         #     return operator
 
-
     async def add_and_flush(self, operator: OperatorModel) -> OperatorModel:
         self.db.add(operator)
         await self.db.flush()
@@ -43,13 +43,11 @@ class OperatorRepository:
         #     await session.refresh(operator, ["operator_statistics", "user"])
         #     return operator
 
-
     async def get_by_id(self, operator_id: UUID) -> Optional[OperatorModel]:
         """Fetch operator by ID, including operator_statistics."""
         query = (
             select(OperatorModel)
-            .options(joinedload(OperatorModel.operator_statistics),
-                    joinedload(OperatorModel.user))
+            .options(joinedload(OperatorModel.operator_statistics), joinedload(OperatorModel.user))
             .where(OperatorModel.id == operator_id)
         )
         result = await self.db.execute(query)
@@ -77,12 +75,12 @@ class OperatorRepository:
     async def get_all(self) -> List[OperatorModel]:
         """Fetch all operators including their statistics."""
         query = (
-            select(OperatorModel)
-            .options(joinedload(OperatorModel.operator_statistics),
-                     joinedload(OperatorModel.user))  # Ensure statistics are preloaded
+            select(OperatorModel).options(
+                joinedload(OperatorModel.operator_statistics), joinedload(OperatorModel.user)
+            )  # Ensure statistics are preloaded
         )
         result = await self.db.execute(query)
-        return  result.scalars().all()  # Fetch all operators
+        return result.scalars().all()  # Fetch all operators
         # async with self.session_factory() as session:
         #     query = (
         #         select(OperatorModel)

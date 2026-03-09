@@ -1,10 +1,10 @@
+import json
 from typing import Any, Dict
 from uuid import UUID
-import json
 
 from injector import inject
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.agent_response_log import AgentResponseLogModel
 
@@ -44,8 +44,6 @@ class AgentResponseLogRepository:
         """
         Fetch a log entry by the transcript (message) id.
         """
-        stmt = select(AgentResponseLogModel).where(
-            AgentResponseLogModel.transcript_message_id == transcript_message_id
-        )
+        stmt = select(AgentResponseLogModel).where(AgentResponseLogModel.transcript_message_id == transcript_message_id)
         result = await self.db.execute(stmt)
         return result.scalars().first()

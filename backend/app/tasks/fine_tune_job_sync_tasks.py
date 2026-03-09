@@ -1,13 +1,13 @@
 import asyncio
 import logging
 from datetime import datetime
+
 from celery import shared_task
 
 from app.core.utils.date_time_utils import utc_now
+from app.core.utils.enums.open_ai_fine_tuning_enum import JobStatus
 from app.dependencies.injector import injector
 from app.services.open_ai_fine_tuning import OpenAIFineTuningService
-from app.core.utils.enums.open_ai_fine_tuning_enum import JobStatus
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +22,8 @@ def sync_active_fine_tuning_jobs():
 async def sync_active_fine_tuning_jobs_async_with_scope():
     """Wrapper to run sync for all tenants"""
     from app.tasks.base import run_task_with_tenant_support
-    return await run_task_with_tenant_support(
-        sync_active_fine_tuning_jobs_async,
-        "sync of active fine-tuning jobs"
-    )
+
+    return await run_task_with_tenant_support(sync_active_fine_tuning_jobs_async, "sync of active fine-tuning jobs")
 
 
 async def sync_active_fine_tuning_jobs_async():
@@ -56,14 +54,14 @@ async def sync_active_fine_tuning_jobs_async():
 
             # Update database with fresh data
             await service.repository.update_job_status(
-                    id=job.id,
-                    status=JobStatus(response.status),
-                    fine_tuned_model=response.fine_tuned_model,
-                    finished_at=datetime.fromtimestamp(response.finished_at) if response.finished_at else None,
-                    trained_tokens=response.trained_tokens,
-                    error_message=response.error.message if response.error else None,
-                    error_code=response.error.code if response.error else None
-                    )
+                id=job.id,
+                status=JobStatus(response.status),
+                fine_tuned_model=response.fine_tuned_model,
+                finished_at=datetime.fromtimestamp(response.finished_at) if response.finished_at else None,
+                trained_tokens=response.trained_tokens,
+                error_message=response.error.message if response.error else None,
+                error_code=response.error.code if response.error else None,
+            )
             await service.sync_events_for_active_jobs()
 
             synced_count += 1
@@ -71,17 +69,13 @@ async def sync_active_fine_tuning_jobs_async():
             # Track completed jobs
             if response.status in ["succeeded", "failed", "cancelled"]:
                 completed_count += 1
-                logger.info(
-                        f"Job {job.openai_job_id} reached terminal state: {response.status}"
-                        )
+                logger.info(f"Job {job.openai_job_id} reached terminal state: {response.status}")
 
             # Track failed jobs
             if response.status == "failed":
                 error_count += 1
                 error_msg = response.error.message if response.error else "Unknown error"
-                logger.warning(
-                        f"Job {job.openai_job_id} failed with error: {error_msg}"
-                        )
+                logger.warning(f"Job {job.openai_job_id} failed with error: {error_msg}")
 
             # Small delay to avoid rate limiting
             await asyncio.sleep(0.2)
@@ -97,8 +91,8 @@ async def sync_active_fine_tuning_jobs_async():
         "completed_count": completed_count,
         "failed_count": failed_count,
         "error_count": error_count,
-        "timestamp": utc_now().isoformat()
-        }
+        "timestamp": utc_now().isoformat(),
+    }
 
     logger.info(f"Sync of active fine-tuning jobs completed: {result}")
     return result
@@ -114,10 +108,8 @@ def sync_all_fine_tuning_jobs():
 async def sync_all_fine_tuning_jobs_async_with_scope():
     """Wrapper to run full sync for all tenants"""
     from app.tasks.base import run_task_with_tenant_support
-    return await run_task_with_tenant_support(
-        sync_all_fine_tuning_jobs_async,
-        "full sync of all fine-tuning jobs"
-    )
+
+    return await run_task_with_tenant_support(sync_all_fine_tuning_jobs_async, "full sync of all fine-tuning jobs")
 
 
 async def sync_all_fine_tuning_jobs_async():
@@ -157,8 +149,8 @@ async def sync_all_fine_tuning_jobs_async():
         "total_jobs": len(all_jobs),
         "synced_count": synced_count,
         "failed_count": failed_count,
-        "timestamp": utc_now().isoformat()
-        }
+        "timestamp": utc_now().isoformat(),
+    }
 
     logger.info(f"Full sync of fine-tuning jobs completed: {result}")
     return result

@@ -1,9 +1,10 @@
 from typing import Optional
+
+from .azure import AzureStorageProvider
 from .base import BaseStorageProvider
+from .gcs import GoogleCloudStorageProvider
 from .local import LocalFileSystemProvider
 from .s3 import S3StorageProvider
-from .azure import AzureStorageProvider
-from .gcs import GoogleCloudStorageProvider
 from .sharepoint import SharePointProvider
 
 __all__ = [
@@ -23,6 +24,7 @@ providers = {
     "gcs": GoogleCloudStorageProvider,
     "sharepoint": SharePointProvider,
 }
+
 
 def init_by_name(name: str, config: Optional[dict] = None) -> BaseStorageProvider:
     """Initialize a storage provider by name."""

@@ -1,6 +1,6 @@
-import { Phone } from "lucide-react";
-import { formatCallDuration, formatTimeAgo } from "@/helpers/formatters";
-import { Operator } from "@/interfaces/operator.interface";
+import { Phone } from 'lucide-react';
+import { formatCallDuration, formatTimeAgo } from '@/helpers/formatters';
+import { Operator } from '@/interfaces/operator.interface';
 
 interface LatestCallDetailsProps {
   operator: Operator;
@@ -14,9 +14,10 @@ export function LatestCallDetails({ operator }: LatestCallDetailsProps) {
   const agentRatio = operator.latest_conversation_analysis.agent_ratio ?? 0;
   const customerRatio = operator.latest_conversation_analysis.customer_ratio ?? 100 - agentRatio;
 
-  const customerSatisfaction = operator.latest_conversation_analysis.analysis?.customer_satisfaction !== undefined
-    ? `${operator.latest_conversation_analysis.analysis.customer_satisfaction * 10}%`
-    : operator.operator_statistics?.avg_customer_satisfaction || "N/A";
+  const customerSatisfaction =
+    operator.latest_conversation_analysis.analysis?.customer_satisfaction !== undefined
+      ? `${operator.latest_conversation_analysis.analysis.customer_satisfaction * 10}%`
+      : operator.operator_statistics?.avg_customer_satisfaction || 'N/A';
 
   return (
     <div className="bg-primary/5 p-4 rounded-lg">
@@ -31,9 +32,7 @@ export function LatestCallDetails({ operator }: LatestCallDetailsProps) {
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Time:</span>
-          <span>
-            {formatTimeAgo(operator.latest_conversation_analysis.created_at || operator.created_at)}
-          </span>
+          <span>{formatTimeAgo(operator.latest_conversation_analysis.created_at || operator.created_at)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Customer Satisfaction:</span>
@@ -48,4 +47,4 @@ export function LatestCallDetails({ operator }: LatestCallDetailsProps) {
       </div>
     </div>
   );
-} 
+}

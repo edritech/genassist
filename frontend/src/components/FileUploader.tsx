@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Button } from "@/components/button";
-import { Label } from "@/components/label";
-import { FileText, Upload, X, Download } from "lucide-react";
-import { useToast } from "@/hooks/useToast";
-import { uploadFiles } from "@/services/api";
-import { UploadFileResponse } from "@/interfaces/file-manager.interface";
+import React, { useState } from 'react';
+import { Button } from '@/components/button';
+import { Label } from '@/components/label';
+import { FileText, Upload, X, Download } from 'lucide-react';
+import { useToast } from '@/hooks/useToast';
+import { uploadFiles } from '@/services/api';
+import { UploadFileResponse } from '@/interfaces/file-manager.interface';
 
 export interface FileUploaderProps {
   label: string;
@@ -20,23 +20,17 @@ export interface FileUploaderProps {
 export const FileUploader: React.FC<FileUploaderProps> = ({
   label,
   acceptedFileTypes,
-  initialOriginalFileName = "",
+  initialOriginalFileName = '',
   initialServerFilePath,
   initialServerFileUrl,
   onUploadComplete,
   onRemove,
-  placeholder = "Select a file to upload",
+  placeholder = 'Select a file to upload',
 }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [originalFileName, setOriginalFileName] = useState(
-    initialOriginalFileName,
-  );
-  const [serverFilePath, setServerFilePath] = useState<string | undefined>(
-    initialServerFilePath,
-  );
-  const [serverFileUrl, setServerFileUrl] = useState<string | undefined>(
-    initialServerFileUrl,
-  );
+  const [originalFileName, setOriginalFileName] = useState(initialOriginalFileName);
+  const [serverFilePath, setServerFilePath] = useState<string | undefined>(initialServerFilePath);
+  const [serverFileUrl, setServerFileUrl] = useState<string | undefined>(initialServerFileUrl);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
@@ -45,40 +39,35 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     if (!selectedFile) return;
 
     if (acceptedFileTypes && acceptedFileTypes.length > 0) {
-      const fileExtension =
-        "." + selectedFile.name.split(".").pop()?.toLowerCase();
-      const isValidExtension = acceptedFileTypes.some(
-        (ext) => fileExtension === ext.toLowerCase(),
-      );
+      const fileExtension = '.' + selectedFile.name.split('.').pop()?.toLowerCase();
+      const isValidExtension = acceptedFileTypes.some((ext) => fileExtension === ext.toLowerCase());
 
       if (!isValidExtension) {
         toast({
-          title: "Invalid file type",
-          description: `Please upload a file with one of these extensions: ${acceptedFileTypes.join(
-            ", ",
-          )}`,
-          variant: "destructive",
+          title: 'Invalid file type',
+          description: `Please upload a file with one of these extensions: ${acceptedFileTypes.join(', ')}`,
+          variant: 'destructive',
         });
-        e.target.value = ""; // Reset input
+        e.target.value = ''; // Reset input
         return;
       }
     }
 
     setFile(selectedFile);
     uploadFile(selectedFile);
-    e.target.value = ""; // Reset input to allow selecting the same file again or different files
+    e.target.value = ''; // Reset input to allow selecting the same file again or different files
   };
 
   const handleRemoveFile = () => {
     setFile(null);
-    setOriginalFileName("");
-    setServerFilePath("");
-    setServerFileUrl("");
+    setOriginalFileName('');
+    setServerFilePath('');
+    setServerFileUrl('');
     onRemove?.();
   };
 
   const uploadFile = async (
-    fileToUpload?: File,
+    fileToUpload?: File
   ): Promise<
     | ({
         file_path?: string;
@@ -108,11 +97,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       setFile(null);
 
       toast({
-        title: "Upload Error",
-        description: `Failed to upload file: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-        variant: "destructive",
+        title: 'Upload Error',
+        description: `Failed to upload file: ${error instanceof Error ? error.message : String(error)}`,
+        variant: 'destructive',
       });
       return null;
     } finally {
@@ -131,17 +118,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           <div className="flex flex-col items-center gap-2">
             <Upload className="h-10 w-10 text-muted-foreground" />
             <span className="text-sm font-medium text-muted-foreground">
-              {file
-                ? file.name
-                : serverFileUrl || serverFilePath
-                  ? "Replace file"
-                  : placeholder}
+              {file ? file.name : serverFileUrl || serverFilePath ? 'Replace file' : placeholder}
             </span>
           </div>
           <input
             id="file"
             type="file"
-            accept={acceptedFileTypes?.join(",")}
+            accept={acceptedFileTypes?.join(',')}
             onChange={handleFileChange}
             disabled={isUploading}
             className="hidden"
@@ -173,14 +156,12 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           <div className="flex items-center justify-between p-2 bg-muted rounded-md">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              <span className="text-sm">
-                {originalFileName || "File uploaded"}
-              </span>
+              <span className="text-sm">{originalFileName || 'File uploaded'}</span>
             </div>
             <div className="flex items-center gap-2">
               <a
                 href={serverFileUrl}
-                download={originalFileName || "file"}
+                download={originalFileName || 'file'}
                 className="text-primary hover:text-primary/80"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -204,9 +185,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           <div className="flex items-center justify-between p-2 bg-muted rounded-md">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              <span className="text-sm">
-                File: {originalFileName || "File uploaded"}
-              </span>
+              <span className="text-sm">File: {originalFileName || 'File uploaded'}</span>
             </div>
             <Button
               type="button"
@@ -221,11 +200,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           </div>
         )}
 
-        {isUploading && (
-          <div className="p-2 text-sm text-muted-foreground">
-            Uploading file... Please wait.
-          </div>
-        )}
+        {isUploading && <div className="p-2 text-sm text-muted-foreground">Uploading file... Please wait.</div>}
       </div>
     </div>
   );

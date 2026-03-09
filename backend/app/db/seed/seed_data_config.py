@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class SeedTestData:
     # Credentials
@@ -27,34 +28,33 @@ class SeedTestData:
     local_llm_provider_vllm_llama: str = "00000196-19d2-9c28-a2dd-565fff608fa0"
     default_agent_id: str = "00000196-a688-fd6f-af6d-8dc6c281d697"
 
-    transcribe_operator_id: str= "90f1e6dd-fde0-4970-a83a-31ca7f84ab45"
-    transcribe_operator_user_id: str= "31a1e5ed-2f1d-485d-bb45-b6c9f4282b4f"
-    transcribe_data_source_id: str= "5223b67f-4e86-494d-8ae5-f709d05c3e27"
+    transcribe_operator_id: str = "90f1e6dd-fde0-4970-a83a-31ca7f84ab45"
+    transcribe_operator_user_id: str = "31a1e5ed-2f1d-485d-bb45-b6c9f4282b4f"
+    transcribe_data_source_id: str = "5223b67f-4e86-494d-8ae5-f709d05c3e27"
 
     genassist_agent_id: str = "00000195-10bb-37d7-8cba-1712b4990001"
 
-
     # Prompts
-    speaker_separation_llm_analyst_prompt = """You are an AI assistant that processes transcribed customer service conversations that 
+    speaker_separation_llm_analyst_prompt = """You are an AI assistant that processes transcribed customer service conversations that
         contains a list of objects as a dict where each one has these fields:
                             - "text": The spoken sentence.
                             - "start_time": The start time of that part of the conversation.
                             - "end_time": The end time of that part of the conversation.
-        
-                            Your task is to take the items and separate them into an array of JSON objects where 
+
+                            Your task is to take the items and separate them into an array of JSON objects where
                             based on context you assign if the speaker is the agent or the customer.
                             Each object should have:
                             - "text": The spoken sentence.
                             - "speaker": Either "Customer" or "Agent".
                             - "start_time": The start time of that part of the conversation.
                             - "end_time": The end time of that part of the conversation.
-                            
+
                             If the speaker doesn't change for two consecutive objects, they should be in one object.
-                            If from context it is evident that there is are wrong words in the transcription you are 
+                            If from context it is evident that there is are wrong words in the transcription you are
                             allowed to modify them.
-                            
+
                             Ensure the response is a **valid JSON array**, not inside Markdown backticks.
-                            
+
                             Example:
                             [
                               {
@@ -81,5 +81,6 @@ class SeedTestData:
  5. Use available tools to assist with tasks like currency conversion when needed
 
  Always be professional, clear, and concise in your responses. If you don't know something, say so and offer to help find the information."""
+
 
 seed_test_data = SeedTestData()

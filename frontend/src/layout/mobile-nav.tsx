@@ -1,17 +1,16 @@
-
-import { Home, BarChart2, FileText, Settings } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Home, BarChart2, FileText, Settings } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 export function MobileNav() {
   const location = useLocation();
-  
+
   const isActive = (path: string) => location.pathname === path;
-  
+
   const items = [
-    { icon: Home, label: "Home", path: "/" },
-    { icon: FileText, label: "Transcripts", path: "/transcripts" },
-    { icon: BarChart2, label: "Analytics", path: "/analytics" },
-    { icon: Settings, label: "Settings", path: "/settings" }
+    { icon: Home, label: 'Home', path: '/' },
+    { icon: FileText, label: 'Transcripts', path: '/transcripts' },
+    { icon: BarChart2, label: 'Analytics', path: '/analytics' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
   return (
@@ -22,9 +21,7 @@ export function MobileNav() {
             key={path}
             to={path}
             className={`flex flex-col items-center py-2 px-4 min-w-[64px] ${
-              isActive(path) 
-                ? "text-primary" 
-                : "text-muted-foreground hover:text-primary"
+              isActive(path) ? 'text-primary' : 'text-muted-foreground hover:text-primary'
             }`}
           >
             <Icon className="h-5 w-5" />

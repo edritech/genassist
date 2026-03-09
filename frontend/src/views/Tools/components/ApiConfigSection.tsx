@@ -1,13 +1,7 @@
-import { FC } from "react";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/select";
-import { Input } from "@/components/input";
-import { ToolSection } from "../components/ToolSection"; 
+import { FC } from 'react';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/select';
+import { Input } from '@/components/input';
+import { ToolSection } from '../components/ToolSection';
 
 interface ApiConfigSectionProps {
   endpoint: string;
@@ -53,9 +47,7 @@ export const ApiConfigSection: FC<ApiConfigSectionProps> = ({
   <div className="grid md:grid-cols-3 gap-6">
     <div className="hidden md:block">
       <h2 className="text-lg font-medium">API Configuration</h2>
-      <p className="text-sm text-muted-foreground mt-1">
-        Configure the API endpoint and parameters
-      </p>
+      <p className="text-sm text-muted-foreground mt-1">Configure the API endpoint and parameters</p>
     </div>
     <div className="col-span-2 space-y-6">
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -66,7 +58,7 @@ export const ApiConfigSection: FC<ApiConfigSectionProps> = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {["GET", "POST", "PUT", "DELETE"].map(m => (
+              {['GET', 'POST', 'PUT', 'DELETE'].map((m) => (
                 <SelectItem key={m} value={m}>
                   {m}
                 </SelectItem>
@@ -79,7 +71,7 @@ export const ApiConfigSection: FC<ApiConfigSectionProps> = ({
           <Input
             placeholder="https://api.example.com/endpoint"
             value={endpoint}
-            onChange={e => setEndpoint(e.target.value)}
+            onChange={(e) => setEndpoint(e.target.value)}
           />
         </div>
       </div>
@@ -93,7 +85,7 @@ export const ApiConfigSection: FC<ApiConfigSectionProps> = ({
         setTab={setHeadersTab}
         addItem={addItem}
         removeItem={removeItem}
-        sample={{ name: "", value: "" }}
+        sample={{ name: '', value: '' }}
       />
       <ToolSection
         title="Query Parameters"
@@ -104,7 +96,7 @@ export const ApiConfigSection: FC<ApiConfigSectionProps> = ({
         setTab={setQueryTab}
         addItem={addItem}
         removeItem={removeItem}
-        sample={{ name: "", value: "" }}
+        sample={{ name: '', value: '' }}
       />
       <ToolSection
         title="Request Body"
@@ -115,7 +107,7 @@ export const ApiConfigSection: FC<ApiConfigSectionProps> = ({
         setTab={setBodyTab}
         addItem={addItem}
         removeItem={removeItem}
-        sample={{ name: "", value: "" }}
+        sample={{ name: '', value: '' }}
       />
     </div>
   </div>

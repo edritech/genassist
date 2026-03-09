@@ -1,18 +1,19 @@
-from fastapi import APIRouter, HTTPException, Depends, Body, UploadFile, File, Form, Request
-from typing import List, Dict, Optional
-import os
-import uuid
-import shutil
 import asyncio
+import logging
+import os
+import shutil
+import uuid
+from typing import Dict, List, Optional
+from uuid import UUID
+
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi_injector import Injected
+
 from app.auth.dependencies import auth, permissions
-from app.core.exceptions.error_messages import ErrorKey
-from app.core.exceptions.exception_classes import AppException
+from app.core.config.settings import file_storage_settings
+from app.core.project_path import DATA_VOLUME
 from app.core.utils.bi_utils import set_url_content_if_no_rag
 from app.modules.data.manager import AgentRAGServiceManager
-from app.modules.data.utils import FileExtractor, FileTextExtractor
-import logging
-from uuid import UUID
 from app.modules.data.providers.legra import (
     FaissFlatIndexer,
     HuggingFaceGenerator,
@@ -21,23 +22,22 @@ from app.modules.data.providers.legra import (
     SemanticChunker,
     SentenceTransformerEmbedder,
 )
+from app.modules.data.utils import FileExtractor, FileTextExtractor
+from app.modules.workflow.agents.rag import ThreadScopedRAG
 from app.schemas.agent_knowledge import KBBase, KBCreate, KBRead
+from app.schemas.dynamic_form_schemas import AGENT_RAG_FORM_SCHEMAS_DICT
+from app.schemas.file import FileBase, FileUploadResponse
 from app.services.agent_knowledge import KnowledgeBaseService
 from app.services.agent_knowledge_utils import (
     populate_remote_file_metadata,
     schedule_rag_load,
 )
-from app.tasks.kb_batch_tasks import batch_process_files_kb_async_with_scope
-from app.tasks.s3_tasks import import_s3_files_to_kb_async
-from app.core.project_path import DATA_VOLUME
-from app.modules.workflow.agents.rag import ThreadScopedRAG
-from app.schemas.dynamic_form_schemas import AGENT_RAG_FORM_SCHEMAS_DICT
+from app.services.app_settings import AppSettingsService
+
 # File manager service
 from app.services.file_manager import FileManagerService
-from app.schemas.file import FileBase, FileUploadResponse
-from app.core.config.settings import file_storage_settings
-from app.services.app_settings import AppSettingsService
-from app.db.models.file import StorageProvider
+from app.tasks.kb_batch_tasks import batch_process_files_kb_async_with_scope
+from app.tasks.s3_tasks import import_s3_files_to_kb_async
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -79,9 +79,7 @@ async def get_knowledge_item_by_id(
     item = await knowledge_service.get_by_id(item_id)
 
     if not item:
-        raise HTTPException(
-            status_code=404, detail=f"Knowledge base item with ID {item_id} not found"
-        )
+        raise HTTPException(status_code=404, detail=f"Knowledge base item with ID {item_id} not found")
     return item
 
 
@@ -134,8 +132,7 @@ async def update_knowledge_item(
 
     # Ensure the ID in the path matches the ID in the body
     if "id" in item and item.id != item_id:
-        raise HTTPException(
-            status_code=400, detail="ID in path must match ID in body")
+        raise HTTPException(status_code=400, detail="ID in path must match ID in body")
 
     logger.info(f"update_knowledge_item route trigger : item = {item}")
 
@@ -233,13 +230,11 @@ async def upload_file(
 
     for file in files:
         try:
-            logger.info(
-                f"Received file upload: {file.filename}, size: {file.size}, content_type: {file.content_type}"
-            )
+            logger.info(f"Received file upload: {file.filename}, size: {file.size}, content_type: {file.content_type}")
 
             # Generate a unique filename
             file_extension = file.filename.split(".")[-1] if "." in file.filename else ""
-            unique_filename = (f"{uuid.uuid4()}.{file_extension}" if file_extension else f"{uuid.uuid4()}")
+            unique_filename = f"{uuid.uuid4()}.{file_extension}" if file_extension else f"{uuid.uuid4()}"
 
             # create the result object
             result = {
@@ -252,11 +247,17 @@ async def upload_file(
 
             if use_file_manager:
                 # subdir
-                sub_folder = f"agents_config/uploads"
+                sub_folder = "agents_config/uploads"
 
                 # initialize the file manager service
-                app_settings_config = await app_settings_svc.get_by_type_and_name("FileManagerSettings", "File Manager Settings")
-                storage_provider = await file_manager_service.initialize(base_url=str(request.base_url).rstrip('/'), base_path=str(DATA_VOLUME), app_settings = app_settings_config)
+                app_settings_config = await app_settings_svc.get_by_type_and_name(
+                    "FileManagerSettings", "File Manager Settings"
+                )
+                storage_provider = await file_manager_service.initialize(
+                    base_url=str(request.base_url).rstrip("/"),
+                    base_path=str(DATA_VOLUME),
+                    app_settings=app_settings_config,
+                )
 
                 file_base = FileBase(
                     name=unique_filename,
@@ -299,8 +300,7 @@ async def upload_file(
             results.append(result)
         except Exception as e:
             logger.error(f"Error uploading file: {str(e)}")
-            raise HTTPException(
-                status_code=500, detail=f"Error uploading file: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
 
     logger.info(f"All uploads successful: {results}")
     return results
@@ -311,7 +311,7 @@ async def upload_file(
     response_model=FileUploadResponse,
     dependencies=[
         Depends(auth),
-    ]
+    ],
 )
 async def upload_file_to_chat(
     request: Request,
@@ -324,13 +324,15 @@ async def upload_file_to_chat(
     Upload a file, extract its text content, and return both the saved filename and extracted text file
     """
     try:
-        logger.info(
-            f"Received file upload: {file.filename}, size: {file.size}, content_type: {file.content_type}"
-        )
+        logger.info(f"Received file upload: {file.filename}, size: {file.size}, content_type: {file.content_type}")
 
         # file storage settings
-        app_settings_config = await app_settings_svc.get_by_type_and_name("FileManagerSettings", "File Manager Settings")
-        storage_provider = await file_manager_service.initialize(base_url=str(request.base_url).rstrip('/'), base_path=str(DATA_VOLUME), app_settings = app_settings_config)
+        app_settings_config = await app_settings_svc.get_by_type_and_name(
+            "FileManagerSettings", "File Manager Settings"
+        )
+        storage_provider = await file_manager_service.initialize(
+            base_url=str(request.base_url).rstrip("/"), base_path=str(DATA_VOLUME), app_settings=app_settings_config
+        )
 
         file_url = None
 
@@ -354,7 +356,8 @@ async def upload_file_to_chat(
         except Exception as e:
             logger.error(f"Error creating file: {str(e)}")
             raise HTTPException(
-                status_code=400, detail=f"Unsupported file type. Only PDF, DOCX, TXT, JPG, JPEG, and PNG are allowed.") from e
+                status_code=400, detail="Unsupported file type. Only PDF, DOCX, TXT, JPG, JPEG, and PNG are allowed."
+            ) from e
 
         # get file id from created file
         file_id = created_file.id
@@ -392,7 +395,6 @@ async def upload_file_to_chat(
         except Exception as e:
             logger.warning(f"Could not extract text from file: {str(e)}")
 
-
         # Return the filenames and paths
         result = FileUploadResponse(
             filename=str(file_id),
@@ -409,8 +411,7 @@ async def upload_file_to_chat(
         raise
     except Exception as e:
         logger.error(f"Error uploading file: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error uploading file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
 
 
 @router.get(
@@ -465,10 +466,7 @@ async def finalize_legra_knowledgebase(
     if success:
         # Update knowledge base to mark LEGRA as finalized
         knowledge_base.legra_finalize = True
-        await knowledge_service.update(
-            knowledge_base.id, KBCreate(
-                **knowledge_base.model_dump(exclude={"id"}))
-        )
+        await knowledge_service.update(knowledge_base.id, KBCreate(**knowledge_base.model_dump(exclude={"id"})))
         return {
             "status": "success",
             "message": f"LEGRA finalization completed for KB {kb_id}",
@@ -482,19 +480,15 @@ async def finalize_legra_knowledgebase(
 
 @router.post(
     "/process-files",
-    dependencies=[Depends(auth), Depends(
-        permissions("update:knowledge_base"))],
+    dependencies=[Depends(auth), Depends(permissions("update:knowledge_base"))],
 )
 async def process_files(files: list[UploadFile] = File(...)):
-
     chunker = SemanticChunker(
         min_sents=1,
         max_sents=30,
         min_sent_length=32,
     )
-    embedder = SentenceTransformerEmbedder(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
+    embedder = SentenceTransformerEmbedder(model_name="sentence-transformers/all-MiniLM-L6-v2")
     indexer = FaissFlatIndexer(dim=embedder.dimension, use_gpu=False)
 
     clusterer = LeidenClusterer(resolution_parameter=0.5)
@@ -529,27 +523,21 @@ async def get_form_schemas():
     return AGENT_RAG_FORM_SCHEMAS_DICT
 
 
-
-#Endpoint to trigger KB batch processing for files from various sources Same way as (e.g. Azure Blob, S3, SharePoint)
+# Endpoint to trigger KB batch processing for files from various sources Same way as (e.g. Azure Blob, S3, SharePoint)
 from fastapi import BackgroundTasks
+
 
 @router.get(
     "/kb-batch-tasks-execution",
     dependencies=[Depends(auth)],
-    summary="Runs the job that sync the KB with files from various sources"
+    summary="Runs the job that sync the KB with files from various sources",
 )
-async def summarize_files_from_azure(
-    background_tasks: BackgroundTasks,
-    kb_id: Optional[UUID] = None
-):
-    await asyncio.sleep(2) # simulate some delay before starting the background task
+async def summarize_files_from_azure(background_tasks: BackgroundTasks, kb_id: Optional[UUID] = None):
+    await asyncio.sleep(2)  # simulate some delay before starting the background task
     if not kb_id:
         logger.warning("Attempting to run KB batch processing without specifying a KB ID.")
         return {"status": "error", "message": "kb_id is required"}
 
-    background_tasks.add_task(
-        batch_process_files_kb_async_with_scope,
-        kb_id
-    )
+    background_tasks.add_task(batch_process_files_kb_async_with_scope, kb_id)
 
     return {"status": "started"}

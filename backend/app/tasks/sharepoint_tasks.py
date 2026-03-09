@@ -4,17 +4,19 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
-from croniter import croniter, CroniterBadCronError
+
 from celery import shared_task
-from app.modules.data.utils import FileTextExtractor
+from croniter import CroniterBadCronError, croniter
+
+from app.core.utils.encryption_utils import decrypt_key
 from app.dependencies.injector import injector
 from app.modules.data.manager import AgentRAGServiceManager
+from app.modules.data.utils import FileTextExtractor
+from app.modules.integration.office365_connector import Office365Connector
 from app.schemas.agent_knowledge import KBCreate
 from app.services.agent_knowledge import KnowledgeBaseService
-from app.services.datasources import DataSourceService
-from app.modules.integration.office365_connector import Office365Connector
 from app.services.app_settings import AppSettingsService
-from app.core.utils.encryption_utils import decrypt_key
+from app.services.datasources import DataSourceService
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +45,7 @@ def _compute_next_run(cron_expr: Optional[str], last_synced: Optional[datetime])
         logger.error(f"Cron invalid -> {expr!r}: {e}")
         return None
 
+
 # ------------------------------ Task entrypoints --------------------------------- #
 
 
@@ -55,10 +58,8 @@ def import_sharepoint_files_to_kb():
 async def import_sharepoint_files_to_kb_async_with_scope():
     """Wrapper to run SharePoint import for all tenants"""
     from app.tasks.base import run_task_with_tenant_support
-    return await run_task_with_tenant_support(
-        import_sharepoint_files_to_kb_async,
-        "SharePoint file import"
-    )
+
+    return await run_task_with_tenant_support(import_sharepoint_files_to_kb_async, "SharePoint file import")
 
 
 async def import_sharepoint_files_to_kb_async(kb_id: Optional[UUID] = None):
@@ -97,8 +98,7 @@ async def import_sharepoint_files_to_kb_async(kb_id: Optional[UUID] = None):
             # Get Microsoft credentials from app settings by ID
             try:
                 app_settings = await app_settings_service.get_by_id(UUID(app_settings_id))
-                values = app_settings.values if isinstance(
-                    app_settings.values, dict) else {}
+                values = app_settings.values if isinstance(app_settings.values, dict) else {}
                 o365_client_id = values.get("microsoft_client_id")
                 o365_client_secret = values.get("microsoft_client_secret")
                 o365_tenant_id = values.get("microsoft_tenant_id")
@@ -182,11 +182,9 @@ async def import_sharepoint_files_to_kb_async(kb_id: Optional[UUID] = None):
             # ---- add new files ----
             for file_info in new_files:
                 try:
-                    file_content = sp_client.get_file_content(
-                        file_info["download_url"])
+                    file_content = sp_client.get_file_content(file_info["download_url"])
                     if len(file_content) == 0:
-                        logger.warning(
-                            f"File {file_info.get('name', '')} has no content, skipping...")
+                        logger.warning(f"File {file_info.get('name', '')} has no content, skipping...")
                         continue
 
                     # Use the filename's suffix to indentify the type (e.g., .docx)
@@ -208,10 +206,8 @@ async def import_sharepoint_files_to_kb_async(kb_id: Optional[UUID] = None):
                     files_added_tot += 1
 
                 except Exception as e:
-                    logger.error(
-                        f"Error processing {file_info.get('path', '<unknown>')}: {e}")
-                    errors.append(
-                        f"Error processing {file_info.get('path', '<unknown>')}: {str(e)}")
+                    logger.error(f"Error processing {file_info.get('path', '<unknown>')}: {e}")
+                    errors.append(f"Error processing {file_info.get('path', '<unknown>')}: {str(e)}")
 
             # ---- update KB sync timestamps ----
             kb_update = json.loads(kb.model_dump_json())
@@ -223,10 +219,8 @@ async def import_sharepoint_files_to_kb_async(kb_id: Optional[UUID] = None):
 
         except Exception as e:
             # don't let one KB kill the whole batch
-            logger.error(
-                f"Unhandled error for KB {getattr(kb, 'id', '<unknown>')}: {e}")
-            errors.append(
-                f"{getattr(kb, 'id', '<unknown>')} unhandled error: {str(e)}")
+            logger.error(f"Unhandled error for KB {getattr(kb, 'id', '<unknown>')}: {e}")
+            errors.append(f"{getattr(kb, 'id', '<unknown>')} unhandled error: {str(e)}")
             continue
 
     return {

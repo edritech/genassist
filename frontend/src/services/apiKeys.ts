@@ -1,8 +1,8 @@
-import { apiRequest } from "@/config/api";
-import { ApiKey } from "@/interfaces/api-key.interface";
+import { apiRequest } from '@/config/api';
+import { ApiKey } from '@/interfaces/api-key.interface';
 
 export const getAllApiKeys = async (): Promise<ApiKey[]> => {
-  const data = await apiRequest<ApiKey[]>("GET", "api-keys/");
+  const data = await apiRequest<ApiKey[]>('GET', 'api-keys/');
   if (!data) {
     return [];
   }
@@ -15,7 +15,7 @@ export const getAllApiKeys = async (): Promise<ApiKey[]> => {
 };
 
 export const getApiKey = async (id: string): Promise<ApiKey | null> => {
-  const data = await apiRequest<ApiKey>("GET", `api-keys/${id}/`);
+  const data = await apiRequest<ApiKey>('GET', `api-keys/${id}/`);
   if (!data) {
     return null;
   }
@@ -44,16 +44,13 @@ export const createApiKey = async (apiKeyData: Partial<ApiKey> & { role_ids?: st
     requestData.agent_id = apiKeyData.agent_id;
   }
 
-  const response = await apiRequest<ApiKey>("POST", "api-keys/", requestData);
-  if (!response) throw new Error("Failed to create API key");
+  const response = await apiRequest<ApiKey>('POST', 'api-keys/', requestData);
+  if (!response) throw new Error('Failed to create API key');
 
   return response;
 };
 
-export const updateApiKey = async (
-  id: string,
-  apiKeyData: Partial<ApiKey>
-): Promise<ApiKey> => {
+export const updateApiKey = async (id: string, apiKeyData: Partial<ApiKey>): Promise<ApiKey> => {
   const requestData: Record<string, unknown> = {
     name: apiKeyData.name,
     is_active: Boolean(apiKeyData.is_active),
@@ -68,31 +65,27 @@ export const updateApiKey = async (
     requestData.agent_id = apiKeyData.agent_id;
   }
 
-  const response = await apiRequest<ApiKey>(
-    "PATCH",
-    `api-keys/${id}/`,
-    requestData
-  );
+  const response = await apiRequest<ApiKey>('PATCH', `api-keys/${id}/`, requestData);
 
   if (!response) {
-    throw new Error("Failed to update API key");
+    throw new Error('Failed to update API key');
   }
 
   return response;
 };
 
 export const revokeApiKey = async (id: string): Promise<void> => {
-  await apiRequest("DELETE", `api-keys/${id}/`);
+  await apiRequest('DELETE', `api-keys/${id}/`);
 };
 
 export const getApiKeys = async (userId?: string): Promise<ApiKey[]> => {
-  let url = "api-keys/";
+  let url = 'api-keys/';
 
   if (userId) {
     url += `?user_id=${encodeURIComponent(userId)}`;
   }
 
-  const data = await apiRequest<ApiKey[]>("GET", url);
+  const data = await apiRequest<ApiKey[]>('GET', url);
   if (!data) {
     return [];
   }

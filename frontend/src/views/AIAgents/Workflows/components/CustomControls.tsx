@@ -1,6 +1,6 @@
-import React from "react";
-import { useReactFlow } from "reactflow";
-import { ZoomIn, ZoomOut, Maximize2, Lock, Unlock } from "lucide-react";
+import React from 'react';
+import { useReactFlow } from 'reactflow';
+import { ZoomIn, ZoomOut, Maximize2, Lock, Unlock } from 'lucide-react';
 
 interface CustomControlsProps {
   nodesDraggable: boolean;
@@ -75,14 +75,10 @@ const CustomControls: React.FC<CustomControlsProps> = ({
         type="button"
         className="react-flow__controls-button"
         onClick={handleToggleInteractive}
-        title={isInteractive ? "Lock view" : "Unlock view"}
-        aria-label={isInteractive ? "Lock view" : "Unlock view"}
+        title={isInteractive ? 'Lock view' : 'Unlock view'}
+        aria-label={isInteractive ? 'Lock view' : 'Unlock view'}
       >
-        {isInteractive ? (
-          <Unlock size={14} />
-        ) : (
-          <Lock size={14} />
-        )}
+        {isInteractive ? <Unlock size={14} /> : <Lock size={14} />}
       </button>
     </div>
   );

@@ -1,32 +1,32 @@
 import datetime
 from typing import List, Optional, Sequence, Tuple
 from uuid import UUID
+
 from injector import inject
-from sqlalchemy import asc, desc, func, and_, or_
+from sqlalchemy import and_, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
-from app.core.utils.enums.conversation_status_enum import ConversationStatus
-from app.core.utils.enums.sentiment_enum import Sentiment
-from app.core.utils.sql_alchemy_utils import add_dynamic_ordering, add_pagination
-from app.db.models.conversation import ConversationModel
-from app.db.models.message_model import TranscriptMessageModel
-from app.schemas.conversation import ConversationCreate
-from app.schemas.filter import ConversationFilter
 from app.core.utils.bi_utils import (
     filter_conversation_date,
     filter_conversation_messages_create_time,
 )
-from app.db.models.conversation import ConversationAnalysisModel
-from app.db.models.operator import OperatorModel
+from app.core.utils.enums.conversation_status_enum import ConversationStatus
+from app.core.utils.enums.sentiment_enum import Sentiment
+from app.core.utils.sql_alchemy_utils import add_dynamic_ordering, add_pagination
 from app.db.models import AgentModel
+from app.db.models.conversation import ConversationAnalysisModel, ConversationModel
+from app.db.models.message_model import TranscriptMessageModel
+from app.db.models.operator import OperatorModel
+from app.schemas.conversation import ConversationCreate
+from app.schemas.filter import ConversationFilter
 
 
 @inject
 class ConversationRepository:
-
     def __init__(self, db: AsyncSession):  # Auto-inject db
         self.db = db
 
@@ -53,9 +53,7 @@ class ConversationRepository:
 
         if include_messages:
             query = query.options(
-                selectinload(ConversationModel.messages).selectinload(
-                    TranscriptMessageModel.feedback
-                )
+                selectinload(ConversationModel.messages).selectinload(TranscriptMessageModel.feedback)
             )
 
         result = await self.db.execute(query)
@@ -82,33 +80,28 @@ class ConversationRepository:
 
         # Build message loading with optional filtering
         if conversation_filter and (
-            conversation_filter.from_create_datetime_messages
-            or conversation_filter.to_create_datetime_messages
+            conversation_filter.from_create_datetime_messages or conversation_filter.to_create_datetime_messages
         ):
             # Create filtered selectinload using .and_()
             message_filters = []
             if conversation_filter.from_create_datetime_messages:
                 message_filters.append(
-                    TranscriptMessageModel.create_time
-                    >= conversation_filter.from_create_datetime_messages
+                    TranscriptMessageModel.create_time >= conversation_filter.from_create_datetime_messages
                 )
             if conversation_filter.to_create_datetime_messages:
                 message_filters.append(
-                    TranscriptMessageModel.create_time
-                    <= conversation_filter.to_create_datetime_messages
+                    TranscriptMessageModel.create_time <= conversation_filter.to_create_datetime_messages
                 )
 
             query = query.options(
-                selectinload(
-                    ConversationModel.messages.and_(*message_filters)
-                ).selectinload(TranscriptMessageModel.feedback)
+                selectinload(ConversationModel.messages.and_(*message_filters)).selectinload(
+                    TranscriptMessageModel.feedback
+                )
             )
         else:
             # Load all messages
             query = query.options(
-                selectinload(ConversationModel.messages).selectinload(
-                    TranscriptMessageModel.feedback
-                )
+                selectinload(ConversationModel.messages).selectinload(TranscriptMessageModel.feedback)
             )
 
         result = await self.db.execute(query)
@@ -128,9 +121,7 @@ class ConversationRepository:
 
         if include_messages:
             query = query.options(
-                selectinload(ConversationModel.messages).selectinload(
-                    TranscriptMessageModel.feedback
-                )
+                selectinload(ConversationModel.messages).selectinload(TranscriptMessageModel.feedback)
             )
 
         result = await self.db.execute(query)
@@ -151,9 +142,7 @@ class ConversationRepository:
 
         if include_messages:
             query = query.options(
-                selectinload(ConversationModel.messages).selectinload(
-                    TranscriptMessageModel.feedback
-                )
+                selectinload(ConversationModel.messages).selectinload(TranscriptMessageModel.feedback)
             )
 
         result = await self.db.execute(query)
@@ -175,9 +164,7 @@ class ConversationRepository:
         result = await self.db.execute(query)
         return result.scalars().first()
 
-    async def update_conversation(
-        self, conversation: ConversationModel
-    ) -> ConversationModel:
+    async def update_conversation(self, conversation: ConversationModel) -> ConversationModel:
         """
         Updates an existing conversation in DB
         """
@@ -196,42 +183,30 @@ class ConversationRepository:
 
         Note: include_messages=True may impact performance for large result sets.
         """
-        query = select(ConversationModel).options(
-            joinedload(ConversationModel.recording)
-        )
+        query = select(ConversationModel).options(joinedload(ConversationModel.recording))
 
         # Apply existing filters (from your current implementation)
         if conversation_filter.minimum_hostility_score:
             query = query.where(
-                ConversationModel.in_progress_hostility_score
-                >= conversation_filter.minimum_hostility_score
+                ConversationModel.in_progress_hostility_score >= conversation_filter.minimum_hostility_score
             )
 
         if conversation_filter.conversation_status:
             query = query.where(
-                ConversationModel.status.in_(
-                    [status.value for status in conversation_filter.conversation_status]
-                )
+                ConversationModel.status.in_([status.value for status in conversation_filter.conversation_status])
             )
 
         query = filter_conversation_date(conversation_filter, query)
 
         if conversation_filter.operator_id:
-            query = query.where(
-                ConversationModel.operator_id == conversation_filter.operator_id
-            )
+            query = query.where(ConversationModel.operator_id == conversation_filter.operator_id)
 
         if conversation_filter.customer_id:
-            query = query.where(
-                ConversationModel.customer_id == conversation_filter.customer_id
-            )
+            query = query.where(ConversationModel.customer_id == conversation_filter.customer_id)
 
         # filter based on sentiment score
         if conversation_filter.sentiment:
-            if (
-                conversation_filter.hostility_positive_max is None
-                or conversation_filter.hostility_neutral_max is None
-            ):
+            if conversation_filter.hostility_positive_max is None or conversation_filter.hostility_neutral_max is None:
                 raise AppException(error_key=ErrorKey.REQUIRED_INTERVAL_VALUES)
             query = (
                 query.outerjoin(ConversationModel.analysis)
@@ -250,22 +225,14 @@ class ConversationRepository:
                     ConversationModel.status == ConversationStatus.FINALIZED.value,
                     ConversationModel.analysis.has(
                         ConversationAnalysisModel.topic.in_(
-                            [
-                                topic.value
-                                for topic in conversation_filter.conversation_topics
-                            ]
+                            [topic.value for topic in conversation_filter.conversation_topics]
                         )
                     ),
                 ),
                 # For all other conversations: check topic in conversationmodel
                 and_(
                     ConversationModel.status != ConversationStatus.FINALIZED.value,
-                    ConversationModel.topic.in_(
-                        [
-                            topic.value
-                            for topic in conversation_filter.conversation_topics
-                        ]
-                    ),
+                    ConversationModel.topic.in_([topic.value for topic in conversation_filter.conversation_topics]),
                 ),
             )
 
@@ -273,9 +240,7 @@ class ConversationRepository:
 
         if include_messages:
             query = query.options(
-                selectinload(ConversationModel.messages).selectinload(
-                    TranscriptMessageModel.feedback
-                )
+                selectinload(ConversationModel.messages).selectinload(TranscriptMessageModel.feedback)
             )
             query = filter_conversation_messages_create_time(conversation_filter, query)
         else:
@@ -303,28 +268,18 @@ class ConversationRepository:
         ca = ConversationAnalysisModel  # shorthand
 
         # ── finalized branch ────────────────────────────────────────────
-        pos_final = (ca.positive_sentiment > ca.negative_sentiment) & (
-            ca.positive_sentiment > ca.neutral_sentiment
-        )
+        pos_final = (ca.positive_sentiment > ca.negative_sentiment) & (ca.positive_sentiment > ca.neutral_sentiment)
 
-        neg_final = (ca.negative_sentiment > ca.positive_sentiment) & (
-            ca.negative_sentiment > ca.neutral_sentiment
-        )
+        neg_final = (ca.negative_sentiment > ca.positive_sentiment) & (ca.negative_sentiment > ca.neutral_sentiment)
 
-        neu_final = (ca.neutral_sentiment >= ca.positive_sentiment) & (
-            ca.neutral_sentiment >= ca.negative_sentiment
-        )
+        neu_final = (ca.neutral_sentiment >= ca.positive_sentiment) & (ca.neutral_sentiment >= ca.negative_sentiment)
 
         # ── in-progress branch (score-based) ───────────────────────────
-        positive_progress = (
-            cm.in_progress_hostility_score <= filter.hostility_positive_max
+        positive_progress = cm.in_progress_hostility_score <= filter.hostility_positive_max
+        neutral_progress = (cm.in_progress_hostility_score > filter.hostility_positive_max) & (
+            cm.in_progress_hostility_score <= filter.hostility_neutral_max
         )
-        neutral_progress = (
-            cm.in_progress_hostility_score > filter.hostility_positive_max
-        ) & (cm.in_progress_hostility_score <= filter.hostility_neutral_max)
-        negative_progress = (
-            cm.in_progress_hostility_score > filter.hostility_neutral_max
-        )
+        negative_progress = cm.in_progress_hostility_score > filter.hostility_neutral_max
 
         if filter.sentiment is Sentiment.POSITIVE:
             finalized_clause = pos_final
@@ -351,17 +306,13 @@ class ConversationRepository:
 
         if conversation_filter.conversation_status:
             query = query.where(
-                ConversationModel.status.in_(
-                    [status.value for status in conversation_filter.conversation_status]
-                )
+                ConversationModel.status.in_([status.value for status in conversation_filter.conversation_status])
             )
 
         result = await self.db.execute(query)
         return result.scalar_one()
 
-    async def get_stale_conversations(
-        self, cutoff_time: datetime.datetime
-    ) -> Sequence[ConversationModel]:
+    async def get_stale_conversations(self, cutoff_time: datetime.datetime) -> Sequence[ConversationModel]:
         # add a limit to the query to prevent too many conversations from being returned
         limit = 100
 
@@ -384,9 +335,7 @@ class ConversationRepository:
         """
         Count *all* conversations, bucketed by analysis.topic (or 'Other' if none/mismatched).
         """
-        topic_bucket = func.initcap(func.trim(ConversationAnalysisModel.topic)).label(
-            "topic"
-        )
+        topic_bucket = func.initcap(func.trim(ConversationAnalysisModel.topic)).label("topic")
 
         stmt = (
             select(topic_bucket, func.count(ConversationModel.id).label("count"))
@@ -401,18 +350,12 @@ class ConversationRepository:
         result = await self.db.execute(stmt)
         return result.all()
 
-    async def get_by_zendesk_ticket_id(
-        self, ticket_id: int
-    ) -> Optional[ConversationModel]:
-        q = select(ConversationModel).where(
-            ConversationModel.zendesk_ticket_id == ticket_id
-        )
+    async def get_by_zendesk_ticket_id(self, ticket_id: int) -> Optional[ConversationModel]:
+        q = select(ConversationModel).where(ConversationModel.zendesk_ticket_id == ticket_id)
         result = await self.db.execute(q)
         return result.scalars().first()
 
-    async def set_zendesk_ticket_id(
-        self, conversation_id: UUID, zendesk_ticket_id: int
-    ):
+    async def set_zendesk_ticket_id(self, conversation_id: UUID, zendesk_ticket_id: int):
         conv = await self.get_by_id(conversation_id)
         if not conv:
             return None
@@ -422,14 +365,10 @@ class ConversationRepository:
         return conv
 
     async def get_by_id(self, conversation_id: UUID) -> Optional[ConversationModel]:
-        result = await self.db.execute(
-            select(ConversationModel).where(ConversationModel.id == conversation_id)
-        )
+        result = await self.db.execute(select(ConversationModel).where(ConversationModel.id == conversation_id))
         return result.scalar_one_or_none()
 
-    async def fetch_conversation_by_id_with_operator_agent(
-        self, conversation_id: UUID
-    ) -> Optional[ConversationModel]:
+    async def fetch_conversation_by_id_with_operator_agent(self, conversation_id: UUID) -> Optional[ConversationModel]:
         """
         Fetch conversation by ID with operator and agent eager-loaded.
         Use this when you need to access conversation.operator.agent without triggering

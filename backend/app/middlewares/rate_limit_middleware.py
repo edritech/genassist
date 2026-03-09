@@ -7,10 +7,11 @@ It supports both Redis and in-memory storage backends.
 
 import logging
 from contextvars import ContextVar
+
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 from starlette.requests import Request
 
 from app.core.config.settings import settings
@@ -19,7 +20,7 @@ from app.core.rate_limit_utils import RATE_LIMIT_GLOBAL_HOUR, RATE_LIMIT_GLOBAL_
 logger = logging.getLogger(__name__)
 
 # Context variable to store the current request for rate limit functions
-_request_context: ContextVar[Request] = ContextVar('request_context', default=None)
+_request_context: ContextVar[Request] = ContextVar("request_context", default=None)
 
 
 def get_user_identifier(request: Request) -> str:
@@ -166,13 +167,9 @@ def init_rate_limiter(app):
             try:
                 # Use Redis for distributed rate limiting
                 limiter.storage_uri = settings.REDIS_URL
-                logger.info(
-                    f"Rate limiting initialized with Redis: {settings.REDIS_URL}"
-                )
+                logger.info(f"Rate limiting initialized with Redis: {settings.REDIS_URL}")
             except Exception as e:
-                logger.warning(
-                    f"Failed to use Redis for rate limiting: {e}. Using in-memory storage."
-                )
+                logger.warning(f"Failed to use Redis for rate limiting: {e}. Using in-memory storage.")
                 limiter.storage_uri = None
         else:
             limiter.storage_uri = None

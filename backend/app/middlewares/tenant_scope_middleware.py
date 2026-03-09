@@ -1,8 +1,9 @@
 import logging
+
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.core.tenant_scope import set_tenant_context, clear_tenant_context
+from app.core.tenant_scope import clear_tenant_context, set_tenant_context
 
 logger = logging.getLogger(__name__)
 

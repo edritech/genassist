@@ -1,30 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { RouterNodeData } from "../types/nodes";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { Save } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { BaseNodeDialogProps } from "./base";
-import { DraggableInput } from "../components/custom/DraggableInput";
+import React, { useState, useEffect } from 'react';
+import { RouterNodeData } from '../types/nodes';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Save } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { BaseNodeDialogProps } from './base';
+import { DraggableInput } from '../components/custom/DraggableInput';
 
 const CONDITION_OPTIONS = [
-  "equal",
-  "not_equal",
-  "contains",
-  "not_contain",
-  "starts_with",
-  "not_starts_with",
-  "ends_with",
-  "not_ends_with",
-  "regex",
+  'equal',
+  'not_equal',
+  'contains',
+  'not_contain',
+  'starts_with',
+  'not_starts_with',
+  'ends_with',
+  'not_ends_with',
+  'regex',
 ] as const;
 
 type ConditionType = (typeof CONDITION_OPTIONS)[number];
@@ -34,21 +28,18 @@ type RouterDialogProps = BaseNodeDialogProps<RouterNodeData, RouterNodeData>;
 export const RouterDialog: React.FC<RouterDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
 
-  const [name, setName] = useState(data.name || "");
-  const [compareCondition, setCompareCondition] =
-    useState<ConditionType>("contains");
-  const [firstValue, setFirstValue] = useState("");
+  const [name, setName] = useState(data.name || '');
+  const [compareCondition, setCompareCondition] = useState<ConditionType>('contains');
+  const [firstValue, setFirstValue] = useState('');
 
-  const [secondValue, setSecondValue] = useState("");
+  const [secondValue, setSecondValue] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setFirstValue(data.first_value ?? "");
-      setCompareCondition(
-        (data.compare_condition as ConditionType) ?? "contains"
-      );
-      setSecondValue(data.second_value ?? "");
+      setName(data.name || '');
+      setFirstValue(data.first_value ?? '');
+      setCompareCondition((data.compare_condition as ConditionType) ?? 'contains');
+      setSecondValue(data.second_value ?? '');
     }
   }, [isOpen, data]);
 
@@ -107,17 +98,14 @@ export const RouterDialog: React.FC<RouterDialogProps> = (props) => {
 
       <div className="space-y-2">
         <Label htmlFor="compare_condition">Compare Condition</Label>
-        <Select
-          value={compareCondition}
-          onValueChange={(value) => setCompareCondition(value as ConditionType)}
-        >
+        <Select value={compareCondition} onValueChange={(value) => setCompareCondition(value as ConditionType)}>
           <SelectTrigger id="compare_condition">
             <SelectValue placeholder="Select condition" />
           </SelectTrigger>
           <SelectContent>
             {CONDITION_OPTIONS.map((opt) => (
               <SelectItem key={opt} value={opt}>
-                {opt.replace(/_/g, " ")}
+                {opt.replace(/_/g, ' ')}
               </SelectItem>
             ))}
           </SelectContent>

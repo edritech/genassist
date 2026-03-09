@@ -1,35 +1,36 @@
-from typing import Optional
-from sqlalchemy import DateTime, Integer, PrimaryKeyConstraint, String, UniqueConstraint, ForeignKey, text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
+
+from sqlalchemy import DateTime, ForeignKey, Integer, PrimaryKeyConstraint, String, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.db.models.role import RoleModel
 
 
-
 class UserModel(Base):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     __table_args__ = (
-        PrimaryKeyConstraint('id', name='users_pkey'),
-        UniqueConstraint('username', name='users_username_key')
+        PrimaryKeyConstraint("id", name="users_pkey"),
+        UniqueConstraint("username", name="users_username_key"),
     )
     username: Mapped[str] = mapped_column(String(255))
     email: Mapped[str] = mapped_column(String(255))
     notes: Mapped[Optional[str]] = mapped_column(String(255))
     is_active: Mapped[Optional[int]] = mapped_column(Integer)
     hashed_password: Mapped[str] = mapped_column(String(1000))
-    force_upd_pass_date = mapped_column(DateTime(timezone=True)) # date to force password update
+    force_upd_pass_date = mapped_column(DateTime(timezone=True))  # date to force password update
 
     user_type_id: Mapped[UUID] = mapped_column(ForeignKey("user_types.id"), nullable=False)
 
     user_roles = relationship("UserRoleModel", back_populates="user", foreign_keys="[UserRoleModel.user_id]")
     user_type = relationship("UserTypeModel", back_populates="users", foreign_keys=[user_type_id])
     api_keys = relationship("ApiKeyModel", back_populates="user", foreign_keys="[ApiKeyModel.user_id]")
-    operator = relationship("OperatorModel", back_populates="user", uselist=False, foreign_keys="["
-                                                                                                "OperatorModel.user_id]")
+    operator = relationship(
+        "OperatorModel", back_populates="user", uselist=False, foreign_keys="[OperatorModel.user_id]"
+    )
     workflows = relationship("WorkflowModel", back_populates="user", foreign_keys="[WorkflowModel.user_id]")
     mcp_servers = relationship("MCPServerModel", back_populates="user", foreign_keys="[MCPServerModel.user_id]")
 
@@ -40,7 +41,6 @@ class UserModel(Base):
         e.g., ["admin", "editor"] if you store those in Roles.name
         """
         return [ur.role for ur in self.user_roles if ur.role]
-
 
     @property
     def permissions(self) -> set[str]:

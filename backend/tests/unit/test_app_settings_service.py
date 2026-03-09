@@ -1,35 +1,37 @@
-import pytest
+from datetime import datetime
 from unittest.mock import AsyncMock, create_autospec
 from uuid import uuid4
-from datetime import datetime
-from app.services.app_settings import AppSettingsService
+
+import pytest
+
+from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
+from app.db.models.app_settings import AppSettingsModel
 from app.repositories.app_settings import AppSettingsRepository
 from app.schemas.app_settings import AppSettingsCreate, AppSettingsUpdate
-from app.core.exceptions.exception_classes import AppException
-from app.core.exceptions.error_messages import ErrorKey
-from app.db.models.app_settings import AppSettingsModel
+from app.services.app_settings import AppSettingsService
 
 
 @pytest.fixture
 def mock_repository():
     return AsyncMock(spec=AppSettingsRepository)
 
+
 @pytest.fixture
 def app_settings_service(mock_repository):
     return AppSettingsService(mock_repository)
+
 
 @pytest.fixture
 def sample_app_setting_data():
     return {
         "name": "Test App Setting",
         "type": "Other",
-        "values": {
-            "test_key": "test_value",
-            "another_key": "another_value"
-        },
+        "values": {"test_key": "test_value", "another_key": "another_value"},
         "description": "description of the app settings",
-        "is_active": 1
+        "is_active": 1,
     }
+
 
 @pytest.mark.asyncio
 async def test_create_app_setting(app_settings_service, mock_repository, sample_app_setting_data):
@@ -50,13 +52,13 @@ async def test_create_app_setting(app_settings_service, mock_repository, sample_
 
     # The service checks for duplicates and validates/encrypts values
     mock_repository.get_by_type_and_name.assert_called_once_with(
-        sample_app_setting_data["type"],
-        sample_app_setting_data["name"]
+        sample_app_setting_data["type"], sample_app_setting_data["name"]
     )
     mock_repository.create.assert_called_once()
     assert result.name == sample_app_setting_data["name"]
     assert result.type == sample_app_setting_data["type"]
     assert result.values == sample_app_setting_data["values"]
+
 
 @pytest.mark.asyncio
 async def test_get_app_setting_by_id_success(app_settings_service, mock_repository, sample_app_setting_data):
@@ -78,6 +80,7 @@ async def test_get_app_setting_by_id_success(app_settings_service, mock_reposito
     assert result.type == sample_app_setting_data["type"]
     assert result.values == sample_app_setting_data["values"]
 
+
 @pytest.mark.asyncio
 async def test_get_app_setting_by_id_not_found(app_settings_service, mock_repository):
     setting_id = uuid4()
@@ -89,13 +92,11 @@ async def test_get_app_setting_by_id_not_found(app_settings_service, mock_reposi
     assert exc_info.value.error_key == ErrorKey.APP_SETTINGS_NOT_FOUND
     mock_repository.get_by_id.assert_called_once_with(setting_id)
 
+
 @pytest.mark.asyncio
 async def test_update_app_setting_success(app_settings_service, mock_repository, sample_app_setting_data):
     setting_id = uuid4()
-    update_data = AppSettingsUpdate(
-        values={"test_key": "updated_value", "another_key": "another_value"},
-        is_active=0
-    )
+    update_data = AppSettingsUpdate(values={"test_key": "updated_value", "another_key": "another_value"}, is_active=0)
 
     # Mock existing setting
     mock_existing = create_autospec(AppSettingsModel, instance=True)
@@ -123,6 +124,7 @@ async def test_update_app_setting_success(app_settings_service, mock_repository,
     mock_repository.update.assert_called_once()
     assert result.values == update_data.values
     assert result.is_active == update_data.is_active
+
 
 @pytest.mark.asyncio
 async def test_delete_app_setting(app_settings_service, mock_repository):

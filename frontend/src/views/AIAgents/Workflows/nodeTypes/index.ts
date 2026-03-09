@@ -1,15 +1,11 @@
-import nodeRegistry from "../registry/nodeRegistry";
-import ChatInputNode from "./chat/chatInputNode";
-import LLMModelNode from "./llm/modelNode";
-import APIToolNode from "./tools/apiToolNode";
-import OpenApiNode from "./tools/openApiNode";
-import AgentNode from "./llm/agentNode";
-import PythonCodeNode from "./tools/pythonCodeNode";
-import {
-  CHAT_INPUT_NODE_DEFINITION,
-  CHAT_OUTPUT_NODE_DEFINITION,
-  SET_STATE_NODE_DEFINITION,
-} from "./chat/definitions";
+import nodeRegistry from '../registry/nodeRegistry';
+import ChatInputNode from './chat/chatInputNode';
+import LLMModelNode from './llm/modelNode';
+import APIToolNode from './tools/apiToolNode';
+import OpenApiNode from './tools/openApiNode';
+import AgentNode from './llm/agentNode';
+import PythonCodeNode from './tools/pythonCodeNode';
+import { CHAT_INPUT_NODE_DEFINITION, CHAT_OUTPUT_NODE_DEFINITION, SET_STATE_NODE_DEFINITION } from './chat/definitions';
 import {
   API_TOOL_NODE_DEFINITION,
   OPEN_API_NODE_DEFINITION,
@@ -19,32 +15,29 @@ import {
   ML_MODEL_INFERENCE_NODE_DEFINITION,
   THREAD_RAG_NODE_DEFINITION,
   WORKFLOW_EXECUTOR_NODE_DEFINITION,
-} from "./tools/definitions";
-import KnowledgeBaseNode from "./tools/knowledgeBaseNode";
-import SQLNode from "./tools/sqlNode";
-import MLModelInferenceNode from "./tools/mlModelInferenceNode";
-import ThreadRAGNode from "./tools/threadRAGNode";
-import WorkflowExecutorNode from "./tools/workflowExecutorNode";
-import MCPNode from "./llm/mcpNode";
-import ReadMailsNode from "./integrations/readMailsNode";
-import ToolBuilderNode from "./llm/toolBuilderNode";
-import ChatOutputNode from "./chat/chatOutputNode";
+} from './tools/definitions';
+import KnowledgeBaseNode from './tools/knowledgeBaseNode';
+import SQLNode from './tools/sqlNode';
+import MLModelInferenceNode from './tools/mlModelInferenceNode';
+import ThreadRAGNode from './tools/threadRAGNode';
+import WorkflowExecutorNode from './tools/workflowExecutorNode';
+import MCPNode from './llm/mcpNode';
+import ReadMailsNode from './integrations/readMailsNode';
+import ToolBuilderNode from './llm/toolBuilderNode';
+import ChatOutputNode from './chat/chatOutputNode';
 import {
   AGENT_NODE_DEFINITION,
   MODEL_NODE_DEFINITION,
   TOOL_BUILDER_NODE_DEFINITION,
   MCP_NODE_DEFINITION,
-} from "./llm/definitions";
-import {
-  DATA_MAPPER_NODE_DEFINITION,
-  TEMPLATE_NODE_DEFINITION,
-} from "./utils/definitions";
-import TemplateNode from "./utils/templateNode";
-import DataMapperNode from "./utils/dataMapperNode";
-import SetStateNode from "./chat/setStateNode";
-import SlackOutputNode from "./integrations/slackOutputNode";
-import ZendeskTicketNode from "./integrations/zendeskTicketNode";
-import GmailNode from "./integrations/gmailNode";
+} from './llm/definitions';
+import { DATA_MAPPER_NODE_DEFINITION, TEMPLATE_NODE_DEFINITION } from './utils/definitions';
+import TemplateNode from './utils/templateNode';
+import DataMapperNode from './utils/dataMapperNode';
+import SetStateNode from './chat/setStateNode';
+import SlackOutputNode from './integrations/slackOutputNode';
+import ZendeskTicketNode from './integrations/zendeskTicketNode';
+import GmailNode from './integrations/gmailNode';
 import {
   GMAIL_NODE_DEFINITION,
   ZENDESK_TICKET_NODE_DEFINITION,
@@ -53,26 +46,23 @@ import {
   READ_MAILS_NODE_DEFINITION,
   WHATSAPP_NODE_DEFINITION,
   JIRA_NODE_DEFINITION,
-} from "@/views/AIAgents/Workflows/nodeTypes/integrations/definition";
-import WhatsAppNode from "./integrations/whatsappNode";
-import {
-  ROUTER_NODE_DEFINITION,
-  AGGREGATOR_NODE_DEFINITION,
-} from "./router/definitions";
-import RouterNode from "./router/routerNode";
-import AggregatorNode from "./router/aggregatorNode";
-import CalendarEventNode from "./integrations/calendarEventNode";
+} from '@/views/AIAgents/Workflows/nodeTypes/integrations/definition';
+import WhatsAppNode from './integrations/whatsappNode';
+import { ROUTER_NODE_DEFINITION, AGGREGATOR_NODE_DEFINITION } from './router/definitions';
+import RouterNode from './router/routerNode';
+import AggregatorNode from './router/aggregatorNode';
+import CalendarEventNode from './integrations/calendarEventNode';
 import {
   TRAIN_DATA_SOURCE_NODE_DEFINITION,
   PREPROCESSING_NODE_DEFINITION,
   TRAIN_MODEL_NODE_DEFINITION,
-} from "./training/definitions";
-import TrainDataSourceNode from "./training/trainDataSourceNode";
-import PreprocessingNode from "./training/preprocessingNode";
-import TrainModelNode from "./training/trainModelNode";
-import JiraNode from "./integrations/jiraNode";
-import HumanInTheLoopNode from "./io/humanInTheLoopNode";
-import { HUMAN_IN_THE_LOOP_NODE_DEFINITION } from "./io/definitions";
+} from './training/definitions';
+import TrainDataSourceNode from './training/trainDataSourceNode';
+import PreprocessingNode from './training/preprocessingNode';
+import TrainModelNode from './training/trainModelNode';
+import JiraNode from './integrations/jiraNode';
+import HumanInTheLoopNode from './io/humanInTheLoopNode';
+import { HUMAN_IN_THE_LOOP_NODE_DEFINITION } from './io/definitions';
 
 // A function to re-register if needed
 export const registerAllNodeTypes = () => {

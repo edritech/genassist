@@ -1,8 +1,9 @@
-import pytest
 import logging
-from app.schemas.user import UserRead, UserCreate, UserUpdate
+
+import pytest
 
 logger = logging.getLogger(__name__)
+
 
 @pytest.fixture(scope="module")
 def new_rp_data():
@@ -11,9 +12,10 @@ def new_rp_data():
         "permission_id": "",
     }
 
+
 @pytest.mark.asyncio
 async def test_create_role_perm(authorized_client, new_rp_data):
-    #create role first
+    # create role first
     role_data = {
         "name": "test role",
         "description": "test role description",
@@ -26,7 +28,7 @@ async def test_create_role_perm(authorized_client, new_rp_data):
     assert "id" in role_data
     new_rp_data["role_id"] = role_data["id"]
 
-    #create permission first
+    # create permission first
     permission_data = {
         "name": "test permission",
         "description": "test permission description",
@@ -38,7 +40,7 @@ async def test_create_role_perm(authorized_client, new_rp_data):
     assert "id" in permission_data
     new_rp_data["permission_id"] = permission_data["id"]
 
-    #create role permission
+    # create role permission
     response = authorized_client.post("/api/role-permissions", json=new_rp_data)
     print(response.json())
 
@@ -79,7 +81,7 @@ async def test_delete_role_perm(authorized_client, new_rp_data):
     get_response = authorized_client.get(f"/api/role-permissions/{id}")
     assert get_response.status_code == 404
 
-    #delete test role   
+    # delete test role
     role_id = new_rp_data["role_id"]
     role_response = authorized_client.delete(f"/api/roles/{role_id}")
     assert role_response.status_code == 200
@@ -88,7 +90,7 @@ async def test_delete_role_perm(authorized_client, new_rp_data):
     get_response = authorized_client.get(f"/api/roles/{role_id}")
     assert get_response.status_code == 404
 
-    #delete test permission
+    # delete test permission
     permission_id = new_rp_data["permission_id"]
     permission_response = authorized_client.delete(f"/api/permissions/{permission_id}")
     assert permission_response.status_code == 200

@@ -1,21 +1,20 @@
 import asyncio
 import logging
 from datetime import datetime, timezone
+from io import BytesIO
 from typing import Optional
 
 from celery import shared_task
-from io import BytesIO
-
-from app.dependencies.injector import injector
-from app.services.datasources import DataSourceService
-from app.services.audio import AudioService
-from app.services.app_settings import AppSettingsService
-from app.schemas.recording import RecordingCreate
-from app.db.seed.seed_data_config import SeedTestData
 from fastapi import UploadFile
 
-from app.services.smb_share_service import SMBShareFSService
+from app.db.seed.seed_data_config import SeedTestData
+from app.dependencies.injector import injector
+from app.schemas.recording import RecordingCreate
+from app.services.app_settings import AppSettingsService
+from app.services.audio import AudioService
+from app.services.datasources import DataSourceService
 from app.services.GoogleTranscribeService import GoogleTranscribeService
+from app.services.smb_share_service import SMBShareFSService
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +31,8 @@ def transcribe_audio_files_from_smb():
 async def transcribe_audio_files_async_with_scope(ds_id: Optional[str] = None):
     """Wrapper to run SMB transcription for all tenants"""
     from app.tasks.base import run_task_with_tenant_support
-    return await run_task_with_tenant_support(
-        transcribe_audio_files_async,
-        "SMB audio transcription",
-        ds_id=ds_id
-    )
+
+    return await run_task_with_tenant_support(transcribe_audio_files_async, "SMB audio transcription", ds_id=ds_id)
 
 
 async def transcribe_audio_files_async(ds_id: Optional[str] = None):
@@ -45,12 +41,8 @@ async def transcribe_audio_files_async(ds_id: Optional[str] = None):
     settingsService = injector.get(AppSettingsService)
 
     # Get Google Cloud settings - using "Other" type and setting names
-    google_cloud_json_setting = await settingsService.get_by_type_and_name(
-        "Other", "google_cloud_json"
-    )
-    google_cloud_bucket_setting = await settingsService.get_by_type_and_name(
-        "Other", "google_cloud_bucket"
-    )
+    google_cloud_json_setting = await settingsService.get_by_type_and_name("Other", "google_cloud_json")
+    google_cloud_bucket_setting = await settingsService.get_by_type_and_name("Other", "google_cloud_bucket")
 
     if not google_cloud_json_setting:
         raise ValueError("Google Cloud setting 'google_cloud_json' not found")
@@ -75,7 +67,7 @@ async def transcribe_audio_files_async(ds_id: Optional[str] = None):
     if not google_cloud_bucket:
         raise ValueError("Google Cloud setting 'google_cloud_bucket' value is empty")
 
-    logger.info(f"google_cloud_json key and google_cloud_bucket is loaded")
+    logger.info("google_cloud_json key and google_cloud_bucket is loaded")
 
     gts = GoogleTranscribeService(
         sst_region="us-central1",
@@ -134,11 +126,8 @@ async def transcribe_audio_files_async(ds_id: Optional[str] = None):
             local_root=base_folder,
             use_local_fs=use_local_fs,
         ) as smb:
-
             # List *.wav files
-            files = await smb.list_dir(
-                subpath=base_folder, only_files=True, pattern="*.wav"
-            )
+            files = await smb.list_dir(subpath=base_folder, only_files=True, pattern="*.wav")
 
             if not files:
                 logger.info(f"No audio files found in SMB Datasource: {ds_item.name}")
@@ -166,14 +155,10 @@ async def transcribe_audio_files_async(ds_id: Optional[str] = None):
                     # transcribed_result = gts.transcribe_long_audio(content=content,file_name=filename)
                     # final_transcribed = gts.get_merged_transcripts(transcribed_result)
                     # PROCESSING: save the transcrition
-                    await audioService.process_recording_chirp(
-                        upload_file, metadata, gts
-                    )
+                    await audioService.process_recording_chirp(upload_file, metadata, gts)
 
                     # Update Statistics
-                    transcribed.append(
-                        {"file": file_path, "timestamp": datetime.now().isoformat()}
-                    )
+                    transcribed.append({"file": file_path, "timestamp": datetime.now().isoformat()})
                     count_success += 1
 
                 except Exception as e:

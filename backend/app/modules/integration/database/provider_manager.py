@@ -75,9 +75,7 @@ class DBProviderManager:
         # Use lock to prevent concurrent initialization
         async with self._initialization_locks[source_id]:
             # Double-check pattern - manager might have been created while waiting
-            if source_id in self._managers and self._is_manager_valid(
-                self._managers[source_id]
-            ):
+            if source_id in self._managers and self._is_manager_valid(self._managers[source_id]):
                 return self._managers[source_id]
 
             try:
@@ -85,9 +83,7 @@ class DBProviderManager:
                 # Get data source configuration
                 ds_service = injector.get(DataSourceService)
                 # Convert source_id to UUID if it's a string
-                source_uuid = (
-                    UUID(source_id) if isinstance(source_id, str) else source_id
-                )
+                source_uuid = UUID(source_id) if isinstance(source_id, str) else source_id
                 ds = await ds_service.get_by_id(source_uuid, decrypt_sensitive=True)
 
                 if not ds:
@@ -111,18 +107,14 @@ class DBProviderManager:
                 # Create DatabaseManager
                 manager = DatabaseManager(ds_config)
                 if not manager:
-                    logger.error(
-                        f"Failed to create DatabaseManager for source_id {source_id}"
-                    )
+                    logger.error(f"Failed to create DatabaseManager for source_id {source_id}")
                     return None
 
                 await manager.initialize()
 
                 # Cache the manager
                 self._managers[source_id] = manager
-                logger.info(
-                    f"Created and cached DatabaseManager for source_id {source_id}"
-                )
+                logger.info(f"Created and cached DatabaseManager for source_id {source_id}")
                 return manager
 
             except Exception as e:
@@ -144,11 +136,7 @@ class DBProviderManager:
         """
         try:
             # Check if manager has required attributes
-            if not (
-                hasattr(manager, "config")
-                and hasattr(manager, "db_type")
-                and manager.config is not None
-            ):
+            if not (hasattr(manager, "config") and hasattr(manager, "db_type") and manager.config is not None):
                 return False
 
             # Check if connection is still valid using the manager's internal method
@@ -219,9 +207,7 @@ class DBProviderManager:
                 if hasattr(manager, "disconnect"):
                     await manager.disconnect()
             except Exception as e:
-                logger.warning(
-                    f"Error disconnecting manager for source_id {source_id}: {e}"
-                )
+                logger.warning(f"Error disconnecting manager for source_id {source_id}: {e}")
             finally:
                 del self._managers[source_id]
 

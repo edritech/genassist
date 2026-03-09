@@ -1,53 +1,21 @@
 from typing import List
-from ..base import FieldSchema, ConditionalField
+
+from ..base import ConditionalField, FieldSchema
 
 AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
-    FieldSchema(
-        name="name",
-        type="text",
-        label="Node Name",
-        required=False
-    ),
-    FieldSchema(
-        name="providerId",
-        type="select",
-        label="LLM Provider",
-        required=True
-    ),
+    FieldSchema(name="name", type="text", label="Node Name", required=False),
+    FieldSchema(name="providerId", type="select", label="LLM Provider", required=True),
     FieldSchema(
         name="systemPrompt",
         type="text",
         label="System Prompt",
         required=True,
-        default="You are a helpful assistant that helps the user with their requests."
+        default="You are a helpful assistant that helps the user with their requests.",
     ),
-    FieldSchema(
-        name="userPrompt",
-        type="text",
-        label="User Prompt",
-        required=True,
-        default="{{session.message}}"
-    ),
-    FieldSchema(
-        name="type",
-        type="select",
-        label="Agent Type",
-        required=True,
-        default="ToolSelection"
-    ),
-    FieldSchema(
-        name="maxIterations",
-        type="number",
-        label="Max Iterations",
-        required=True,
-        default=3
-    ),
-    FieldSchema(
-        name="memory",
-        type="boolean",
-        label="Enable Memory",
-        required=True
-    ),
+    FieldSchema(name="userPrompt", type="text", label="User Prompt", required=True, default="{{session.message}}"),
+    FieldSchema(name="type", type="select", label="Agent Type", required=True, default="ToolSelection"),
+    FieldSchema(name="maxIterations", type="number", label="Max Iterations", required=True, default=3),
+    FieldSchema(name="memory", type="boolean", label="Enable Memory", required=True),
     FieldSchema(
         name="memoryTrimmingMode",
         type="select",
@@ -58,9 +26,9 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
             {"value": "message_count", "label": "Last N Messages"},
             {"value": "token_budget", "label": "Token Budget"},
             {"value": "message_compacting", "label": "Message Compacting"},
-            {"value": "rag_retrieval", "label": "RAG Retrieval"}
+            {"value": "rag_retrieval", "label": "RAG Retrieval"},
         ],
-        description="How to limit conversation history"
+        description="How to limit conversation history",
     ),
     FieldSchema(
         name="maxMessages",
@@ -71,10 +39,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         min=1,
         step=1,
         description="Maximum messages when using message count mode",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="message_count"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="message_count"),
     ),
     FieldSchema(
         name="compactingThreshold",
@@ -86,10 +51,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=100,
         step=5,
         description="Trigger compaction when total messages exceed this count",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="message_compacting"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="message_compacting"),
     ),
     FieldSchema(
         name="compactingKeepRecent",
@@ -101,10 +63,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=50,
         step=5,
         description="Number of recent messages to include in context (older messages are compacted)",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="message_compacting"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="message_compacting"),
     ),
     FieldSchema(
         name="compactingModel",
@@ -112,10 +71,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         label="Compacting Model",
         required=False,
         description="LLM provider to use for compaction (defaults to node's provider)",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="message_compacting"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="message_compacting"),
     ),
     FieldSchema(
         name="compactingImportantEntities",
@@ -123,10 +79,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         label="Important Entities to Preserve",
         required=False,
         description="Entities that must always be retained in the compaction summary (e.g. 'client name', 'project ID')",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="message_compacting"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="message_compacting"),
     ),
     FieldSchema(
         name="ragPassthroughThreshold",
@@ -138,10 +91,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=500,
         step=1,
         description="Number of messages below which ALL messages are passed verbatim (no RAG)",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="rag_retrieval"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="rag_retrieval"),
     ),
     FieldSchema(
         name="ragGroupSize",
@@ -153,10 +103,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=20,
         step=2,
         description="Number of messages per indexed group (must be even; each pair = 1 Q&A exchange)",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="rag_retrieval"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="rag_retrieval"),
     ),
     FieldSchema(
         name="ragGroupOverlap",
@@ -168,10 +115,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=18,
         step=1,
         description="Number of overlapping messages between consecutive groups (must be less than group size)",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="rag_retrieval"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="rag_retrieval"),
     ),
     FieldSchema(
         name="ragQueryContextMessages",
@@ -183,10 +127,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=10,
         step=1,
         description="Number of recent messages combined with current message for a richer retrieval query",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="rag_retrieval"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="rag_retrieval"),
     ),
     FieldSchema(
         name="ragTopK",
@@ -198,10 +139,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=10,
         step=1,
         description="Maximum number of historical groups to retrieve from the vector store",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="rag_retrieval"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="rag_retrieval"),
     ),
     FieldSchema(
         name="ragRecentMessages",
@@ -213,10 +151,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=50,
         step=2,
         description="Most recent messages always included verbatim in context alongside retrieved groups",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="rag_retrieval"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="rag_retrieval"),
     ),
     FieldSchema(
         name="ragMaxHistoryHours",
@@ -228,10 +163,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=100_000,
         step=1,
         description="Exclude retrieved groups older than this many hours. Set to 0 to disable (no age limit).",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="rag_retrieval"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="rag_retrieval"),
     ),
     FieldSchema(
         name="tokenBudget",
@@ -243,10 +175,7 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=50000,
         step=100,
         description="Total tokens available per request",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="token_budget"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="token_budget"),
     ),
     FieldSchema(
         name="conversationHistoryTokens",
@@ -258,9 +187,6 @@ AGENT_NODE_DIALOG_SCHEMA: List[FieldSchema] = [
         max=20000,
         step=100,
         description="Token budget for conversation history",
-        conditional=ConditionalField(
-            field="memoryTrimmingMode",
-            value="token_budget"
-        )
+        conditional=ConditionalField(field="memoryTrimmingMode", value="token_budget"),
     ),
 ]

@@ -1,15 +1,16 @@
 from sqlalchemy import (
     Column,
-    String,
-    Integer,
     DateTime,
-    ForeignKey,
     Enum,
-    Text,
+    ForeignKey,
+    Integer,
     Numeric,
+    String,
+    Text,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
+
 from app.core.utils.enums.open_ai_fine_tuning_enum import FileStatus, JobStatus
 from app.db.base import Base
 
@@ -42,12 +43,8 @@ class FineTuningJobModel(Base):
     openai_job_id = Column(String, unique=True, nullable=False, index=True)
 
     # File references
-    training_file_id = Column(
-        UUID(as_uuid=True), ForeignKey("openai_files.id"), nullable=False
-    )
-    validation_file_id = Column(
-        UUID(as_uuid=True), ForeignKey("openai_files.id"), nullable=True
-    )
+    training_file_id = Column(UUID(as_uuid=True), ForeignKey("openai_files.id"), nullable=False)
+    validation_file_id = Column(UUID(as_uuid=True), ForeignKey("openai_files.id"), nullable=True)
 
     # Job configuration
     model = Column(String, nullable=False)
@@ -55,9 +52,7 @@ class FineTuningJobModel(Base):
     suffix = Column(String(40), nullable=True)
 
     # Job status
-    status = Column(
-        Enum(JobStatus), default=JobStatus.QUEUED, nullable=False, index=True
-    )
+    status = Column(Enum(JobStatus), default=JobStatus.QUEUED, nullable=False, index=True)
     fine_tuned_model = Column(String, nullable=True)
 
     # Timestamps
@@ -88,7 +83,7 @@ class FineTuningJobModel(Base):
         "FineTuningEventModel",
         back_populates="job",
         cascade="all, delete-orphan",
-        order_by="FineTuningEventModel.event_created_at"
+        order_by="FineTuningEventModel.event_created_at",
     )
 
 
@@ -96,12 +91,7 @@ class FineTuningEventModel(Base):
     __tablename__ = "fine_tuning_events"
 
     # Foreign key to job
-    job_id = Column(
-            UUID(as_uuid=True),
-            ForeignKey("fine_tuning_jobs.id"),
-            nullable=False,
-            index=True
-            )
+    job_id = Column(UUID(as_uuid=True), ForeignKey("fine_tuning_jobs.id"), nullable=False, index=True)
 
     # OpenAI event data
     openai_event_id = Column(String, unique=True, nullable=False, index=True)

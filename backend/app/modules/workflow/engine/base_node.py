@@ -2,11 +2,12 @@
 Base node class for workflow execution with state management.
 """
 
-from abc import ABC, abstractmethod
-from typing import Dict, Any, Literal, Optional, List
 import logging
 import time
-from app.modules.workflow.engine.utils import replace_config_vars, extract_code_params
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Literal, Optional
+
+from app.modules.workflow.engine.utils import extract_code_params, replace_config_vars
 from app.modules.workflow.engine.workflow_state import WorkflowState
 
 logger = logging.getLogger(__name__)
@@ -132,9 +133,7 @@ class BaseNode(ABC):
                     continue
                 source_nodes.append(source_id)
 
-        logger.debug(
-            f"Found {len(source_nodes)} source nodes for next node {self.node_id}: {source_nodes}"
-        )
+        logger.debug(f"Found {len(source_nodes)} source nodes for next node {self.node_id}: {source_nodes}")
         return source_nodes
 
     def check_if_requirement_satisfied(self) -> bool:
@@ -153,9 +152,7 @@ class BaseNode(ABC):
         for source_id in source_nodes:
             source_output = self.state.get_node_output(source_id)
             if source_output is None:
-                logger.debug(
-                    f"Source node {source_id} not ready for next node {self.node_id}"
-                )
+                logger.debug(f"Source node {source_id} not ready for next node {self.node_id}")
                 return False
 
         logger.debug(f"All requirements satisfied for node: {self.node_id}")
@@ -182,9 +179,7 @@ class BaseNode(ABC):
             return self.execution_end_time - self.execution_start_time
         return 0.0
 
-    async def dummy_process(
-        self, config: Optional[Dict[str, Any]] = None, node_input: Any = None
-    ) -> Any:
+    async def dummy_process(self, config: Optional[Dict[str, Any]] = None, node_input: Any = None) -> Any:
         if config is None:
             config = {}
         logger.info(f"Dummy process called for node {self.node_id}")
@@ -192,9 +187,7 @@ class BaseNode(ABC):
         logger.info(f"Node config: {config}")
         return f"Success on node_input: {node_input}"
 
-    def get_connected_nodes(
-        self, tag: Literal["tools", "starter", "true", "false", "default"]
-    ) -> list:
+    def get_connected_nodes(self, tag: Literal["tools", "starter", "true", "false", "default"]) -> list:
         """
         Get connected source nodes, optionally filtered by target handle, in BaseTool format.
 
@@ -233,7 +226,6 @@ class BaseNode(ABC):
 
             # Check if this is a "tools" type connection (for tools)
             if "tools" in edge_target_handle:
-
                 from app.modules.workflow.agents.base_tool import BaseTool
                 from app.modules.workflow.engine.workflow_engine import WorkflowEngine
 
@@ -242,9 +234,7 @@ class BaseNode(ABC):
                 # Get node config directly from the workflow state
                 workflow = self.get_state().workflow
                 if not workflow:
-                    logger.warning(
-                        "No workflow found in state for node %s", self.node_id
-                    )
+                    logger.warning("No workflow found in state for node %s", self.node_id)
                     continue
 
                 # Find the node configuration in the workflow
@@ -262,24 +252,18 @@ class BaseNode(ABC):
                 node_type = node_config.get("type", "")
                 node_class = WorkflowEngine._node_registry.get(node_type)
                 if not node_class:
-                    logger.warning(
-                        "Unknown node type: %s for node %s", node_type, source_node_id
-                    )
+                    logger.warning("Unknown node type: %s for node %s", node_type, source_node_id)
                     continue
 
                 node = node_class(source_node_id, node_config, self.get_state())
 
                 if node:
                     # Check if node exposes multiple tools (e.g., MCP node)
-                    if hasattr(node, "get_tools") and callable(
-                        getattr(node, "get_tools")
-                    ):
+                    if hasattr(node, "get_tools") and callable(getattr(node, "get_tools")):
                         # Node exposes multiple tools
                         tools = node.get_tools()
                         connected_nodes.extend(tools)
-                        logger.debug(
-                            "Added %d tools from node %s", len(tools), source_node_id
-                        )
+                        logger.debug("Added %d tools from node %s", len(tools), source_node_id)
                     else:
                         # Standard single tool node
                         tool = BaseTool(
@@ -287,16 +271,12 @@ class BaseNode(ABC):
                             name=node.get_name(),
                             description=node.get_description(),
                             parameters=node.get_input_schema(),
-                            return_direct=node.get_node_data().get(
-                                "returnDirect", False
-                            ),
+                            return_direct=node.get_node_data().get("returnDirect", False),
                             function=node.execute,
                         )
 
                         connected_nodes.append(tool)
-                        logger.debug(
-                            "Added tool: %s from node %s", tool.name, source_node_id
-                        )
+                        logger.debug("Added tool: %s from node %s", tool.name, source_node_id)
 
             else:
                 source_node_id = edge.get("target")
@@ -310,9 +290,7 @@ class BaseNode(ABC):
 
         return connected_nodes
 
-    async def execute(
-        self, direct_input: Any = None
-    ) -> Any:  # pylint: disable=unused-argument
+    async def execute(self, direct_input: Any = None) -> Any:  # pylint: disable=unused-argument
         """
         Execute the node with the given input data.
 
@@ -330,7 +308,6 @@ class BaseNode(ABC):
             The processed output from the node
         """
         try:
-
             # Start execution tracking
             self.start_execution()
             # self.set_node_input(input_data)
@@ -347,9 +324,7 @@ class BaseNode(ABC):
 
             # Log replacements for debugging
             if replacements:
-                logger.debug(
-                    "Node %s variable replacements: %s", self.node_id, replacements
-                )
+                logger.debug("Node %s variable replacements: %s", self.node_id, replacements)
 
             # Extract params.get("varName") references from code fields
             # so Python scripts can access them at execution time
@@ -411,9 +386,7 @@ class BaseNode(ABC):
         """
         all_target_edges = self.get_state().target_edges
         target_edges = all_target_edges.get(self.node_id, [])
-        input_edges = [
-            edge for edge in target_edges if edge.get("targetHandle", "") == "input"
-        ]
+        input_edges = [edge for edge in target_edges if edge.get("targetHandle", "") == "input"]
         if not input_edges:
             logger.debug("No target edges found for node %s", self.node_id)
             return None
@@ -437,9 +410,7 @@ class BaseNode(ABC):
                 source_node_id = edge["source"]
                 source_output = {
                     **source_output,
-                    **{
-                        source_node_id: self.get_state().get_node_output(source_node_id)
-                    },
+                    **{source_node_id: self.get_state().get_node_output(source_node_id)},
                 }
 
         return source_output

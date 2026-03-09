@@ -1,15 +1,15 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/sidebar";
-import { AppSidebar } from "@/layout/app-sidebar";
-import { OperatorsCard } from "@/views/Operators/components/OperatorCard";
-import { useIsMobile } from "@/hooks/useMobile";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { SidebarProvider, SidebarTrigger } from '@/components/sidebar';
+import { AppSidebar } from '@/layout/app-sidebar';
+import { OperatorsCard } from '@/views/Operators/components/OperatorCard';
+import { useIsMobile } from '@/hooks/useMobile';
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
 
-import { Button } from "@/components/button";
-import { Operator } from "@/interfaces/operator.interface";
-import { CreateOperator } from "../components/CreateOperator";
-import { OperatorCredentialsDialog } from "../components/OperatorCredentialsDialog";
-import { SearchInput } from "@/components/SearchInput";
+import { Button } from '@/components/button';
+import { Operator } from '@/interfaces/operator.interface';
+import { CreateOperator } from '../components/CreateOperator';
+import { OperatorCredentialsDialog } from '../components/OperatorCredentialsDialog';
+import { SearchInput } from '@/components/SearchInput';
 
 type NewOperatorResponse = Operator & {
   user: {
@@ -21,7 +21,7 @@ type NewOperatorResponse = Operator & {
 
 export default function Operators() {
   const isMobile = useIsMobile();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [refreshKey, setRefreshKey] = useState(0);
@@ -49,7 +49,6 @@ export default function Operators() {
     }
   };
 
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full overflow-x-hidden">
@@ -61,14 +60,12 @@ export default function Operators() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:flex-wrap">
                 <div className="min-w-0">
                   <h1 className="text-2xl md:text-3xl font-bold mb-1 animate-fade-down">Operators</h1>
-                  <p className="text-sm md:text-base text-muted-foreground animate-fade-up">View and manage your team of customer service operators</p>
+                  <p className="text-sm md:text-base text-muted-foreground animate-fade-up">
+                    View and manage your team of customer service operators
+                  </p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                  <SearchInput
-                    placeholder="Search operators..."
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                  />
+                  <SearchInput placeholder="Search operators..." value={searchQuery} onChange={setSearchQuery} />
                   <Button
                     className="flex items-center gap-2 w-full sm:w-auto justify-center rounded-full"
                     onClick={handleCreateOperator}
@@ -78,27 +75,19 @@ export default function Operators() {
                   </Button>
                 </div>
               </div>
-              <OperatorsCard
-                searchQuery={searchQuery}
-                refreshKey={refreshKey} />
-
+              <OperatorsCard searchQuery={searchQuery} refreshKey={refreshKey} />
             </div>
           </div>
         </main>
       </div>
 
-      <CreateOperator
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onOperatorCreated={handleOperatorSaved}
-      />
+      <CreateOperator isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} onOperatorCreated={handleOperatorSaved} />
 
       <OperatorCredentialsDialog
         isOpen={isCredentialsDialogOpen}
         onOpenChange={setIsCredentialsDialogOpen}
         credentials={newOperatorCredentials}
       />
-
     </SidebarProvider>
   );
 }

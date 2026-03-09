@@ -1,6 +1,6 @@
-import { useCallback } from "react";
-import { useReactFlow } from "reactflow";
-import { NodeSchema } from "../types/schemas";
+import { useCallback } from 'react';
+import { useReactFlow } from 'reactflow';
+import { NodeSchema } from '../types/schemas';
 
 /**
  * Reusable hook to get the input schema from the first connected ChatInputNode in the flow.
@@ -12,7 +12,7 @@ export function useChatInputSchema(nodeId?: string): NodeSchema | null {
   const getChatInputSchema = useCallback(() => {
     const nodes = getNodes();
     // Find the first ChatInputNode
-    const chatInputNode = nodes.find((node) => node.type === "chatInputNode");
+    const chatInputNode = nodes.find((node) => node.type === 'chatInputNode');
     if (chatInputNode) {
       return chatInputNode.data.inputSchema as NodeSchema;
     }
@@ -20,4 +20,4 @@ export function useChatInputSchema(nodeId?: string): NodeSchema | null {
   }, [getNodes, getEdges, nodeId]);
 
   return getChatInputSchema();
-} 
+}

@@ -1,11 +1,11 @@
-import { apiRequest } from "@/config/api";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { DynamicFormSchema } from "@/interfaces/dynamicFormSchemas.interface";
-import { FileManagerSettings } from "./fileManager";
+import { apiRequest } from '@/config/api';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { DynamicFormSchema } from '@/interfaces/dynamicFormSchemas.interface';
+import { FileManagerSettings } from './fileManager';
 
 export const getAllAppSettings = async (): Promise<AppSetting[]> => {
   try {
-    const data = await apiRequest<AppSetting[]>("GET", "app-settings/");
+    const data = await apiRequest<AppSetting[]>('GET', 'app-settings/');
     if (!data) {
       return [];
     }
@@ -22,7 +22,7 @@ export const getAllAppSettings = async (): Promise<AppSetting[]> => {
 
 export const getAppSetting = async (id: string): Promise<AppSetting | null> => {
   try {
-    const data = await apiRequest<AppSetting>("GET", `app-settings/${id}`);
+    const data = await apiRequest<AppSetting>('GET', `app-settings/${id}`);
     if (!data) {
       return null;
     }
@@ -42,8 +42,8 @@ export const createAppSetting = async (appSettingData: Partial<AppSetting>): Pro
       is_active: appSettingData.is_active,
     };
 
-    const response = await apiRequest<AppSetting>("POST", "app-settings", requestData);
-    if (!response) throw new Error("Failed to create app setting");
+    const response = await apiRequest<AppSetting>('POST', 'app-settings', requestData);
+    if (!response) throw new Error('Failed to create app setting');
     return response;
   } catch (error) {
     throw error;
@@ -60,9 +60,9 @@ export const updateAppSetting = async (id: string, appSettingData: Partial<AppSe
     if (appSettingData.description !== undefined) requestData.description = appSettingData.description;
     if (appSettingData.is_active !== undefined) requestData.is_active = appSettingData.is_active;
 
-    const response = await apiRequest<AppSetting>("PATCH", `app-settings/${id}`, requestData);
+    const response = await apiRequest<AppSetting>('PATCH', `app-settings/${id}`, requestData);
     if (!response) {
-      throw new Error("Failed to update app setting");
+      throw new Error('Failed to update app setting');
     }
     return response;
   } catch (error) {
@@ -72,7 +72,7 @@ export const updateAppSetting = async (id: string, appSettingData: Partial<AppSe
 
 export const deleteAppSetting = async (id: string): Promise<void> => {
   try {
-    await apiRequest("DELETE", `app-settings/${id}`);
+    await apiRequest('DELETE', `app-settings/${id}`);
   } catch (error) {
     throw error;
   }
@@ -80,7 +80,7 @@ export const deleteAppSetting = async (id: string): Promise<void> => {
 
 export const getAppSettingsFormSchemas = async (): Promise<DynamicFormSchema> => {
   try {
-    return await apiRequest<DynamicFormSchema>("GET", "/app-settings/form_schemas");
+    return await apiRequest<DynamicFormSchema>('GET', '/app-settings/form_schemas');
   } catch (error) {
     throw error;
   }

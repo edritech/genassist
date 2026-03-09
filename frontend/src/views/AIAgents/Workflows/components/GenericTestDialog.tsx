@@ -1,30 +1,18 @@
-import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/button";
-import { Label } from "@/components/label";
-import { Textarea } from "@/components/textarea";
-import { Input } from "@/components/input";
-import { Checkbox } from "@/components/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { Play, X } from "lucide-react";
-import { NodeData, HumanInTheLoopNodeData } from "../types/nodes";
-import { testNode, WorkflowTestResponse } from "@/services/workflows";
-import { extractDynamicVariables, getValueFromPath, parseInputValue, truncateNodeOutput } from "../utils/helpers";
-import { useWorkflowExecution } from "../context/WorkflowExecutionContext";
-import { SchemaField, SchemaType } from "../types/schemas";
-import JsonViewer from "@/components/JsonViewer";
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/button';
+import { Label } from '@/components/label';
+import { Textarea } from '@/components/textarea';
+import { Input } from '@/components/input';
+import { Checkbox } from '@/components/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { Play, X } from 'lucide-react';
+import { NodeData, HumanInTheLoopNodeData } from '../types/nodes';
+import { testNode, WorkflowTestResponse } from '@/services/workflows';
+import { extractDynamicVariables, getValueFromPath, parseInputValue, truncateNodeOutput } from '../utils/helpers';
+import { useWorkflowExecution } from '../context/WorkflowExecutionContext';
+import { SchemaField, SchemaType } from '../types/schemas';
+import JsonViewer from '@/components/JsonViewer';
 
 export interface GenericTestInputField {
   id: string;
@@ -56,27 +44,21 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
 }) => {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [fieldTypes, setFieldTypes] = useState<Record<string, SchemaType>>({});
-  const [output, setOutput] = useState<string | Record<string, unknown> | null>(
-    null
-  );
+  const [output, setOutput] = useState<string | Record<string, unknown> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inputFields, setInputFields] = useState<GenericTestInputField[]>([]);
-  const [availableData, setAvailableData] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
+  const [availableData, setAvailableData] = useState<Record<string, unknown> | null>(null);
 
-  const SCHEMA_TYPES: SchemaType[] = ["string", "number", "boolean", "object", "array", "any"];
+  const SCHEMA_TYPES: SchemaType[] = ['string', 'number', 'boolean', 'object', 'array', 'any'];
 
-  const { updateNodeOutput, getAvailableDataForNode, getNodeOutput } =
-    useWorkflowExecution();
+  const { updateNodeOutput, getAvailableDataForNode, getNodeOutput } = useWorkflowExecution();
 
   // Extract variables from node config when dialog opens
   useEffect(() => {
     if (isOpen && nodeData) {
       // Special handling for humanInTheLoopNode — populate fields from form_fields config
-      if (nodeType === "humanInTheLoopNode" && "form_fields" in nodeData) {
+      if (nodeType === 'humanInTheLoopNode' && 'form_fields' in nodeData) {
         const uiNodeData = nodeData as HumanInTheLoopNodeData;
         const formFields = uiNodeData.form_fields || [];
         const humanInTheLoopFields: GenericTestInputField[] = formFields.map((field) => ({
@@ -85,20 +67,22 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
           type: field.type,
           placeholder: field.placeholder || `Enter ${field.label}`,
           required: field.required || false,
-          defaultValue: "",
-          source: "form_fields",
-          options: field.type === "select" ? field.options : undefined,
+          defaultValue: '',
+          source: 'form_fields',
+          options: field.type === 'select' ? field.options : undefined,
         }));
         setInputFields(humanInTheLoopFields);
         setAvailableData(nodeId ? getAvailableDataForNode(nodeId) : null);
         const initialData: Record<string, string> = {};
-        humanInTheLoopFields.forEach((field) => { initialData[field.id] = ""; });
+        humanInTheLoopFields.forEach((field) => {
+          initialData[field.id] = '';
+        });
         setFormData(initialData);
         return;
       }
 
       let variables = extractVariablesFromNodeConfig(nodeData);
-      variables = variables.filter((v) => v !== "direct_input");
+      variables = variables.filter((v) => v !== 'direct_input');
       const schemaFields = extractInputSchemaFields(nodeData);
       // Create a set of schema field names to avoid duplicates
       const schemaFieldNames = new Set(schemaFields.map((field) => field.id));
@@ -111,7 +95,7 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
       // Filter out stateful parameters and conversation_history from variables
       const filteredVariables = variables.filter((v) => {
         // Check if this variable is a stateful parameter in inputSchema
-        if ("inputSchema" in nodeData && nodeData.inputSchema) {
+        if ('inputSchema' in nodeData && nodeData.inputSchema) {
           const schema = nodeData.inputSchema[v];
           if (schema?.stateful) {
             return false;
@@ -125,11 +109,11 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
           ? filteredVariables.map((variable) => ({
               id: variable,
               label: variable,
-              type: "string",
+              type: 'string',
               placeholder: `Enter ${variable}`,
               required: false,
-              defaultValue: "",
-              source: "config",
+              defaultValue: '',
+              source: 'config',
             }))
           : schemaFields;
 
@@ -139,7 +123,7 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
       // Initialize field types from the field definitions
       const initialTypes: Record<string, SchemaType> = {};
       allFields.forEach((field) => {
-        initialTypes[field.id] = (field.type as SchemaType) || "string";
+        initialTypes[field.id] = (field.type as SchemaType) || 'string';
       });
       setFieldTypes(initialTypes);
 
@@ -151,24 +135,24 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
       const output = nodeOutput ? nodeOutput.output : null;
 
       allFields.forEach((field) => {
-        let previousValueStr = "";
-        if (output && typeof output === "object" && output !== null) {
+        let previousValueStr = '';
+        if (output && typeof output === 'object' && output !== null) {
           const outputObj = output as Record<string, unknown>;
           const prevValue = outputObj[`session.${field.id}`];
-          previousValueStr = prevValue !== undefined ? String(prevValue) : "";
+          previousValueStr = prevValue !== undefined ? String(prevValue) : '';
         }
-        let defaultValue: string = field.defaultValue || previousValueStr || "";
+        let defaultValue: string = field.defaultValue || previousValueStr || '';
 
         // Try to get value from availableData using the field ID as a path
         if (availableData) {
           const availableValue = getValueFromPath(availableData, field.id);
           if (availableValue !== undefined) {
             // Handle different types properly
-            if (field.type === "boolean") {
+            if (field.type === 'boolean') {
               defaultValue = String(availableValue);
-            } else if (typeof availableValue === "string") {
+            } else if (typeof availableValue === 'string') {
               defaultValue = availableValue;
-            } else if (typeof availableValue === "object") {
+            } else if (typeof availableValue === 'object') {
               defaultValue = JSON.stringify(availableValue);
             } else {
               defaultValue = String(availableValue);
@@ -217,23 +201,21 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
     }> = [];
 
     // Check if the node has inputSchema
-    if ("inputSchema" in data && data.inputSchema) {
+    if ('inputSchema' in data && data.inputSchema) {
       Object.entries(data.inputSchema).forEach(([key, schema]) => {
         // Skip stateful parameters and conversation_history
         if (schema.stateful) {
           return;
         }
-        
+
         fields.push({
           id: key,
           label: key,
           type: schema.type,
-          placeholder: schema.description
-            ? `Enter ${schema.description}`
-            : `Enter ${key}`,
+          placeholder: schema.description ? `Enter ${schema.description}` : `Enter ${key}`,
           required: schema.required || false,
-          defaultValue: schema.defaultValue || "",
-          source: "inputSchema",
+          defaultValue: schema.defaultValue || '',
+          source: 'inputSchema',
         });
       });
     }
@@ -255,7 +237,8 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
     }));
   };
 
-  const allFieldsOptional = nodeType === "humanInTheLoopNode" && inputFields.length > 0 && inputFields.every((f) => !f.required);
+  const allFieldsOptional =
+    nodeType === 'humanInTheLoopNode' && inputFields.length > 0 && inputFields.every((f) => !f.required);
 
   const handleSkip = async () => {
     setIsLoading(true);
@@ -279,9 +262,9 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
         setOutput(response);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An error occurred";
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
-      setOutput({ status: "error", output: errorMessage });
+      setOutput({ status: 'error', output: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -297,9 +280,7 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
       const parsedData: Record<string, unknown> = {};
 
       // Get inputSchema if available
-      const inputSchema = "inputSchema" in nodeData && nodeData.inputSchema
-        ? nodeData.inputSchema
-        : null;
+      const inputSchema = 'inputSchema' in nodeData && nodeData.inputSchema ? nodeData.inputSchema : null;
 
       for (const field of inputFields) {
         // Skip stateful parameters and conversation_history
@@ -309,10 +290,10 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
             continue;
           }
         }
-        
+
         const value = formData[field.id];
 
-        if (value === undefined || value === "") {
+        if (value === undefined || value === '') {
           // Skip empty values unless required
           if (!field.required) {
             continue;
@@ -320,27 +301,30 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
         }
 
         // Determine the field type for parsing
-        let fieldType: SchemaType = fieldTypes[field.id] || (field.type as SchemaType) || "string";
+        let fieldType: SchemaType = fieldTypes[field.id] || (field.type as SchemaType) || 'string';
         // For inputSchema fields, prefer the schema type
         if (inputSchema && field.id in inputSchema) {
           const schemaField = inputSchema[field.id] as SchemaField;
           fieldType = schemaField.type;
         }
         // Map humanInTheLoopNode field types to schema-compatible types
-        if (field.source === "form_fields") {
+        if (field.source === 'form_fields') {
           const typeMap: Record<string, SchemaType> = {
-            text: "string", select: "string", date: "string",
-            number: "number", boolean: "boolean",
+            text: 'string',
+            select: 'string',
+            date: 'string',
+            number: 'number',
+            boolean: 'boolean',
           };
-          fieldType = typeMap[field.type] || "string";
+          fieldType = typeMap[field.type] || 'string';
         }
 
         // Parse the value based on its type
         try {
-          parsedData[field.id] = parseInputValue(value || "", fieldType);
+          parsedData[field.id] = parseInputValue(value || '', fieldType);
         } catch (err) {
           // If parsing fails, validate JSON for object/array types
-          if (fieldType === "object" || fieldType === "array") {
+          if (fieldType === 'object' || fieldType === 'array') {
             try {
               JSON.parse(value);
               parsedData[field.id] = value;
@@ -362,7 +346,6 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
         node_config: nodeData,
       });
 
-
       if (response && response.output !== undefined) {
         const truncatedOutput = truncateNodeOutput(response.output) as string | Record<string, unknown>;
 
@@ -370,22 +353,15 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
         setOutput(Object.assign({}, response, { output: truncatedOutput }));
 
         if (nodeId) {
-            updateNodeOutput(
-              nodeId,
-              truncatedOutput,
-              nodeType,
-              nodeData.name || nodeType
-            );
+          updateNodeOutput(nodeId, truncatedOutput, nodeType, nodeData.name || nodeType);
         }
       } else {
         setOutput(response);
       }
-
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An error occurred";
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
-      setOutput({ status: "error", output: errorMessage });
+      setOutput({ status: 'error', output: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -396,14 +372,12 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
       <DialogContent className="max-w-2xl max-h-[85vh] w-full overflow-hidden" style={{ zIndex: 1201 }}>
         <DialogHeader>
           <DialogTitle>{`Test ${nodeName}`}</DialogTitle>
-          <p className="text-sm text-gray-500">
-            Test this node using sample inputs or extracted variables.
-          </p>
+          <p className="text-sm text-gray-500">Test this node using sample inputs or extracted variables.</p>
           {!nodeId && (
             <div className="mt-2 p-2 bg-yellow-50 rounded-md border border-yellow-200">
               <div className="text-xs text-yellow-700">
-                ⚠️ Warning: Node ID not provided. Input fields cannot be
-                prefilled with available data from the workflow.
+                ⚠️ Warning: Node ID not provided. Input fields cannot be prefilled with available data from the
+                workflow.
               </div>
             </div>
           )}
@@ -416,7 +390,7 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
               <div className="space-y-4">
                 <Label>Input Variables</Label>
                 {inputFields.map((field) => {
-                  const currentType = fieldTypes[field.id] || "string";
+                  const currentType = fieldTypes[field.id] || 'string';
                   const isPrefilled = availableData && getValueFromPath(availableData, field.id) !== undefined;
 
                   return (
@@ -424,16 +398,12 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
                       <div className="flex items-center justify-between">
                         <Label htmlFor={field.id}>
                           {field.label}
-                          {field.required && (
-                            <span className="text-red-500 ml-1">*</span>
-                          )}
+                          {field.required && <span className="text-red-500 ml-1">*</span>}
                         </Label>
                         <div className="flex items-center space-x-2">
                           <select
                             value={currentType}
-                            onChange={(e) =>
-                              handleTypeChange(field.id, e.target.value as SchemaType)
-                            }
+                            onChange={(e) => handleTypeChange(field.id, e.target.value as SchemaType)}
                             className="text-xs border border-gray-200 rounded px-1.5 py-1 bg-white text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-300"
                             disabled={isLoading}
                           >
@@ -444,7 +414,7 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
                             ))}
                           </select>
                           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                            {field.source || "config"}
+                            {field.source || 'config'}
                           </span>
                           {isPrefilled && (
                             <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-200">
@@ -453,57 +423,40 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
                           )}
                         </div>
                       </div>
-                      {currentType === "boolean" ? (
+                      {currentType === 'boolean' ? (
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id={field.id}
-                            checked={formData[field.id] === "true"}
-                            onCheckedChange={(checked) =>
-                              handleInputChange(
-                                field.id,
-                                checked ? "true" : "false"
-                              )
-                            }
+                            checked={formData[field.id] === 'true'}
+                            onCheckedChange={(checked) => handleInputChange(field.id, checked ? 'true' : 'false')}
                             disabled={isLoading}
                           />
-                          <Label
-                            htmlFor={field.id}
-                            className="text-sm font-normal"
-                          >
+                          <Label htmlFor={field.id} className="text-sm font-normal">
                             {field.placeholder || `Enable ${field.label}`}
                           </Label>
                         </div>
-                      ) : currentType === "object" || currentType === "array" ? (
+                      ) : currentType === 'object' || currentType === 'array' ? (
                         <div className="space-y-2">
                           <Textarea
                             id={field.id}
                             placeholder={
-                              field.placeholder ||
-                              `Enter ${
-                                currentType === "object"
-                                  ? "JSON object"
-                                  : "JSON array"
-                              }`
+                              field.placeholder || `Enter ${currentType === 'object' ? 'JSON object' : 'JSON array'}`
                             }
-                            value={formData[field.id] || ""}
-                            onChange={(e) =>
-                              handleInputChange(field.id, e.target.value)
-                            }
+                            value={formData[field.id] || ''}
+                            onChange={(e) => handleInputChange(field.id, e.target.value)}
                             disabled={isLoading}
-                            className={`flex-1 font-mono text-xs ${
-                              isPrefilled ? "border-blue-300 bg-blue-50" : ""
-                            }`}
+                            className={`flex-1 font-mono text-xs ${isPrefilled ? 'border-blue-300 bg-blue-50' : ''}`}
                             rows={3}
                           />
                           <p className="text-xs text-gray-500">
-                            {currentType === "object"
+                            {currentType === 'object'
                               ? 'Enter a valid JSON object (e.g., {"key": "value"})'
                               : 'Enter a valid JSON array (e.g., ["item1", "item2"])'}
                           </p>
                         </div>
                       ) : field.options && field.options.length > 0 ? (
                         <Select
-                          value={formData[field.id] || ""}
+                          value={formData[field.id] || ''}
                           onValueChange={(val) => handleInputChange(field.id, val)}
                           disabled={isLoading}
                         >
@@ -521,16 +474,12 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
                       ) : (
                         <Input
                           id={field.id}
-                          type={currentType === "number" ? "number" : field.type === "date" ? "date" : "text"}
+                          type={currentType === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
                           placeholder={field.placeholder}
-                          value={formData[field.id] || ""}
-                          onChange={(e) =>
-                            handleInputChange(field.id, e.target.value)
-                          }
+                          value={formData[field.id] || ''}
+                          onChange={(e) => handleInputChange(field.id, e.target.value)}
                           disabled={isLoading}
-                          className={`flex-1 ${
-                            isPrefilled ? "border-blue-300 bg-blue-50" : ""
-                          }`}
+                          className={`flex-1 ${isPrefilled ? 'border-blue-300 bg-blue-50' : ''}`}
                         />
                       )}
                     </div>
@@ -547,28 +496,22 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label>Output</Label>
-                {isLoading && (
-                  <div className="text-xs text-blue-500">Loading...</div>
-                )}
+                {isLoading && <div className="text-xs text-blue-500">Loading...</div>}
               </div>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 p-2 rounded-md text-xs mb-2">
-                  {error}
-                </div>
+                <div className="bg-red-50 border border-red-200 text-red-600 p-2 rounded-md text-xs mb-2">{error}</div>
               )}
               {output === null ? (
                 <div className="whitespace-pre-wrap">No output yet</div>
-              ) : typeof output === "string" ? (
+              ) : typeof output === 'string' ? (
                 <div className="whitespace-pre-wrap">{output}</div>
               ) : (
                 <JsonViewer
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   data={output as any}
                   onCopy={(data) => {
-                    navigator.clipboard.writeText(
-                      JSON.stringify(data, null, 2)
-                    );
+                    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
                   }}
                 />
               )}
@@ -588,10 +531,7 @@ export const GenericTestDialog: React.FC<GenericTestDialogProps> = ({
           )}
           <Button
             onClick={handleRun}
-            disabled={
-              isLoading ||
-              inputFields.some((field) => field.required && !formData[field.id])
-            }
+            disabled={isLoading || inputFields.some((field) => field.required && !formData[field.id])}
           >
             <Play className="h-4 w-4 mr-2" />
             Run Test

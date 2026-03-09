@@ -1,4 +1,4 @@
-import { Transcript } from "@/interfaces/transcript.interface";
+import { Transcript } from '@/interfaces/transcript.interface';
 
 // Hostility constants for live conversations
 export const HOSTILITY_POSITIVE_MAX = 20;
@@ -17,20 +17,21 @@ export const getSentimentFromHostility = (hostilityScore: number): string => {
 
 // Gets the effective sentiment for a transcript
 export const getEffectiveSentiment = (transcript: Transcript): string => {
-  const isLive = transcript?.status === "in_progress" || transcript?.status === "takeover";
-  
+  const isLive = transcript?.status === 'in_progress' || transcript?.status === 'takeover';
+
   if (isLive) {
     // Sentiment from hostility score
-    const hostilityScore = transcript.in_progress_hostility_score ?? transcript.metrics?.in_progress_hostility_score ?? 0;
+    const hostilityScore =
+      transcript.in_progress_hostility_score ?? transcript.metrics?.in_progress_hostility_score ?? 0;
     return getSentimentFromHostility(hostilityScore);
   }
-  
+
   // Existing sentiment for finalized conversations
-  return transcript.metrics?.sentiment || "neutral";
+  return transcript.metrics?.sentiment || 'neutral';
 };
 
-export const getSentimentStyles = (sentiment: string = ""): string => {
-  switch ((sentiment || "").toLowerCase()) {
+export const getSentimentStyles = (sentiment: string = ''): string => {
+  switch ((sentiment || '').toLowerCase()) {
     case 'positive':
       return 'bg-green-100 text-green-800';
     case 'neutral':
@@ -44,7 +45,7 @@ export const getSentimentStyles = (sentiment: string = ""): string => {
   }
 };
 
-import { formatDuration as sharedFormatDuration } from "@/helpers/duration";
+import { formatDuration as sharedFormatDuration } from '@/helpers/duration';
 
 export const formatDuration = (durationInSeconds: number = 0): string => {
   return sharedFormatDuration(durationInSeconds);
@@ -52,57 +53,56 @@ export const formatDuration = (durationInSeconds: number = 0): string => {
 
 export const formatCallTimestamp = (startTimeSeconds: number = 0): string => {
   if (isNaN(startTimeSeconds) || startTimeSeconds < 0) {
-    return "00:00";
+    return '00:00';
   }
-  
+
   const minutes = Math.floor(startTimeSeconds / 60);
   const seconds = Math.floor(startTimeSeconds % 60);
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
-export const formatDateTime = (dateString: string = ""): string => {
+export const formatDateTime = (dateString: string = ''): string => {
   try {
-    if (!dateString) return "N/A";
-    
+    if (!dateString) return 'N/A';
+
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Invalid Date";
-    
+    if (isNaN(date.getTime())) return 'Invalid Date';
+
     return date.toLocaleString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   } catch (error) {
-    return dateString || "N/A";
+    return dateString || 'N/A';
   }
 };
 
 export const formatMetric = (value: number = 0, precision: number = 1): string => {
   if (typeof value !== 'number' || isNaN(value)) {
-    return "0.0";
+    return '0.0';
   }
   return value.toFixed(precision);
 };
 
 export const getTranscriptTypeLabel = (transcript: Transcript): string => {
   if (!transcript || !transcript.metadata) {
-    return "Unknown";
+    return 'Unknown';
   }
-  return transcript.metadata.customer_speaker ? "Call" : "Chat";
-}; 
+  return transcript.metadata.customer_speaker ? 'Call' : 'Chat';
+};
 
 export const formatMessageTime = (createTime: string | number | undefined): string => {
-  if (!createTime) return "";
-  
+  if (!createTime) return '';
+
   try {
     let date: Date;
-    
+
     if (typeof createTime === 'number') {
       date = new Date(createTime * 1000);
-    } 
-    else if (typeof createTime === 'string') {
+    } else if (typeof createTime === 'string') {
       if (createTime.includes('T') || createTime.includes(' ')) {
         date = new Date(createTime);
       } else {
@@ -110,17 +110,17 @@ export const formatMessageTime = (createTime: string | number | undefined): stri
         if (!isNaN(timestamp)) {
           date = new Date(timestamp * 1000);
         } else {
-          return "";
+          return '';
         }
       }
     } else {
-      return "";
+      return '';
     }
-    
-    if (isNaN(date.getTime())) return "";
-    
+
+    if (isNaN(date.getTime())) return '';
+
     return date.toTimeString().split(' ')[0];
   } catch (error) {
-    return "";
+    return '';
   }
 };

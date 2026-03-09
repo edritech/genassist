@@ -1,13 +1,15 @@
-from pathlib import Path
-import re
-import aiofiles
-from fastapi import FastAPI, Form, UploadFile, File
-from typing import Literal, Optional, Tuple, Union
-import whisper
-import os
-import logging
 import asyncio
+import logging
+import os
+import re
+from pathlib import Path
+from typing import Literal, Optional, Tuple, Union
+
+import aiofiles
+import whisper
+from fastapi import FastAPI, File, Form, UploadFile
 from pydantic import BaseModel, Field
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +32,7 @@ def sanitize_file_suffix(filename: Optional[str]) -> str:
 
     suffix = Path(filename).suffix
     # Only allow alphanumeric characters and dots in suffix
-    if suffix and re.match(r'^\.[\w]+$', suffix):
+    if suffix and re.match(r"^\.[\w]+$", suffix):
         return suffix
     return ".tmp"
 
@@ -60,7 +62,9 @@ def safe_remove_temp_file(file_path: str) -> None:
 
     if resolved_path.exists():
         resolved_path.unlink()
-DEFAULT_WHISPER_MODEL = os.getenv('DEFAULT_WHISPER_MODEL', 'base.en') #load default whisper model from environment or
+
+
+DEFAULT_WHISPER_MODEL = os.getenv("DEFAULT_WHISPER_MODEL", "base.en")  # load default whisper model from environment or
 
 # Initialize the default model
 current_model_name = DEFAULT_WHISPER_MODEL
@@ -74,66 +78,40 @@ class WhisperOptions(BaseModel):
 
     # Basic options
     language: Optional[str] = Field(
-            None,
-            description="Language code (e.g., 'en', 'es', 'fr') or None for auto-detection"
-            )
+        None, description="Language code (e.g., 'en', 'es', 'fr') or None for auto-detection"
+    )
     task: Literal["transcribe", "translate"] = Field(
-            "transcribe",
-            description="Task type: transcribe audio or translate to English"
-            )
+        "transcribe", description="Task type: transcribe audio or translate to English"
+    )
     temperature: Union[float, Tuple[float, ...]] = Field(
-            0.0,
-            description="Sampling temperature (0.0-1.0). Higher values increase randomness"
-            )
+        0.0, description="Sampling temperature (0.0-1.0). Higher values increase randomness"
+    )
 
     # Advanced options
-    initial_prompt: Optional[str] = Field(
-            None,
-            description="Initial prompt to guide transcription style and context"
-            )
-    word_timestamps: bool = Field(
-            False,
-            description="Generate word-level timestamps in addition to segment-level"
-            )
+    initial_prompt: Optional[str] = Field(None, description="Initial prompt to guide transcription style and context")
+    word_timestamps: bool = Field(False, description="Generate word-level timestamps in addition to segment-level")
     condition_on_previous_text: bool = Field(
-            True,
-            description="Use previous text segments for context (improves consistency)"
-            )
+        True, description="Use previous text segments for context (improves consistency)"
+    )
     compression_ratio_threshold: float = Field(
-            2.4,
-            description="Threshold for detecting repetitive text (default: 2.4)"
-            )
+        2.4, description="Threshold for detecting repetitive text (default: 2.4)"
+    )
     logprob_threshold: float = Field(
-            -1.0,
-            description="Log probability threshold for segment filtering (default: -1.0)"
-            )
-    no_speech_threshold: float = Field(
-            0.6,
-            description="Silence detection threshold (0.0-1.0, default: 0.6)"
-            )
-    verbose: bool = Field(
-            False,
-            description="Enable verbose output during transcription"
-            )
-    best_of: Optional[int] = Field(
-            None,
-            description="Number of candidates when sampling (default: 5)"
-            )
-    beam_size: Optional[int] = Field(
-            None,
-            description="Number of beams in beam search (default: 5)"
-            )
-    patience: Optional[float] = Field(
-            None,
-            description="Patience value for beam decoding"
-            )
+        -1.0, description="Log probability threshold for segment filtering (default: -1.0)"
+    )
+    no_speech_threshold: float = Field(0.6, description="Silence detection threshold (0.0-1.0, default: 0.6)")
+    verbose: bool = Field(False, description="Enable verbose output during transcription")
+    best_of: Optional[int] = Field(None, description="Number of candidates when sampling (default: 5)")
+    beam_size: Optional[int] = Field(None, description="Number of beams in beam search (default: 5)")
+    patience: Optional[float] = Field(None, description="Patience value for beam decoding")
+
 
 @app.post("/transcribe-old")
-async def transcribe(file: UploadFile = File(...),
-                     whisper_options: Optional[str] = Form(None),
-                     model_name: Optional[str] = DEFAULT_WHISPER_MODEL,
+async def transcribe(
+    file: UploadFile = File(...),
+    whisper_options: Optional[str] = Form(None),
+    model_name: Optional[str] = DEFAULT_WHISPER_MODEL,
 ):
-
     return await transcribe_audio_whisper_no_save(file, whisper_options, model_name)
 
 
@@ -196,13 +174,13 @@ async def cuda_status():
         "cuda_device_count": torch.cuda.device_count(),
         "pytorch_version": torch.__version__,
         "whisper_model_name": current_model_name,
-        }
+    }
 
     if torch.cuda.is_available():
         status["cuda_version"] = torch.version.cuda
         status["gpu_devices"] = [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
-        status["gpu_memory_allocated_mb"] = round(torch.cuda.memory_allocated(0) / 1024 ** 2, 1)
-        status["gpu_memory_reserved_mb"] = round(torch.cuda.memory_reserved(0) / 1024 ** 2, 1)
+        status["gpu_memory_allocated_mb"] = round(torch.cuda.memory_allocated(0) / 1024**2, 1)
+        status["gpu_memory_reserved_mb"] = round(torch.cuda.memory_reserved(0) / 1024**2, 1)
 
         # Check if current Whisper model is on GPU
         if model is not None:
@@ -219,50 +197,44 @@ async def cuda_status():
     return status
 
 
-
 ######################
 ## Chunked transcription for long audio files
 ######################
 
-from pydub import AudioSegment
-import torch
-
-from faster_whisper import WhisperModel # Use faster-whisper for improved performance on CPU and GPU remove the rgullar whisper if it work
+import os
+import time
 from concurrent.futures import ThreadPoolExecutor
 
-import time
-import os
-
+import torch
+from faster_whisper import (
+    WhisperModel,  # Use faster-whisper for improved performance on CPU and GPU remove the rgullar whisper if it work
+)
+from pydub import AudioSegment
 
 CHUNK_LENGTH_MS = 10 * 60000  # 10 minutes (600 seconds)
 
-GPU_WORKERS = int(os.environ.get("GPU_WORKERS", 1))  # Only one worker can use the GPU at a time (update it as per your system configuration)
-CPU_WORKERS = int(os.environ.get("CPU_WORKERS", 4))   # Number of paralel workers for CPU processing (update it as per number of cores  your system has)
+GPU_WORKERS = int(
+    os.environ.get("GPU_WORKERS", 1)
+)  # Only one worker can use the GPU at a time (update it as per your system configuration)
+CPU_WORKERS = int(
+    os.environ.get("CPU_WORKERS", 4)
+)  # Number of paralel workers for CPU processing (update it as per number of cores  your system has)
 
-#check if Cuda is available and set device accordingly
+# check if Cuda is available and set device accordingly
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Use a lock to ensure only one GPU transcription runs at a time the rest are forwarded to CPU workers
 gpu_lock = asyncio.Lock()
-selected_model = "base.en" # set it as default model
+selected_model = "base.en"  # set it as default model
 
 cpu_executor = ThreadPoolExecutor(max_workers=CPU_WORKERS)
 
 
-
 # Initialize model once
 if DEVICE == "cuda":
-    model = WhisperModel(
-        selected_model,
-        device="cuda",
-        compute_type="float16"
-    )
+    model = WhisperModel(selected_model, device="cuda", compute_type="float16")
 else:
-    model = WhisperModel(
-        selected_model,
-        device="cpu",
-        compute_type="int8"
-    )
+    model = WhisperModel(selected_model, device="cpu", compute_type="int8")
 
 
 async def transcribe_chunk(chunk_path: str, options_dict: dict):
@@ -270,29 +242,19 @@ async def transcribe_chunk(chunk_path: str, options_dict: dict):
 
     if DEVICE == "cuda":
         async with gpu_lock:
-            segments, info = await asyncio.to_thread(
-                model.transcribe,
-                chunk_path,
-                **options_dict
-            )
+            segments, info = await asyncio.to_thread(model.transcribe, chunk_path, **options_dict)
             return segments, info, "cuda"
     else:
-        segments, info = await loop.run_in_executor(
-            cpu_executor,
-            lambda: model.transcribe(chunk_path, **options_dict)
-        )
+        segments, info = await loop.run_in_executor(cpu_executor, lambda: model.transcribe(chunk_path, **options_dict))
         return segments, info, "cpu"
 
-async def transcribe_audio_whisper_chunked(
-    file: UploadFile,
-    whisper_options: Optional[str], 
-    model_name: str
-):
+
+async def transcribe_audio_whisper_chunked(file: UploadFile, whisper_options: Optional[str], model_name: str):
     temp_file_path = None
     file_ext = None
     chunk_paths = []
 
-    processing_time=0
+    processing_time = 0
     start_time = time.perf_counter()
     end_time = None
     cuda_cpu_used = None
@@ -311,9 +273,7 @@ async def transcribe_audio_whisper_chunked(
         # Save uploaded file (streaming safer for large files)
         suffix = sanitize_file_suffix(file.filename)
 
-        async with aiofiles.tempfile.NamedTemporaryFile(
-            delete=False, suffix=suffix
-        ) as temp_file:
+        async with aiofiles.tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
             while chunk := await file.read(1024 * 1024):
                 await temp_file.write(chunk)
             temp_file_path = temp_file.name
@@ -323,10 +283,7 @@ async def transcribe_audio_whisper_chunked(
         audio = await asyncio.to_thread(AudioSegment.from_file, temp_file_path)
         audio = audio.set_channels(1).set_frame_rate(16000)
 
-        chunks = [
-            audio[i:i + CHUNK_LENGTH_MS]
-            for i in range(0, len(audio), CHUNK_LENGTH_MS)
-        ]
+        chunks = [audio[i : i + CHUNK_LENGTH_MS] for i in range(0, len(audio), CHUNK_LENGTH_MS)]
 
         full_text = ""
         all_segments = []
@@ -346,7 +303,7 @@ async def transcribe_audio_whisper_chunked(
                 adjusted_segment = {
                     "start": segment.start + offset_seconds,
                     "end": segment.end + offset_seconds,
-                    "text": segment.text
+                    "text": segment.text,
                 }
                 all_segments.append(adjusted_segment)
                 full_text += segment.text + " "
@@ -381,9 +338,4 @@ async def transcribe(
     whisper_options: Optional[str] = Form(None),
     model_name: Optional[str] = DEFAULT_WHISPER_MODEL,
 ):
-    return await transcribe_audio_whisper_chunked(
-        file,
-        whisper_options, 
-        model_name  
-    )
-
+    return await transcribe_audio_whisper_chunked(file, whisper_options, model_name)

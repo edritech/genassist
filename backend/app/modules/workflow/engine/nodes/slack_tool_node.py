@@ -3,13 +3,14 @@ Slack tool node implementation using the BaseNode class.
 """
 
 import logging
-from typing import Dict, Any, cast
+from typing import Any, Dict, cast
 from uuid import UUID
 
-from ..base_node import BaseNode
+from app.dependencies.injector import injector
 from app.modules.integration.slack import SlackConnector
 from app.services.app_settings import AppSettingsService
-from app.dependencies.injector import injector
+
+from ..base_node import BaseNode
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +57,7 @@ class SlackToolNode(BaseNode):
 
             # Validate that we have the required values and they are strings
             if not token or not isinstance(token, str):
-                error_msg = (
-                    "Slack tool: slack_bot_token not found or invalid in app settings"
-                )
+                error_msg = "Slack tool: slack_bot_token not found or invalid in app settings"
                 logger.error(error_msg)
                 return {"status": 400, "data": {"error": error_msg}}
 

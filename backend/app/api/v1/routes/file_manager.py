@@ -1,27 +1,29 @@
-from fastapi import APIRouter, Depends, Form, status, Request, UploadFile, File
-from fastapi.responses import Response, RedirectResponse
-from uuid import UUID
-from typing import Annotated, Optional, List
 import base64
+from typing import List, Optional
+from uuid import UUID
 
-from app.schemas.file import FileBase, FileResponse
-from app.services.file_manager import FileManagerService
-from app.auth.dependencies import auth, permissions
+from fastapi import APIRouter, Depends, File, Request, UploadFile, status
+from fastapi.responses import RedirectResponse, Response
 from fastapi_injector import Injected
-from app.core.exceptions.exception_classes import AppException
-from app.core.exceptions.error_messages import ErrorKey
+
+from app.auth.dependencies import auth, permissions
 from app.core.config.settings import file_storage_settings
-from app.core.project_path import DATA_VOLUME
-from app.services.app_settings import AppSettingsService
-from app.schemas.app_settings import AppSettingsCreate
+from app.core.exceptions.error_messages import ErrorKey
+from app.core.exceptions.exception_classes import AppException
 
 # permissions
 from app.core.permissions.constants import Permissions as P
+from app.core.project_path import DATA_VOLUME
+from app.schemas.app_settings import AppSettingsCreate
+from app.schemas.file import FileBase, FileResponse
+from app.services.app_settings import AppSettingsService
+from app.services.file_manager import FileManagerService
 
 router = APIRouter()
 
 
 # ==================== Settings Endpoints ====================
+
 
 @router.get("/settings", dependencies=[Depends(auth), Depends(permissions(P.FileManager.READ))])
 async def get_file_manager_settings(svc: AppSettingsService = Injected(AppSettingsService)):
@@ -29,20 +31,24 @@ async def get_file_manager_settings(svc: AppSettingsService = Injected(AppSettin
     app_settings = await svc.get_by_type_and_name("FileManagerSettings", "File Manager Settings")
     if not app_settings:
         # create a new app settings
-        app_settings = await svc.create(AppSettingsCreate(
-            name="File Manager Settings",
-            type="FileManagerSettings",
-            values={
-                "file_manager_enabled": True,
-                "file_manager_provider": file_storage_settings.FILE_MANAGER_PROVIDER or "local",
-                "base_path": str(DATA_VOLUME),
-                "aws_bucket_name": file_storage_settings.AWS_BUCKET_NAME or "",
-                "azure_container_name": file_storage_settings.AZURE_CONTAINER_NAME or "",
-                # "gcs_bucket_name": file_storage_settings.GOOGLE_STORAGE_BUCKET or "",
-                # "sharepoint_site_url": file_storage_settings.SHAREPOINT_SITE_URL or "",
-            },
-            is_active=1 if file_storage_settings.FILE_MANAGER_ENABLED else 0 # default to 1 if enabled, 0 if disabled
-        ))
+        app_settings = await svc.create(
+            AppSettingsCreate(
+                name="File Manager Settings",
+                type="FileManagerSettings",
+                values={
+                    "file_manager_enabled": True,
+                    "file_manager_provider": file_storage_settings.FILE_MANAGER_PROVIDER or "local",
+                    "base_path": str(DATA_VOLUME),
+                    "aws_bucket_name": file_storage_settings.AWS_BUCKET_NAME or "",
+                    "azure_container_name": file_storage_settings.AZURE_CONTAINER_NAME or "",
+                    # "gcs_bucket_name": file_storage_settings.GOOGLE_STORAGE_BUCKET or "",
+                    # "sharepoint_site_url": file_storage_settings.SHAREPOINT_SITE_URL or "",
+                },
+                is_active=1
+                if file_storage_settings.FILE_MANAGER_ENABLED
+                else 0,  # default to 1 if enabled, 0 if disabled
+            )
+        )
 
     # check if the file manager is not enabled from the environment variables
     app_settings.is_active = 1 if file_storage_settings.FILE_MANAGER_ENABLED and app_settings.is_active == 1 else 0
@@ -51,7 +57,13 @@ async def get_file_manager_settings(svc: AppSettingsService = Injected(AppSettin
 
 # ==================== File Endpoints ====================
 
-@router.post("/files", response_model=FileResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(auth), Depends(permissions(P.FileManager.CREATE))])
+
+@router.post(
+    "/files",
+    response_model=FileResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(auth), Depends(permissions(P.FileManager.CREATE))],
+)
 async def create_file(
     file: UploadFile = File(...),
     file_base: FileBase = Depends(FileBase.as_form),
@@ -65,10 +77,14 @@ async def create_file(
             file_base=file_base,
         )
     except Exception as e:
-        raise AppException(ErrorKey.INTERNAL_ERROR,500,f"Failed to create file: {str(e)}")
+        raise AppException(ErrorKey.INTERNAL_ERROR, 500, f"Failed to create file: {str(e)}")
 
 
-@router.get("/files/{file_id}", response_model=FileResponse, dependencies=[Depends(auth), Depends(permissions(P.FileManager.READ))])
+@router.get(
+    "/files/{file_id}",
+    response_model=FileResponse,
+    dependencies=[Depends(auth), Depends(permissions(P.FileManager.READ))],
+)
 async def get_file(
     file_id: UUID,
     service: FileManagerService = Injected(FileManagerService),
@@ -78,7 +94,7 @@ async def get_file(
         file = await service.get_file_by_id(file_id)
         return file
     except Exception as e:
-        raise AppException(ErrorKey.FILE_NOT_FOUND,404,f"File not found: {str(e)}")
+        raise AppException(ErrorKey.FILE_NOT_FOUND, 404, f"File not found: {str(e)}")
 
 
 @router.get("/files/{file_id}/download", response_model=FileResponse)
@@ -101,13 +117,10 @@ async def download_file(
 
         headers, media_type = service.build_file_headers(file, content=content, disposition_type="attachment")
 
-        return Response(
-            content=content,
-            media_type=media_type,
-            headers=headers
-        )
+        return Response(content=content, media_type=media_type, headers=headers)
     except Exception as e:
-        raise AppException(ErrorKey.FILE_NOT_FOUND,404,f"File not found: {str(e)}")
+        raise AppException(ErrorKey.FILE_NOT_FOUND, 404, f"File not found: {str(e)}")
+
 
 # @router.get("/files/{file_id}/source", response_model=FileResponse, dependencies=[Depends(auth), Depends(permissions(P.FileManager.READ))])
 @router.get("/files/{file_id}/source", response_model=FileResponse)
@@ -132,24 +145,16 @@ async def get_file_source(
         # For HEAD requests, only get metadata (no content download)
         if request.method == "HEAD":
             headers, media_type = service.build_file_headers(file, disposition_type="inline")
-            return Response(
-                content=b"",
-                media_type=media_type,
-                headers=headers
-            )
+            return Response(content=b"", media_type=media_type, headers=headers)
 
         # if the service is not using s3, download the file content
         # For GET requests, download the file content
         file, content = await service.download_file(file_id)
         headers, media_type = service.build_file_headers(file, content=content, disposition_type="inline")
 
-        return Response(
-            content=content,
-            media_type=media_type,
-            headers=headers
-        )
+        return Response(content=content, media_type=media_type, headers=headers)
     except Exception as e:
-        raise AppException(ErrorKey.FILE_NOT_FOUND,404,f"File not found: {str(e)}")
+        raise AppException(ErrorKey.FILE_NOT_FOUND, 404, f"File not found: {str(e)}")
 
 
 @router.get("/files/{file_id}/base64", dependencies=[Depends(auth), Depends(permissions(P.FileManager.READ))])
@@ -162,20 +167,22 @@ async def get_file_base64(
         file, content = await service.download_file(file_id)
 
         # Encode content to base64
-        base64_content = base64.standard_b64encode(content).decode('utf-8')
+        base64_content = base64.standard_b64encode(content).decode("utf-8")
 
         return {
             "file_id": str(file_id),
             "name": file.name,
             "mime_type": file.mime_type,
             "size": file.size,
-            "content": base64_content
+            "content": base64_content,
         }
     except Exception as e:
-        raise AppException(ErrorKey.FILE_NOT_FOUND,404,f"File not found: {str(e)}")
+        raise AppException(ErrorKey.FILE_NOT_FOUND, 404, f"File not found: {str(e)}")
 
 
-@router.get("/files", response_model=List[FileResponse], dependencies=[Depends(auth), Depends(permissions(P.FileManager.READ))])
+@router.get(
+    "/files", response_model=List[FileResponse], dependencies=[Depends(auth), Depends(permissions(P.FileManager.READ))]
+)
 async def list_files(
     storage_provider: Optional[str] = None,
     limit: Optional[int] = None,
@@ -184,17 +191,17 @@ async def list_files(
 ):
     """List files with optional filtering."""
     try:
-        files = await service.list_files(
-            storage_provider=storage_provider,
-            limit=limit,
-            offset=offset
-        )
+        files = await service.list_files(storage_provider=storage_provider, limit=limit, offset=offset)
         return files
     except Exception as e:
-        raise AppException(ErrorKey.INTERNAL_ERROR,500,f"Failed to list files: {str(e)}")
+        raise AppException(ErrorKey.INTERNAL_ERROR, 500, f"Failed to list files: {str(e)}")
 
 
-@router.put("/files/{file_id}", response_model=FileResponse, dependencies=[Depends(auth), Depends(permissions(P.FileManager.UPDATE))])
+@router.put(
+    "/files/{file_id}",
+    response_model=FileResponse,
+    dependencies=[Depends(auth), Depends(permissions(P.FileManager.UPDATE))],
+)
 async def update_file(
     file_id: UUID,
     file: UploadFile = File(...),
@@ -207,10 +214,14 @@ async def update_file(
         file = await service.update_file(file_id, file, file_base)
         return file
     except Exception as e:
-        raise AppException(ErrorKey.FILE_NOT_FOUND,404,f"File not found: {str(e)}")
+        raise AppException(ErrorKey.FILE_NOT_FOUND, 404, f"File not found: {str(e)}")
 
 
-@router.delete("/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(auth), Depends(permissions(P.FileManager.DELETE))])
+@router.delete(
+    "/files/{file_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(auth), Depends(permissions(P.FileManager.DELETE))],
+)
 async def delete_file(
     file_id: UUID,
     delete_from_storage: bool = True,
@@ -221,4 +232,4 @@ async def delete_file(
         await service.delete_file(file_id, delete_from_storage=delete_from_storage)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except Exception as e:
-        raise AppException(ErrorKey.FILE_NOT_FOUND,404,f"File not found: {str(e)}")
+        raise AppException(ErrorKey.FILE_NOT_FOUND, 404, f"File not found: {str(e)}")

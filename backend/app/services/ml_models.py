@@ -1,15 +1,16 @@
-from uuid import UUID
-from injector import inject
-import os
 import logging
+import os
 from typing import Optional
+from uuid import UUID
 
-from app.db.models.ml_model import MLModel
-from app.repositories.ml_models import MLModelsRepository
-from app.schemas.ml_model import MLModelCreate, MLModelUpdate
+from injector import inject
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
 from app.db.models.file import FileModel
+from app.db.models.ml_model import MLModel
+from app.repositories.ml_models import MLModelsRepository
+from app.schemas.ml_model import MLModelCreate, MLModelUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +27,7 @@ class MLModelsService:
         # Check if a model with the same name already exists
         existing_model = await self.repository.get_by_name(ml_model.name)
         if existing_model:
-            raise AppException(
-                error_key=ErrorKey.ML_MODEL_NAME_EXISTS
-            )
+            raise AppException(error_key=ErrorKey.ML_MODEL_NAME_EXISTS)
 
         db_ml_model = await self.repository.create(ml_model)
         return db_ml_model
@@ -48,12 +47,10 @@ class MLModelsService:
         update_data = ml_model_update.model_dump(exclude_unset=True)
 
         # If name is being updated, check for uniqueness
-        if 'name' in update_data:
-            existing_model = await self.repository.get_by_name(update_data['name'])
+        if "name" in update_data:
+            existing_model = await self.repository.get_by_name(update_data["name"])
             if existing_model and existing_model.id != ml_model_id:
-                raise AppException(
-                    error_key=ErrorKey.ML_MODEL_NAME_EXISTS
-                )
+                raise AppException(error_key=ErrorKey.ML_MODEL_NAME_EXISTS)
 
         db_ml_model = await self.repository.update(ml_model_id, update_data)
         return db_ml_model
@@ -71,11 +68,12 @@ class MLModelsService:
             except OSError as e:
                 logger.error(f"Error deleting pkl file {ml_model.pkl_file}: {str(e)}")
                 # Continue with soft delete even if file deletion fails
-        
+
         # if there's a pkl_file_id, delete the file from the file manager service
         if ml_model.pkl_file_id:
             from app.dependencies.injector import injector
             from app.services.file_manager import FileManagerService
+
             file_manager_service = injector.get(FileManagerService)
             try:
                 await file_manager_service.delete_file(ml_model.pkl_file_id)
@@ -93,10 +91,8 @@ class MLModelsService:
 
         # case when file is provided
 
-        model_info  = get_model_info(pkl_file_path)
+        model_info = get_model_info(pkl_file_path)
         if not model_info["is_valid"]:
-            raise AppException(
-                error_key=ErrorKey.ML_MODEL_NOT_FOUND
-            )
+            raise AppException(error_key=ErrorKey.ML_MODEL_NOT_FOUND)
 
         return model_info

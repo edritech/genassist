@@ -1,22 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { NodeProps } from "reactflow";
-import { createSimpleSchema } from "../../types/schemas";
-import { getNodeColor } from "../../utils/nodeColors";
-import { SlackOutputNodeData } from "../../types/nodes";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { SlackOutputDialog } from "../../nodeDialogs/SlackOutputDialog";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { getAllAppSettings } from "@/services/appSettings";
+import React, { useEffect, useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { createSimpleSchema } from '../../types/schemas';
+import { getNodeColor } from '../../utils/nodeColors';
+import { SlackOutputNodeData } from '../../types/nodes';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { SlackOutputDialog } from '../../nodeDialogs/SlackOutputDialog';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { getAllAppSettings } from '@/services/appSettings';
 
-export const SLACK_OUTPUT_NODE_TYPE = "slackMessageNode";
+export const SLACK_OUTPUT_NODE_TYPE = 'slackMessageNode';
 
-const SlackOutputNode: React.FC<NodeProps<SlackOutputNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const SlackOutputNode: React.FC<NodeProps<SlackOutputNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(SLACK_OUTPUT_NODE_TYPE);
   const color = getNodeColor(nodeDefinition.category);
 
@@ -38,12 +34,12 @@ const SlackOutputNode: React.FC<NodeProps<SlackOutputNodeData>> = ({
 
   const onUpdate = (updatedData: Partial<SlackOutputNodeData>) => {
     const inputSchema = createSimpleSchema({
-      text: { type: "string", required: true },
+      text: { type: 'string', required: true },
     });
 
     const outputSchema = createSimpleSchema({
-      status: { type: "number", required: true },
-      data: { type: "any", required: true },
+      status: { type: 'number', required: true },
+      data: { type: 'any', required: true },
     });
 
     if (data.updateNodeData) {
@@ -56,18 +52,16 @@ const SlackOutputNode: React.FC<NodeProps<SlackOutputNodeData>> = ({
     }
   };
 
-  const selectedAppSettingName = appSettings.find(
-    (setting) => setting.id === data.app_settings_id
-  )?.name;
+  const selectedAppSettingName = appSettings.find((setting) => setting.id === data.app_settings_id)?.name;
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Configuration",
+      label: 'Configuration',
       value: selectedAppSettingName,
-      placeholder: "None selected",
+      placeholder: 'None selected',
     },
-    { label: "Channel ID", value: data.channel },
-    { label: "Message", value: data.message },
+    { label: 'Channel ID', value: data.channel },
+    { label: 'Message', value: data.message },
   ];
 
   return (

@@ -1,19 +1,11 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
-import { Button } from "@/components/button";
-import { Save, Upload, PlayCircle, MoreVertical, History } from "lucide-react";
-import { useBlocker } from "react-router-dom";
-import { Workflow } from "@/interfaces/workflow.interface";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import {
-  useWorkflowExecution,
-  WorkflowExecutionState,
-} from "../../context/WorkflowExecutionContext";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/dropdown-menu";
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/button';
+import { Save, Upload, PlayCircle, MoreVertical, History } from 'lucide-react';
+import { useBlocker } from 'react-router-dom';
+import { Workflow } from '@/interfaces/workflow.interface';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useWorkflowExecution, WorkflowExecutionState } from '../../context/WorkflowExecutionContext';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/dropdown-menu';
 
 interface BottomPanelProps {
   workflow: Workflow;
@@ -39,11 +31,7 @@ const BottomPanel: React.FC<BottomPanelProps> = ({
   const [agentFormOpen, setAgentFormOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const {
-    state: executionState,
-    loadExecutionState,
-    setWorkflowStructure,
-  } = useWorkflowExecution();
+  const { state: executionState, loadExecutionState, setWorkflowStructure } = useWorkflowExecution();
 
   useEffect(() => {
     if (onExecutionStateChange) {
@@ -96,14 +84,13 @@ const BottomPanel: React.FC<BottomPanelProps> = ({
 
   const blocker = useBlocker(
     useCallback(
-      ({ currentLocation, nextLocation }) =>
-        hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
+      ({ currentLocation, nextLocation }) => hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname,
       [hasUnsavedChanges]
     )
   );
 
   useEffect(() => {
-    if (blocker.state === "blocked") {
+    if (blocker.state === 'blocked') {
       setIsDialogOpen(true);
     }
   }, [blocker]);
@@ -114,15 +101,13 @@ const BottomPanel: React.FC<BottomPanelProps> = ({
     const jsonData = JSON.stringify(workflow, null, 2);
 
     // Create blob and download link
-    const blob = new Blob([jsonData], { type: "application/json" });
+    const blob = new Blob([jsonData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
 
     // Create download link and trigger click
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = `langgraph-config-${new Date()
-      .toISOString()
-      .slice(0, 10)}.json`;
+    a.download = `langgraph-config-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
 
@@ -152,7 +137,7 @@ const BottomPanel: React.FC<BottomPanelProps> = ({
         // Load nodes and edges
         onWorkflowLoaded(gd);
       } catch (error) {
-        alert("Failed to load graph configuration. Invalid file format.");
+        alert('Failed to load graph configuration. Invalid file format.');
       }
     };
 
@@ -160,7 +145,7 @@ const BottomPanel: React.FC<BottomPanelProps> = ({
 
     // Reset file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
@@ -173,7 +158,7 @@ const BottomPanel: React.FC<BottomPanelProps> = ({
   // Handle test current graph
   const handleTestCurrentGraph = () => {
     if (workflow?.nodes?.length === 0) {
-      alert("Cannot test an empty graph. Add some nodes first.");
+      alert('Cannot test an empty graph. Add some nodes first.');
       return;
     }
     onTestWorkflow(workflow);
@@ -188,12 +173,12 @@ const BottomPanel: React.FC<BottomPanelProps> = ({
             size="sm"
             variant="outline"
             className={`flex items-center gap-1 rounded-full ${
-              !hasUnsavedChanges ? "opacity-50 cursor-not-allowed" : ""
+              !hasUnsavedChanges ? 'opacity-50 cursor-not-allowed' : ''
             }`}
-            title={hasUnsavedChanges ? "Save changes" : "No changes to save"}
+            title={hasUnsavedChanges ? 'Save changes' : 'No changes to save'}
             disabled={!hasUnsavedChanges || isSaving}
           >
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? 'Saving...' : 'Save'}
           </Button>
         )}
         <Button
@@ -201,20 +186,14 @@ const BottomPanel: React.FC<BottomPanelProps> = ({
           size="sm"
           className="flex items-center gap-1 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
           title="Test current graph"
-          disabled={
-            !workflow?.nodes?.some((node) => node.type === "chatInputNode")
-          }
+          disabled={!workflow?.nodes?.some((node) => node.type === 'chatInputNode')}
         >
           <PlayCircle className="h-4 w-4" />
           Test
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-auto p-0 hover:bg-transparent"
-            >
+            <Button size="sm" variant="ghost" className="h-auto p-0 hover:bg-transparent">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -235,13 +214,7 @@ const BottomPanel: React.FC<BottomPanelProps> = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleLoadFromFile}
-          accept=".json"
-          className="hidden"
-        />
+        <input type="file" ref={fileInputRef} onChange={handleLoadFromFile} accept=".json" className="hidden" />
       </div>
 
       <ConfirmDialog

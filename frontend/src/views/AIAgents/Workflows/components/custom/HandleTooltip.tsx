@@ -1,17 +1,17 @@
-import { Badge } from "@/components/badge";
-import React, { useState, useRef } from "react";
-import { Handle, HandleProps, Position } from "reactflow";
-import { NodeData } from "../../types/nodes";
-import { getHandlerPosition } from "../../utils/helpers";
+import { Badge } from '@/components/badge';
+import React, { useState, useRef } from 'react';
+import { Handle, HandleProps, Position } from 'reactflow';
+import { NodeData } from '../../types/nodes';
+import { getHandlerPosition } from '../../utils/helpers';
 
 interface HandleTooltipProps extends HandleProps {
   nodeId: string;
-  compatibility?: "text" | "tools" | "llm" | "json" | "any";
+  compatibility?: 'text' | 'tools' | 'llm' | 'json' | 'any';
   style?: React.CSSProperties;
 }
 
 const getCompatibilityColor = (compatibility?: string) => {
-  return "hsl(var(--brand-600))";
+  return 'hsl(var(--brand-600))';
   // switch (compatibility) {
   //   case "text":
   //     return "blue";
@@ -27,18 +27,11 @@ const getCompatibilityColor = (compatibility?: string) => {
   //     return "gray";
   // }
 };
-const getCompatibilityDescription = (
-  compatibility?: string,
-  type?: string,
-  nodeId?: string
-) => {
+const getCompatibilityDescription = (compatibility?: string, type?: string, nodeId?: string) => {
   try {
-    return (
-      (type === "source" ? "Output" : "Input") +
-      ` ${nodeId.replace("input_", "").replace("output_", "")}`
-    );
+    return (type === 'source' ? 'Output' : 'Input') + ` ${nodeId.replace('input_', '').replace('output_', '')}`;
   } catch (error) {
-    return "";
+    return '';
   }
 };
 
@@ -46,18 +39,10 @@ export const HandlersRenderer: React.FC<{
   id: string;
   data: NodeData;
 }> = ({ id, data }) => {
-  const rightHandler = data.handlers?.filter(
-    (handler) => handler.position === "right"
-  );
-  const leftHandler = data.handlers?.filter(
-    (handler) => handler.position === "left"
-  );
-  const topHandler = data.handlers?.filter(
-    (handler) => handler.position === "top"
-  );
-  const bottomHandler = data.handlers?.filter(
-    (handler) => handler.position === "bottom"
-  );
+  const rightHandler = data.handlers?.filter((handler) => handler.position === 'right');
+  const leftHandler = data.handlers?.filter((handler) => handler.position === 'left');
+  const topHandler = data.handlers?.filter((handler) => handler.position === 'top');
+  const bottomHandler = data.handlers?.filter((handler) => handler.position === 'bottom');
 
   return (
     <>
@@ -109,13 +94,7 @@ export const HandlersRenderer: React.FC<{
   );
 };
 
-export const HandleTooltip: React.FC<HandleTooltipProps> = ({
-  compatibility,
-  nodeId,
-  style,
-  type,
-  ...handleProps
-}) => {
+export const HandleTooltip: React.FC<HandleTooltipProps> = ({ compatibility, nodeId, style, type, ...handleProps }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const handleRef = useRef<HTMLDivElement>(null);
 
@@ -132,8 +111,8 @@ export const HandleTooltip: React.FC<HandleTooltipProps> = ({
           type={type}
           {...handleProps}
           style={{
-            width: "calc(var(--handler-diameter) * 1px)",
-            height: "calc(var(--handler-diameter) * 1px)",
+            width: 'calc(var(--handler-diameter) * 1px)',
+            height: 'calc(var(--handler-diameter) * 1px)',
             backgroundColor: getCompatibilityColor(compatibility),
             ...style,
           }}
@@ -152,9 +131,7 @@ export const HandleTooltip: React.FC<HandleTooltipProps> = ({
             //     : "none",
           }}
         >
-          <Badge style={{ background: getCompatibilityColor(compatibility) }}>
-            {compatibility}
-          </Badge>
+          <Badge style={{ background: getCompatibilityColor(compatibility) }}>{compatibility}</Badge>
           {getCompatibilityDescription(compatibility, type, handleProps.id)}
         </div>
       )}

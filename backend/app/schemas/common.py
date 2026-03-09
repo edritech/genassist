@@ -19,6 +19,7 @@ T = TypeVar("T")
 
 class PaginatedResponse(BaseModel, Generic[T]):
     """Generic paginated response for list endpoints"""
+
     items: List[T]
     total: int
     page: int
@@ -26,12 +27,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     total_pages: int
 
     @classmethod
-    def from_filter(
-        cls,
-        items: List[T],
-        total: int,
-        filter_obj: BaseFilterModel
-    ) -> "PaginatedResponse[T]":
+    def from_filter(cls, items: List[T], total: int, filter_obj: BaseFilterModel) -> "PaginatedResponse[T]":
         """
         Create a PaginatedResponse from items, total count, and filter object.
         Converts skip/limit to page/page_size for the response.

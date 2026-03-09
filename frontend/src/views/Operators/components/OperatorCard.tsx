@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { Card } from "@/components/card";
-import { ThumbsUp, Clock, Star, InfoIcon } from "lucide-react";
-import { OperatorDetailsDialog } from "./OperatorDetailsDialog";
-import { useLocation } from "react-router-dom";
-import { fetchOperators } from "@/services/operators";
-import { Operator } from "@/interfaces/operator.interface";
-import { formatCallDuration } from "@/helpers/formatters";
-import { CardHeader } from "@/components/CardHeader";
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/card';
+import { ThumbsUp, Clock, Star, InfoIcon } from 'lucide-react';
+import { OperatorDetailsDialog } from './OperatorDetailsDialog';
+import { useLocation } from 'react-router-dom';
+import { fetchOperators } from '@/services/operators';
+import { Operator } from '@/interfaces/operator.interface';
+import { formatCallDuration } from '@/helpers/formatters';
+import { CardHeader } from '@/components/CardHeader';
 
 export function OperatorsCard({ searchQuery, refreshKey }) {
   const [operators, setOperators] = useState<Operator[]>([]);
@@ -15,7 +15,7 @@ export function OperatorsCard({ searchQuery, refreshKey }) {
   const [imageErrors, setImageErrors] = useState(new Set());
 
   const location = useLocation();
-  const isDashboard = location.pathname === "/dashboard";
+  const isDashboard = location.pathname === '/dashboard';
 
   useEffect(() => {
     const getOperators = async () => {
@@ -32,14 +32,14 @@ export function OperatorsCard({ searchQuery, refreshKey }) {
       });
 
       setOperators(isDashboard ? sortedOperators.slice(0, 5) : sortedOperators);
-      
+
       setOperators(sortedOperators);
     };
 
     getOperators();
   }, [isDashboard, refreshKey]);
 
-  function getInitials(firstName = "", lastName = "") {
+  function getInitials(firstName = '', lastName = '') {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   }
 
@@ -48,12 +48,12 @@ export function OperatorsCard({ searchQuery, refreshKey }) {
   };
 
   let filteredAgents = searchQuery
-  ? operators.filter(
-      (agent) =>
-        agent.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        agent.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  : operators;
+    ? operators.filter(
+        (agent) =>
+          agent.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          agent.lastName?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : operators;
 
   if (isDashboard) {
     filteredAgents = filteredAgents.slice(0, 5);
@@ -62,11 +62,13 @@ export function OperatorsCard({ searchQuery, refreshKey }) {
   return (
     <>
       <Card className="p-4 shadow-sm animate-fade-up bg-white">
-        <CardHeader 
-          title={isDashboard ? "Top Performing Operators" : ""}
-          tooltipText={isDashboard ? "Operators ranked by customer satisfaction scores and overall performance metrics" : undefined}
-          linkText={isDashboard ? "View all" : undefined}
-          linkHref={isDashboard ? "/operators" : undefined}
+        <CardHeader
+          title={isDashboard ? 'Top Performing Operators' : ''}
+          tooltipText={
+            isDashboard ? 'Operators ranked by customer satisfaction scores and overall performance metrics' : undefined
+          }
+          linkText={isDashboard ? 'View all' : undefined}
+          linkHref={isDashboard ? '/operators' : undefined}
         />
 
         <div className="space-y-2">
@@ -103,7 +105,9 @@ export function OperatorsCard({ searchQuery, refreshKey }) {
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{formatCallDuration(agent.operator_statistics?.totalCallDuration)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatCallDuration(agent.operator_statistics?.totalCallDuration)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="w-3.5 h-3.5 text-yellow-400" />
@@ -122,11 +126,7 @@ export function OperatorsCard({ searchQuery, refreshKey }) {
         </div>
       </Card>
 
-      <OperatorDetailsDialog
-        operator={selectedAgent}
-        isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
+      <OperatorDetailsDialog operator={selectedAgent} isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
     </>
   );
 }

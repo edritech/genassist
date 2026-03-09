@@ -1,13 +1,13 @@
-import json
-import io
-import re
-import traceback
-from contextlib import redirect_stdout, redirect_stderr
-import importlib
-from typing import Callable, Dict, Any, List, Union
-import logging
 import asyncio
 import concurrent.futures
+import importlib
+import io
+import json
+import logging
+import re
+import traceback
+from contextlib import redirect_stderr, redirect_stdout
+from typing import Any, Callable, Dict, List, Union
 
 logger = logging.getLogger(__name__)
 
@@ -20,24 +20,18 @@ def add_executable_function(code: str) -> str:
     template_lines = []
     # Try/except block for execution
     template_lines.append("try:")
-    template_lines.append(
-        "    # Call the executable function with parameters from params['parameters']"
-    )
+    template_lines.append("    # Call the executable function with parameters from params['parameters']")
     template_lines.append("    result = executable_function(params)")
     template_lines.append("")
     template_lines.append("except Exception as e:")
     template_lines.append("    # Handle any errors")
     template_lines.append("    import traceback")
-    template_lines.append(
-        '    errors = f"Error processing parameters: {str(e)}\\n{traceback.format_exc()}"'
-    )
+    template_lines.append('    errors = f"Error processing parameters: {str(e)}\\n{traceback.format_exc()}"')
     template_lines.append("")
     return code + "\n" + "\n".join(template_lines)
 
 
-def _execute_python_code_sync(
-    code: str, params: Dict[str, Any], wrap_code: bool = True
-) -> Dict[str, Any]:
+def _execute_python_code_sync(code: str, params: Dict[str, Any], wrap_code: bool = True) -> Dict[str, Any]:
     """Execute Python code in a controlled environment (synchronous version for thread execution)"""
     # Capture stdout and stderr
     stdout_buffer = io.StringIO()
@@ -122,9 +116,7 @@ def sanitize_python_code(code: str) -> str:
     return clean
 
 
-async def execute_python_code(
-    code: str, params: Dict[str, Any], wrap_code: bool = True
-) -> Dict[str, Any]:
+async def execute_python_code(code: str, params: Dict[str, Any], wrap_code: bool = True) -> Dict[str, Any]:
     """Execute Python code in a controlled environment asynchronously in a new thread"""
     try:
         code = sanitize_python_code(code)
@@ -133,9 +125,7 @@ async def execute_python_code(
 
         # Run the synchronous function in a thread pool
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            result = await loop.run_in_executor(
-                executor, _execute_python_code_sync, code, params, wrap_code
-            )
+            result = await loop.run_in_executor(executor, _execute_python_code_sync, code, params, wrap_code)
 
         return result
     except Exception as e:
@@ -189,54 +179,34 @@ def generate_python_function_template(parameters_schema: Dict[str, Any]) -> str:
             template_lines.append(f"    # {description}")
             # Generate code to extract and validate parameter based on type
             if param_type == "string":
-                template_lines.append(
-                    f"    {var_name} = params.get('{param_name}', '')"
-                )
+                template_lines.append(f"    {var_name} = params.get('{param_name}', '')")
                 template_lines.append(f"    if not isinstance({var_name}, str):")
-                template_lines.append(
-                    f"        {var_name} = str({var_name}) if {var_name} is not None else ''"
-                )
+                template_lines.append(f"        {var_name} = str({var_name}) if {var_name} is not None else ''")
             elif param_type == "number" or param_type == "integer":
                 default = "0"
                 convert_func = "float" if param_type == "number" else "int"
-                template_lines.append(
-                    f"    {var_name} = params.get('{param_name}', {default})"
-                )
+                template_lines.append(f"    {var_name} = params.get('{param_name}', {default})")
                 template_lines.append(f"    if {var_name} is not None:")
                 template_lines.append("        try:")
-                template_lines.append(
-                    f"            {var_name} = {convert_func}({var_name})"
-                )
+                template_lines.append(f"            {var_name} = {convert_func}({var_name})")
                 template_lines.append("        except (ValueError, TypeError):")
                 template_lines.append(f"            {var_name} = {default}")
                 template_lines.append("    else:")
                 template_lines.append(f"        {var_name} = {default}")
             elif param_type == "boolean":
-                template_lines.append(
-                    f"    {var_name} = params.get('{param_name}', False)"
-                )
+                template_lines.append(f"    {var_name} = params.get('{param_name}', False)")
                 template_lines.append(f"    {var_name} = bool({var_name})")
             elif param_type == "array":
-                template_lines.append(
-                    f"    {var_name} = params.get('{param_name}', [])"
-                )
+                template_lines.append(f"    {var_name} = params.get('{param_name}', [])")
                 template_lines.append(f"    if not isinstance({var_name}, list):")
-                template_lines.append(
-                    f"        {var_name} = [{var_name}] if {var_name} is not None else []"
-                )
+                template_lines.append(f"        {var_name} = [{var_name}] if {var_name} is not None else []")
             elif param_type == "object":
-                template_lines.append(
-                    f"    {var_name} = params.get('{param_name}', {{}})"
-                )
+                template_lines.append(f"    {var_name} = params.get('{param_name}', {{}})")
                 template_lines.append(f"    if not isinstance({var_name}, dict):")
-                template_lines.append(
-                    f"        {var_name} = {{}} if {var_name} is None else {var_name}"
-                )
+                template_lines.append(f"        {var_name} = {{}} if {var_name} is None else {var_name}")
             else:
                 # Default to string for unknown types
-                template_lines.append(
-                    f"    {var_name} = params.get('{param_name}', None)"
-                )
+                template_lines.append(f"    {var_name} = params.get('{param_name}', None)")
             template_lines.append("")  # Add blank line between parameters
 
     # Add example usage section for the extracted parameters
@@ -249,9 +219,7 @@ def generate_python_function_template(parameters_schema: Dict[str, Any]) -> str:
         example_lines.append("    }")
         template_lines.extend(example_lines)
     else:
-        template_lines.append(
-            "    result = 'Successfully executed function with no parameters'"
-        )
+        template_lines.append("    result = 'Successfully executed function with no parameters'")
     template_lines.append("")
     template_lines.append("    return result")
     template_lines.append("")
@@ -259,9 +227,7 @@ def generate_python_function_template(parameters_schema: Dict[str, Any]) -> str:
     return "\n".join(template_lines)
 
 
-def validate_params_against_schema(
-    params: Dict[str, Any], schema: Dict[str, Any]
-) -> Dict[str, Any]:
+def validate_params_against_schema(params: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
     """
     Validate and enhance parameters against a schema.
     This is a simplified version of the Agent._validate_params_against_schema method.
@@ -334,20 +300,16 @@ def create_tool_description(tool: Dict[str, Any], index: int) -> str:
     """Create a description for a specific tool"""
     # Basic information for all tools
     description = [
-        f"Tool {index+1}: {tool['name']}",
+        f"Tool {index + 1}: {tool['name']}",
         f"Type: {tool['type'].replace('Node', '')}",
         f"Description: {tool['description']}",
     ]
 
     # Add tool-specific details
     if tool["type"] == "apiToolNode":
-        description.extend(
-            [f"API Endpoint: {tool['endpoint']}", f"Method: {tool['method']}"]
-        )
+        description.extend([f"API Endpoint: {tool['endpoint']}", f"Method: {tool['method']}"])
     elif tool["type"] in ["knowledgeToolNode", "knowledgeBaseNode"]:
-        description.append(
-            f"Knowledge bases: {len(tool.get('selectedBases', []))} selected"
-        )
+        description.append(f"Knowledge bases: {len(tool.get('selectedBases', []))} selected")
 
     # Add input parameters
     input_params = []
@@ -357,9 +319,7 @@ def create_tool_description(tool: Dict[str, Any], index: int) -> str:
         required = "required" if param_info.get("required", False) else "optional"
         param_desc = param_info.get("description", "")
         param_type = param_info.get("type", "any")
-        input_params.append(
-            f"  - {param_name}: {param_type} ({required}){' - ' + param_desc if param_desc else ''}"
-        )
+        input_params.append(f"  - {param_name}: {param_type} ({required}){' - ' + param_desc if param_desc else ''}")
 
     if input_params:
         description.append("Required Parameters:")
@@ -380,9 +340,7 @@ def create_tool_description(tool: Dict[str, Any], index: int) -> str:
 def create_tool_selection_prompt(user_input: str, tools: List[Dict[str, Any]]) -> str:
     """Create a prompt for the agent to select appropriate tools and extract required parameters"""
     # Create descriptions for each tool
-    tool_descriptions = [
-        create_tool_description(tool, i) for i, tool in enumerate(tools)
-    ]
+    tool_descriptions = [create_tool_description(tool, i) for i, tool in enumerate(tools)]
     tools_description = "\n\n".join(tool_descriptions)
 
     return f"""You are an AI assistant that can help users by selecting and using appropriate tools.
@@ -510,9 +468,7 @@ def process_path_based_input_data(input_data: Dict[str, Any]) -> Dict[str, Any]:
     return initial_values
 
 
-def format_dict_for_llm(
-    data: dict, format_type: str = "structured", max_depth: int = 10
-) -> str:
+def format_dict_for_llm(data: dict, format_type: str = "structured", max_depth: int = 10) -> str:
     """
     Format a dictionary as a string suitable for LLM content consumption.
 

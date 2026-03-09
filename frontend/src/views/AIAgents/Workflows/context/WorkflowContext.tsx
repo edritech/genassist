@@ -1,5 +1,5 @@
-import React, { createContext, useContext } from "react";
-import { Workflow } from "@/interfaces/workflow.interface";
+import React, { createContext, useContext } from 'react';
+import { Workflow } from '@/interfaces/workflow.interface';
 
 // Define the context type
 export type WorkflowContextType = {
@@ -14,7 +14,7 @@ export const WorkflowContext = createContext<WorkflowContextType | undefined>(un
 export const useWorkflow = () => {
   const context = useContext(WorkflowContext);
   if (!context) {
-    throw new Error("useWorkflow must be used within a WorkflowProvider");
+    throw new Error('useWorkflow must be used within a WorkflowProvider');
   }
   return context;
 };
@@ -25,7 +25,5 @@ export const WorkflowProvider: React.FC<{
   setWorkflow: React.Dispatch<React.SetStateAction<Workflow | undefined>>;
   children: React.ReactNode;
 }> = ({ workflow, setWorkflow, children }) => (
-  <WorkflowContext.Provider value={{ workflow, setWorkflow }}>
-    {children}
-  </WorkflowContext.Provider>
-); 
+  <WorkflowContext.Provider value={{ workflow, setWorkflow }}>{children}</WorkflowContext.Provider>
+);

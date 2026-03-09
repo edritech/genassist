@@ -4,4 +4,4 @@ export const edgeTypes = {
   default: CustomArrowEdge,
 };
 
-export const getEdgeTypes = () => edgeTypes; 
+export const getEdgeTypes = () => edgeTypes;

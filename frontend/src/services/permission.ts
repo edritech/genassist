@@ -1,11 +1,11 @@
-import { apiRequest } from "@/config/api";
-import { Permission } from "@/interfaces/permission.interface";
-import toast from "react-hot-toast";
+import { apiRequest } from '@/config/api';
+import { Permission } from '@/interfaces/permission.interface';
+import toast from 'react-hot-toast';
 
 export const getAllPermissions = async (): Promise<Permission[]> => {
   // eslint-disable-next-line no-useless-catch
   try {
-    const data = await apiRequest<Permission[]>("GET", "/permissions/");
+    const data = await apiRequest<Permission[]>('GET', '/permissions/');
     return data || [];
   } catch (error) {
     throw error;
@@ -14,27 +14,21 @@ export const getAllPermissions = async (): Promise<Permission[]> => {
 
 export const getRolePermissions = async (roleId: string): Promise<string[]> => {
   try {
-    const permissionsData = await apiRequest<{ permissions: string[] }>(
-      "GET",
-      `/roles/${roleId}`
-    );
+    const permissionsData = await apiRequest<{ permissions: string[] }>('GET', `/roles/${roleId}`);
     return permissionsData.permissions || [];
   } catch (error) {
     return [];
   }
 };
 
-export const getPermissionsByRoleId = async (
-  roleId: string
-): Promise<string[]> => {
+export const getPermissionsByRoleId = async (roleId: string): Promise<string[]> => {
   try {
-    const rolePermissions = await apiRequest<
-      Array<{ role_id: string; permission_id: string }>
-    >("GET", "/role-permissions");
+    const rolePermissions = await apiRequest<Array<{ role_id: string; permission_id: string }>>(
+      'GET',
+      '/role-permissions'
+    );
 
-    const permissionIds = rolePermissions
-      .filter((rp) => rp.role_id === roleId)
-      .map((rp) => rp.permission_id);
+    const permissionIds = rolePermissions.filter((rp) => rp.role_id === roleId).map((rp) => rp.permission_id);
 
     return permissionIds;
   } catch (error) {
@@ -46,9 +40,10 @@ export const getRolePermissionLinksByRoleId = async (
   roleId: string
 ): Promise<{ id: string; permission_id: string }[]> => {
   try {
-    const rolePermissions = await apiRequest<
-      Array<{ id: string; role_id: string; permission_id: string }>
-    >("GET", "/role-permissions");
+    const rolePermissions = await apiRequest<Array<{ id: string; role_id: string; permission_id: string }>>(
+      'GET',
+      '/role-permissions'
+    );
 
     return rolePermissions.filter((rp) => rp.role_id === roleId);
   } catch (error) {
@@ -56,37 +51,27 @@ export const getRolePermissionLinksByRoleId = async (
   }
 };
 
-export const saveRolePermissions = async (
-  roleId: string,
-  selectedPermissionIds: string[]
-) => {
+export const saveRolePermissions = async (roleId: string, selectedPermissionIds: string[]) => {
   try {
     const existingPermissionIds = await getPermissionsByRoleId(roleId);
     const rolePermissionLinks = await getRolePermissionLinksByRoleId(roleId);
 
-    const toAdd = selectedPermissionIds.filter(
-      (id) => !existingPermissionIds.includes(id)
-    );
+    const toAdd = selectedPermissionIds.filter((id) => !existingPermissionIds.includes(id));
 
-    const toDeleteLinks = rolePermissionLinks.filter(
-      (link) => !selectedPermissionIds.includes(link.permission_id)
-    );
+    const toDeleteLinks = rolePermissionLinks.filter((link) => !selectedPermissionIds.includes(link.permission_id));
 
     const addPromises = toAdd.map((permissionId) =>
-      apiRequest("POST", "/role-permissions", {
+      apiRequest('POST', '/role-permissions', {
         role_id: roleId,
         permission_id: permissionId,
         is_active: true,
       })
     );
 
-    const deletePromises = toDeleteLinks.map((link) =>
-      apiRequest("DELETE", `/role-permissions/${link.id}`)
-    );
+    const deletePromises = toDeleteLinks.map((link) => apiRequest('DELETE', `/role-permissions/${link.id}`));
 
     await Promise.all([...addPromises, ...deletePromises]);
-
   } catch (error) {
-    toast.error("Failed to update role permissions.");
+    toast.error('Failed to update role permissions.');
   }
 };

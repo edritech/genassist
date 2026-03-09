@@ -8,18 +8,20 @@ It can create, list, and manage tenant databases.
 
 import asyncio
 import logging
-import sys
 import os
+import sys
 from typing import Optional
+
 from sqlalchemy import create_engine, text
 
 # Add the project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import re
+
 from app.core.config.settings import settings
 from app.db.multi_tenant_session import multi_tenant_manager
 from app.services.tenant import TenantService
-import re
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,8 +39,10 @@ def validate_db_identifier(identifier: str) -> str:
 
     # PostgreSQL identifier pattern: starts with letter/underscore, followed by alphanumeric/underscore
     # Max length is 63 characters
-    if not re.match(r'^[A-Za-z_][A-Za-z0-9_]{0,62}$', identifier):
-        raise ValueError(f"Invalid database identifier: {identifier}. Must start with a letter or underscore and contain only alphanumeric characters and underscores.")
+    if not re.match(r"^[A-Za-z_][A-Za-z0-9_]{0,62}$", identifier):
+        raise ValueError(
+            f"Invalid database identifier: {identifier}. Must start with a letter or underscore and contain only alphanumeric characters and underscores."
+        )
 
     return identifier
 
@@ -56,8 +60,7 @@ async def create_master_database():
         with engine.connect() as conn:
             # Check if database exists using parameterized query
             result = conn.execute(
-                text("SELECT 1 FROM pg_database WHERE datname = :db_name"),
-                {"db_name": master_db_name}
+                text("SELECT 1 FROM pg_database WHERE datname = :db_name"), {"db_name": master_db_name}
             )
             if result.fetchone():
                 logger.info(f"Master database '{master_db_name}' already exists")
@@ -128,7 +131,7 @@ async def create_tenant(
         if tenant:
             logger.info(f"Successfully created tenant: {tenant_name} ({validated_slug})")
             if seed_data and injector:
-                logger.info(f"Tenant database seeded with initial data")
+                logger.info("Tenant database seeded with initial data")
             return True
         else:
             logger.error(f"Failed to create tenant: {tenant_name}")
@@ -176,8 +179,7 @@ async def create_tenant_database(tenant_slug: str):
         with engine.connect() as conn:
             # Check if database exists using parameterized query
             result = conn.execute(
-                text("SELECT 1 FROM pg_database WHERE datname = :db_name"),
-                {"db_name": tenant_db_name}
+                text("SELECT 1 FROM pg_database WHERE datname = :db_name"), {"db_name": tenant_db_name}
             )
             if result.fetchone():
                 logger.info(f"Tenant database '{tenant_db_name}' already exists")
@@ -190,7 +192,8 @@ async def create_tenant_database(tenant_slug: str):
         # Input is validated via validate_db_identifier() at the start of this function
         # snyk-ignore: CWE-89 - Input validated via validate_db_identifier() above
         success = await multi_tenant_manager.create_tenant_database(
-            validated_slug, validated_slug  # nosec B608 - input validated above
+            validated_slug,
+            validated_slug,  # nosec B608 - input validated above
         )
         if success:
             logger.info(f"Successfully created database for tenant: {validated_slug}")
@@ -249,11 +252,7 @@ async def main():
 
         name = sys.argv[2]
         slug = sys.argv[3]
-        description = (
-            sys.argv[4]
-            if len(sys.argv) > 4 and not sys.argv[4].startswith("--")
-            else None
-        )
+        description = sys.argv[4] if len(sys.argv) > 4 and not sys.argv[4].startswith("--") else None
         seed_data = "--no-seed" not in sys.argv
 
         success = await create_tenant(name, slug, description, seed_data)

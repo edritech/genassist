@@ -1,7 +1,10 @@
-from sqlalchemy import Column, String, Integer
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 import uuid
+
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+
 from app.db.base import Base
+
 
 class FeatureFlagModel(Base):
     __tablename__ = "feature_flags"
@@ -11,4 +14,3 @@ class FeatureFlagModel(Base):
     val = Column(String, nullable=False)
     description = Column(String, nullable=True)
     is_active = Column(Integer, nullable=False, default=1)
-

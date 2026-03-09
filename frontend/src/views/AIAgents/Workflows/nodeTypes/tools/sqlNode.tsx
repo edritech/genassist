@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { NodeProps } from "reactflow";
-import { SQLNodeData } from "@/views/AIAgents/Workflows/types/nodes";
-import { getNodeColor } from "../../utils/nodeColors";
-import BaseNodeContainer from "../BaseNodeContainer";
-import { SQLDialog } from "../../nodeDialogs/SQLDialog";
-import { DataSource } from "@/interfaces/dataSource.interface";
-import { getAllDataSources } from "@/services/dataSources";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
+import React, { useState, useEffect } from 'react';
+import { NodeProps } from 'reactflow';
+import { SQLNodeData } from '@/views/AIAgents/Workflows/types/nodes';
+import { getNodeColor } from '../../utils/nodeColors';
+import BaseNodeContainer from '../BaseNodeContainer';
+import { SQLDialog } from '../../nodeDialogs/SQLDialog';
+import { DataSource } from '@/interfaces/dataSource.interface';
+import { getAllDataSources } from '@/services/dataSources';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
 
-export const SQL_NODE_TYPE = "sqlNode";
+export const SQL_NODE_TYPE = 'sqlNode';
 
 const SQLNode: React.FC<NodeProps<SQLNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(SQL_NODE_TYPE);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [availableDataSources, setAvailableDataSources] = useState<
-    DataSource[]
-  >([]);
+  const [availableDataSources, setAvailableDataSources] = useState<DataSource[]>([]);
 
   const color = getNodeColor(nodeDefinition.category);
 
@@ -44,38 +42,26 @@ const SQLNode: React.FC<NodeProps<SQLNodeData>> = ({ id, data, selected }) => {
   };
 
   // Find the name of selected data source
-  const selectedDataSource = availableDataSources.find(
-    (ds) => ds.id === data.dataSourceId,
-  );
+  const selectedDataSource = availableDataSources.find((ds) => ds.id === data.dataSourceId);
 
-  const numberOfParameters = data.parameters
-    ? Object.keys(data.parameters).length
-    : 0;
+  const numberOfParameters = data.parameters ? Object.keys(data.parameters).length : 0;
 
   const nodeContent: NodeContentRow[] = [
     {
-      label: "Data Source",
+      label: 'Data Source',
       value: selectedDataSource?.name,
-      placeholder: "None selected",
+      placeholder: 'None selected',
     },
     {
-      label: "Mode",
+      label: 'Mode',
       value:
-        data.mode === "sqlQuery"
-          ? "Write SQL Manually"
-          : data.mode === "humanQuery"
-            ? "Generate SQL from Text"
-            : "",
-      placeholder: "None selected",
+        data.mode === 'sqlQuery' ? 'Write SQL Manually' : data.mode === 'humanQuery' ? 'Generate SQL from Text' : '',
+      placeholder: 'None selected',
     },
     {
-      label: "Parameters",
+      label: 'Parameters',
       value:
-        numberOfParameters === 1
-          ? "1 parameter"
-          : numberOfParameters > 1
-            ? `${numberOfParameters} parameters`
-            : "",
+        numberOfParameters === 1 ? '1 parameter' : numberOfParameters > 1 ? `${numberOfParameters} parameters` : '',
     },
   ];
 

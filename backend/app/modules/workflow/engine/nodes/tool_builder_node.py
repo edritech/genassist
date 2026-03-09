@@ -2,9 +2,9 @@
 Tool builder node implementation using the BaseNode class.
 """
 
-import logging
 import json
-from typing import Dict, Any
+import logging
+from typing import Any, Dict
 
 from app.modules.workflow.engine.base_node import BaseNode
 from app.modules.workflow.engine.workflow_state import WorkflowPausedException
@@ -15,9 +15,7 @@ logger = logging.getLogger(__name__)
 class ToolBuilderNode(BaseNode):
     """Tool builder node that executes subflows and returns tool references using the BaseNode approach"""
 
-    async def process(
-        self, config: Dict[str, Any]
-    ) -> Dict[str, Any]:  # pylint: disable=unused-argument
+    async def process(self, config: Dict[str, Any]) -> Dict[str, Any]:  # pylint: disable=unused-argument
         """
         Process the tool builder node by executing its subflow.
 
@@ -52,9 +50,7 @@ class ToolBuilderNode(BaseNode):
         next_node = self.get_connected_nodes("starter")
 
         if len(next_node) == 0:
-            no_source_template = config.get("forwardTemplate", "{}").replace(
-                "source.", ""
-            )
+            no_source_template = config.get("forwardTemplate", "{}").replace("source.", "")
             return {**json.loads(no_source_template), **source_input}
         start_node_id = next_node[0]
         temp_data: Dict[str, Any] = {"node_outputs": {}}
@@ -66,7 +62,7 @@ class ToolBuilderNode(BaseNode):
         current_workflow = self.get_state().workflow
         if not current_workflow:
             raise ValueError("No workflow found in state")
-        
+
         workflow_config = {
             "id": self.get_state().workflow_id,
             "nodes": current_workflow.get("nodes", []),

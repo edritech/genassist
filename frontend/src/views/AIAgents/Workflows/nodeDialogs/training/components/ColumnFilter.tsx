@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Label } from "@/components/label";
-import { Input } from "@/components/input";
-import { Badge } from "@/components/badge";
-import { ColumnFilterConfig, ColumnFilterItem } from "../preprocessingConfig";
+import React, { useState, useEffect } from 'react';
+import { Label } from '@/components/label';
+import { Input } from '@/components/input';
+import { Badge } from '@/components/badge';
+import { ColumnFilterConfig, ColumnFilterItem } from '../preprocessingConfig';
 
 interface ColumnFilterProps {
   config: ColumnFilterConfig | undefined;
@@ -10,18 +10,12 @@ interface ColumnFilterProps {
   availableColumns?: string[]; // Column names from CSV analysis
 }
 
-export const ColumnFilter: React.FC<ColumnFilterProps> = ({
-  config,
-  onChange,
-  availableColumns = [],
-}) => {
-  const [columns, setColumns] = useState<ColumnFilterItem[]>(
-    config?.columns || []
-  );
+export const ColumnFilter: React.FC<ColumnFilterProps> = ({ config, onChange, availableColumns = [] }) => {
+  const [columns, setColumns] = useState<ColumnFilterItem[]>(config?.columns || []);
   const [commaSeparatedInput, setCommaSeparatedInput] = useState<string>(
     availableColumns.length === 0 && config?.columns && config.columns.length > 0
-      ? config.columns.map((col) => col.name).join(", ")
-      : ""
+      ? config.columns.map((col) => col.name).join(', ')
+      : ''
   );
 
   useEffect(() => {
@@ -29,27 +23,19 @@ export const ColumnFilter: React.FC<ColumnFilterProps> = ({
       setColumns(config.columns);
       // Sync comma-separated input when no availableColumns
       if (availableColumns.length === 0 && config.columns.length > 0) {
-        setCommaSeparatedInput(
-          config.columns.map((col) => col.name).join(", ")
-        );
+        setCommaSeparatedInput(config.columns.map((col) => col.name).join(', '));
       }
     }
   }, [config, availableColumns.length]);
 
   // Sync columns with availableColumns when they change (only if no config columns exist)
   useEffect(() => {
-    if (
-      availableColumns.length > 0 &&
-      (!config?.columns || config.columns.length === 0) &&
-      columns.length === 0
-    ) {
+    if (availableColumns.length > 0 && (!config?.columns || config.columns.length === 0) && columns.length === 0) {
       // Initialize from availableColumns
-      const initialColumns: ColumnFilterItem[] = availableColumns.map(
-        (name) => ({
-          name,
-          selected: true,
-        })
-      );
+      const initialColumns: ColumnFilterItem[] = availableColumns.map((name) => ({
+        name,
+        selected: true,
+      }));
       setColumns(initialColumns);
       onChange({
         enabled: true,
@@ -58,29 +44,21 @@ export const ColumnFilter: React.FC<ColumnFilterProps> = ({
     } else if (availableColumns.length > 0) {
       // Sync: ensure all availableColumns are in the list, keep existing selections from config
       // Use config.columns as source of truth if available, otherwise use local columns state
-      const sourceColumns = config?.columns && config.columns.length > 0 
-        ? config.columns 
-        : columns;
-      
-      const existingColumnsMap = new Map(
-        sourceColumns.map((col) => [col.name, col])
-      );
+      const sourceColumns = config?.columns && config.columns.length > 0 ? config.columns : columns;
 
-      const syncedColumns: ColumnFilterItem[] = availableColumns.map(
-        (name) => {
-          const existing = existingColumnsMap.get(name);
-          // If column exists in config, use its selection state
-          // If it's a new column (not in parsed config), mark as unselected by default
-          return existing || { name, selected: false };
-        }
-      );
+      const existingColumnsMap = new Map(sourceColumns.map((col) => [col.name, col]));
+
+      const syncedColumns: ColumnFilterItem[] = availableColumns.map((name) => {
+        const existing = existingColumnsMap.get(name);
+        // If column exists in config, use its selection state
+        // If it's a new column (not in parsed config), mark as unselected by default
+        return existing || { name, selected: false };
+      });
 
       // Only update if the order or content changed
       const needsUpdate =
         syncedColumns.length !== columns.length ||
-        syncedColumns.some(
-          (col, idx) => col.name !== columns[idx]?.name || col.selected !== columns[idx]?.selected
-        );
+        syncedColumns.some((col, idx) => col.name !== columns[idx]?.name || col.selected !== columns[idx]?.selected);
 
       if (needsUpdate) {
         setColumns(syncedColumns);
@@ -127,7 +105,7 @@ export const ColumnFilter: React.FC<ColumnFilterProps> = ({
     setCommaSeparatedInput(value);
     // Parse comma-separated values
     const parsedColumns = value
-      .split(",")
+      .split(',')
       .map((col) => col.trim())
       .filter((col) => col.length > 0)
       .map((name) => ({
@@ -146,9 +124,7 @@ export const ColumnFilter: React.FC<ColumnFilterProps> = ({
     <div className="space-y-4">
       <div className="space-y-0.5">
         <Label>Filter Columns</Label>
-        <p className="text-xs text-gray-500">
-          Select which columns to keep in the dataframe
-        </p>
+        <p className="text-xs text-gray-500">Select which columns to keep in the dataframe</p>
       </div>
 
       <div className="space-y-2">
@@ -164,7 +140,7 @@ export const ColumnFilter: React.FC<ColumnFilterProps> = ({
                 return (
                   <Badge
                     key={columnName}
-                    variant={isSelected ? "default" : "outline"}
+                    variant={isSelected ? 'default' : 'outline'}
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => handleBadgeToggle(columnName)}
                   >
@@ -174,8 +150,8 @@ export const ColumnFilter: React.FC<ColumnFilterProps> = ({
               })}
             </div>
             <p className="text-xs text-gray-500">
-              {columns.filter((c) => c.selected).length} of {availableColumns.length}{" "}
-              columns selected. Click badges to toggle selection.
+              {columns.filter((c) => c.selected).length} of {availableColumns.length} columns selected. Click badges to
+              toggle selection.
             </p>
           </div>
         ) : (
@@ -183,9 +159,7 @@ export const ColumnFilter: React.FC<ColumnFilterProps> = ({
           <div className="space-y-3">
             <Input
               value={commaSeparatedInput}
-              onChange={(e) =>
-                handleCommaSeparatedInputChange(e.target.value)
-              }
+              onChange={(e) => handleCommaSeparatedInputChange(e.target.value)}
               placeholder="Enter column names separated by commas (e.g., col1, col2, col3)"
               className="w-full"
             />
@@ -199,7 +173,7 @@ export const ColumnFilter: React.FC<ColumnFilterProps> = ({
                   ))}
                 </div>
                 <p className="text-xs text-gray-500">
-                  {columns.length} column{columns.length !== 1 ? "s" : ""} added
+                  {columns.length} column{columns.length !== 1 ? 's' : ''} added
                 </p>
               </>
             )}

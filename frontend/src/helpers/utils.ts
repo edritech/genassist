@@ -1,17 +1,17 @@
-import { getApiUrlString } from "@/config/api";
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { getApiUrlString } from '@/config/api';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function formatDate(date: string | Date): string {
   const d = new Date(date);
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
 }
 
@@ -27,7 +27,7 @@ export function getTimeFromDatetime(datetimeString: string): string {
 export function tryParse(value: any) {
   try {
     const first = JSON.parse(value);
-    if (typeof first === "string") {
+    if (typeof first === 'string') {
       try {
         return JSON.parse(first);
       } catch {
@@ -41,30 +41,30 @@ export function tryParse(value: any) {
 }
 
 export function maskInput(inputVal: string, maxLength: number = 36): string {
-  let maskSize = inputVal.length;  // default mask size
+  let maskSize = inputVal.length; // default mask size
   if (inputVal.length > maxLength) {
     maskSize = maxLength;
   }
-  return "*".repeat(maskSize);
+  return '*'.repeat(maskSize);
 }
 
 export function escapeHtml(text: string) {
   return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 export function downloadFile(fileUrl: string, filename: string) {
   try {
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = fileUrl;
     link.download = filename;
     link.click();
   } catch (error) {
-    console.error("Failed to download file:", error);
+    console.error('Failed to download file:', error);
     throw error;
   }
 }
@@ -73,7 +73,7 @@ export function getFileDownloadUrl(fileId: string, baseUrl: string, tenantId: st
   let url = new URL(`file-manager/files/${fileId}/source`, baseUrl).toString();
 
   if (tenantId) {
-    url = url.includes("?") ? `${url}&X-Tenant-Id=${tenantId}` : `${url}?X-Tenant-Id=${tenantId}`;
+    url = url.includes('?') ? `${url}&X-Tenant-Id=${tenantId}` : `${url}?X-Tenant-Id=${tenantId}`;
   }
 
   return url;

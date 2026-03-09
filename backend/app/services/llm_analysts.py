@@ -1,5 +1,5 @@
 from uuid import UUID
-from fastapi import Depends
+
 from fastapi_injector import Injected
 from injector import inject
 
@@ -9,9 +9,14 @@ from app.repositories.llm_analysts import LlmAnalystRepository
 from app.repositories.llm_providers import LlmProviderRepository
 from app.schemas.llm import LlmAnalystCreate, LlmAnalystUpdate
 
+
 @inject
 class LlmAnalystService:
-    def __init__(self, repository: LlmAnalystRepository, llm_provider_repository: LlmProviderRepository  = Injected(LlmProviderRepository)):
+    def __init__(
+        self,
+        repository: LlmAnalystRepository,
+        llm_provider_repository: LlmProviderRepository = Injected(LlmProviderRepository),
+    ):
         self.repository = repository
         self.llm_provider_repository = llm_provider_repository
 
@@ -20,8 +25,8 @@ class LlmAnalystService:
         obj = await self.llm_provider_repository.get_by_id(data.llm_provider_id)
         if not obj:
             raise AppException(error_key=ErrorKey.LLM_PROVIDER_NOT_FOUND, status_code=404)
-        
-        llm_analyst =  await self.repository.create(data)
+
+        llm_analyst = await self.repository.create(data)
         model = await self.repository.get_by_id(llm_analyst.id)
         return model
 

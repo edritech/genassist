@@ -1,11 +1,14 @@
 from typing import Optional
 from uuid import UUID
+
 from injector import inject
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
-from app.db.models.recording import RecordingModel
+
 from app.db.models.conversation import ConversationAnalysisModel
+from app.db.models.recording import RecordingModel
 from app.schemas.recording import RecordingCreate
+
 
 @inject
 class RecordingsRepository:
@@ -59,12 +62,12 @@ class RecordingsRepository:
 
     async def save_recording(self, rec_path, recording_create: RecordingCreate):
         new_recording = RecordingModel(
-                file_path=rec_path,
-                operator_id=recording_create.operator_id,
-                recording_date=recording_create.recording_date,
-                data_source_id=recording_create.data_source_id,
-                original_filename=recording_create.original_filename
-                )
+            file_path=rec_path,
+            operator_id=recording_create.operator_id,
+            recording_date=recording_create.recording_date,
+            data_source_id=recording_create.data_source_id,
+            original_filename=recording_create.original_filename,
+        )
 
         self.db.add(new_recording)
         await self.db.commit()
@@ -119,14 +122,12 @@ class RecordingsRepository:
             avg_quality_of_service,
         )
 
-
     async def find_by_id(self, rec_id: UUID):
         return await self.db.get(RecordingModel, rec_id)
 
-    async def recording_exists(self , original_filename: str ,data_source_id: UUID):
+    async def recording_exists(self, original_filename: str, data_source_id: UUID):
         filter = select(RecordingModel).where(
-            RecordingModel.original_filename == original_filename,
-            RecordingModel.data_source_id == data_source_id
+            RecordingModel.original_filename == original_filename, RecordingModel.data_source_id == data_source_id
         )
         records_found = await self.db.execute(filter)
         first_record_or_none = records_found.scalars().first()

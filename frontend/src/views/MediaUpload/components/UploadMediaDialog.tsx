@@ -1,33 +1,19 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/dialog";
-import { Button } from "@/components/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { toast } from "react-hot-toast";
-import { uploadAudio } from "@/services/audioUpload";
-import { AudioLines, X } from "lucide-react";
-import { useOperators } from "../hooks/useOperators";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/dialog';
+import { Button } from '@/components/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { toast } from 'react-hot-toast';
+import { uploadAudio } from '@/services/audioUpload';
+import { AudioLines, X } from 'lucide-react';
+import { useOperators } from '../hooks/useOperators';
 
 interface UploadMediaDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function UploadMediaDialog({
-  isOpen,
-  onOpenChange,
-}: UploadMediaDialogProps) {
+export function UploadMediaDialog({ isOpen, onOpenChange }: UploadMediaDialogProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,8 +21,8 @@ export function UploadMediaDialog({
   const navigate = useNavigate();
 
   const checkAuthentication = (): boolean => {
-    const token = localStorage.getItem("access_token");
-    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+    const token = localStorage.getItem('access_token');
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
     if (!token || !isAuthenticated) {
       return false;
@@ -45,7 +31,7 @@ export function UploadMediaDialog({
     return true;
   };
 
-  const getInitials = (firstName = "", lastName = "") => {
+  const getInitials = (firstName = '', lastName = '') => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
@@ -70,22 +56,22 @@ export function UploadMediaDialog({
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      toast.error("Please select a file to upload.");
+      toast.error('Please select a file to upload.');
       return;
     }
 
     if (!selectedAgent) {
-      toast.error("Please select an operator.");
+      toast.error('Please select an operator.');
       return;
     }
 
     if (!checkAuthentication()) {
-      toast.error("You need to be logged in to upload files.");
-      navigate("/login");
+      toast.error('You need to be logged in to upload files.');
+      navigate('/login');
       return;
     }
 
-    const processingToast = toast.loading("Processing audio file...");
+    const processingToast = toast.loading('Processing audio file...');
     setLoading(true);
 
     try {
@@ -94,30 +80,23 @@ export function UploadMediaDialog({
       toast.dismiss(processingToast);
 
       if (response && response.success) {
-        toast.success(response.message || "Audio analyzed successfully.");
+        toast.success(response.message || 'Audio analyzed successfully.');
         onOpenChange(false);
         setSelectedFile(null);
         setSelectedAgent(null);
       } else if (response) {
-        toast.error(response.message || "An error occurred during processing.");
+        toast.error(response.message || 'An error occurred during processing.');
       } else {
-        toast.error("An error occurred.");
+        toast.error('An error occurred.');
       }
     } catch (error) {
       toast.dismiss(processingToast);
 
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : "Upload failed. Please try again.";
-      if (
-        errorMsg.includes("401") ||
-        errorMsg.includes("Unauthorized") ||
-        errorMsg.includes("Not authenticated")
-      ) {
-        toast.error("Your session has expired. Please log in again.");
-        localStorage.removeItem("isAuthenticated");
-        navigate("/login");
+      const errorMsg = error instanceof Error ? error.message : 'Upload failed. Please try again.';
+      if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('Not authenticated')) {
+        toast.error('Your session has expired. Please log in again.');
+        localStorage.removeItem('isAuthenticated');
+        navigate('/login');
       } else {
         toast.error(errorMsg);
       }
@@ -141,62 +120,37 @@ export function UploadMediaDialog({
           onChange={handleFileSelect}
           onDragOver={(event) => event.preventDefault()}
         >
-          <input
-            id="file-input"
-            type="file"
-            accept="audio/*"
-            className="hidden"
-            onChange={handleFileSelect}
-          />
+          <input id="file-input" type="file" accept="audio/*" className="hidden" onChange={handleFileSelect} />
           {selectedFile ? (
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {selectedFile.name}
-              </p>
+              <p className="text-sm text-muted-foreground">{selectedFile.name}</p>
               <button onClick={handleRemoveFile} type="button">
                 <X className="w-4 h-4 text-red-500" />
               </button>
             </div>
           ) : (
-            <p
-              className="text-sm text-gray-600"
-              onClick={() => document.getElementById("file-input")?.click()}
-            >
-              Drag & Drop an audio file here or{" "}
-              <span className="text-primary underline">click to select</span>
+            <p className="text-sm text-gray-600" onClick={() => document.getElementById('file-input')?.click()}>
+              Drag & Drop an audio file here or <span className="text-primary underline">click to select</span>
             </p>
           )}
         </div>
 
         <div className="mt-4">
-          <label className="text-sm font-medium text-muted-foreground">
-            Select Operator
-          </label>
-          <Select
-            value={selectedAgent ?? ""}
-            onValueChange={(value) => setSelectedAgent(value)}
-          >
+          <label className="text-sm font-medium text-muted-foreground">Select Operator</label>
+          <Select value={selectedAgent ?? ''} onValueChange={(value) => setSelectedAgent(value)}>
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Search & Select an Operator" />
             </SelectTrigger>
             <SelectContent>
               {operators.map((operator) => (
-                <SelectItem
-                  key={operator.id}
-                  value={operator.id}
-                  className="flex items-center gap-3"
-                >
+                <SelectItem key={operator.id} value={operator.id} className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
                     {!imageErrors.has(operator.id) && operator.avatar ? (
                       <img
                         src={operator.avatar}
                         alt={`${operator.firstName} ${operator.lastName}`}
                         className="w-6 h-6 rounded-full object-cover border border-gray-300"
-                        onError={() =>
-                          setImageErrors((prev) =>
-                            new Set(prev).add(operator.id)
-                          )
-                        }
+                        onError={() => setImageErrors((prev) => new Set(prev).add(operator.id))}
                       />
                     ) : (
                       <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-300 text-gray-700 font-bold">
@@ -213,11 +167,7 @@ export function UploadMediaDialog({
           </Select>
         </div>
 
-        <Button
-          className="w-full mt-4 h-12"
-          onClick={handleUpload}
-          disabled={loading}
-        >
+        <Button className="w-full mt-4 h-12" onClick={handleUpload} disabled={loading}>
           {loading ? (
             <span className="flex items-center gap-2">
               <svg
@@ -226,14 +176,7 @@ export function UploadMediaDialog({
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -243,7 +186,7 @@ export function UploadMediaDialog({
               Processing...
             </span>
           ) : (
-            "Upload"
+            'Upload'
           )}
         </Button>
       </DialogContent>

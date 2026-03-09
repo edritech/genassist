@@ -1,12 +1,14 @@
-from datetime import datetime
-import pytest
-from app.db.seed.seed_data_config import seed_test_data
 import logging
+from datetime import datetime
 
+import pytest
+
+from app.db.seed.seed_data_config import seed_test_data
 
 logger = logging.getLogger(__name__)
 
-@pytest.fixture(scope='module')
+
+@pytest.fixture(scope="module")
 def new_in_progress_conversation_data():
     return {
         "messages": [],
@@ -14,7 +16,7 @@ def new_in_progress_conversation_data():
         "data_source_id": seed_test_data.data_source_id,
         "customer_id": None,
         "recorded_at": "2025-10-03T10:00:00Z",
-        }
+    }
 
 
 def _ensure_active_agent(client):
@@ -33,19 +35,25 @@ def _ensure_active_agent(client):
 
 
 @pytest.mark.asyncio(loop_scope="function")
-async def test_create_in_progress_conversation(authorized_client, authorized_client_agent, new_in_progress_conversation_data):
+async def test_create_in_progress_conversation(
+    authorized_client, authorized_client_agent, new_in_progress_conversation_data
+):
     _ensure_active_agent(authorized_client)
 
-    response = authorized_client_agent.post("/api/conversations/in-progress/start", json=new_in_progress_conversation_data)
+    response = authorized_client_agent.post(
+        "/api/conversations/in-progress/start", json=new_in_progress_conversation_data
+    )
     assert response.status_code == 200
 
     logger.info("test_create_in_progress_conversation - response: %s", response.json())
 
-    new_in_progress_conversation_data['id'] = response.json()['conversation_id']
+    new_in_progress_conversation_data["id"] = response.json()["conversation_id"]
+
 
 @pytest.mark.asyncio(loop_scope="function")
-async def test_update_in_progress_conversation(authorized_client, authorized_client_agent,
-                                               new_in_progress_conversation_data):
+async def test_update_in_progress_conversation(
+    authorized_client, authorized_client_agent, new_in_progress_conversation_data
+):
     _ensure_active_agent(authorized_client)
     payload = {
         "messages": [
@@ -59,13 +67,12 @@ async def test_update_in_progress_conversation(authorized_client, authorized_cli
             },
         ],
         "metadata": {
-            "thread_id": new_in_progress_conversation_data['id'],
+            "thread_id": new_in_progress_conversation_data["id"],
         },
     }
 
     response = authorized_client_agent.patch(
-        f"/api/conversations/in-progress/update/{new_in_progress_conversation_data['id']}",
-        json=payload
+        f"/api/conversations/in-progress/update/{new_in_progress_conversation_data['id']}", json=payload
     )
 
     data = response.json()
@@ -75,8 +82,7 @@ async def test_update_in_progress_conversation(authorized_client, authorized_cli
     if response.status_code == 400 and isinstance(data, dict) and data.get("error_key") == "AGENT_INACTIVE":
         _ensure_active_agent(authorized_client)
         response = authorized_client_agent.patch(
-            f"/api/conversations/in-progress/update/{new_in_progress_conversation_data['id']}",
-            json=payload
+            f"/api/conversations/in-progress/update/{new_in_progress_conversation_data['id']}", json=payload
         )
         data = response.json()
         logger.info("test_update_in_progress_conversation - retried response: %s", response.json())
@@ -84,7 +90,8 @@ async def test_update_in_progress_conversation(authorized_client, authorized_cli
     assert response.status_code == 200
 
     assert "id" in data
-    assert data["id"] == new_in_progress_conversation_data['id']
+    assert data["id"] == new_in_progress_conversation_data["id"]
+
 
 @pytest.mark.asyncio(loop_scope="function")
 @pytest.mark.parametrize("token", ["supervisor"], indirect=True)
@@ -98,16 +105,13 @@ async def test_supervisor_takeover_conversation(authorized_client, new_in_progre
     assert data["status"] == "takeover"
     logger.info("test_supervisor_takeover_conversation - response: %s", response.json())
 
+
 @pytest.mark.asyncio(loop_scope="function")
 async def test_finalize_in_progress_conversation(authorized_client, new_in_progress_conversation_data):
-    payload = {
-        "llm_analyst_id": seed_test_data.llm_analyst_kpi_analyzer_id,
-        "type": "finalize"
-    }
+    payload = {"llm_analyst_id": seed_test_data.llm_analyst_kpi_analyzer_id, "type": "finalize"}
 
     response = authorized_client.patch(
-        f"/api/conversations/in-progress/finalize/{new_in_progress_conversation_data['id']}",
-        json=payload
+        f"/api/conversations/in-progress/finalize/{new_in_progress_conversation_data['id']}", json=payload
     )
     assert response.status_code == 200
     data = response.json()
@@ -120,8 +124,7 @@ async def test_update_after_finalize(authorized_client, new_in_progress_conversa
     # Finalize first
     payload = {"llm_analyst_id": seed_test_data.llm_analyst_speaker_separator_id}
     finalize_resp = authorized_client.patch(
-        f"/api/conversations/in-progress/finalize/{new_in_progress_conversation_data['id']}",
-        json=payload
+        f"/api/conversations/in-progress/finalize/{new_in_progress_conversation_data['id']}", json=payload
     )
     assert finalize_resp.status_code == 400
     logger.info("test_update_after_finalize try finalize again - response: %s", finalize_resp.json())
@@ -129,25 +132,20 @@ async def test_update_after_finalize(authorized_client, new_in_progress_conversa
     # Try updating again
     update_payload = {
         "messages": [
-            {
-                "start_time": 5.0,
-                "end_time": 7.0,
-                "speaker": "customer",
-                "text": "More details after closing the case."
-            }
+            {"start_time": 5.0, "end_time": 7.0, "speaker": "customer", "text": "More details after closing the case."}
         ],
         "type": "message",
         "metadata": {
-            "thread_id": new_in_progress_conversation_data['id'],
-        }
+            "thread_id": new_in_progress_conversation_data["id"],
+        },
     }
 
     response = authorized_client.patch(
-        f"/api/conversations/in-progress/update/{new_in_progress_conversation_data['id']}",
-        json=update_payload
+        f"/api/conversations/in-progress/update/{new_in_progress_conversation_data['id']}", json=update_payload
     )
     assert response.status_code == 400
     logger.info("test_update_after_finalize - response: %s", response.json())
+
 
 @pytest.mark.asyncio(loop_scope="function")
 async def test_filter_conversations_count(authorized_client):

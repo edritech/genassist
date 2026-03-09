@@ -1,17 +1,13 @@
-import { BackendTranscript } from "@/interfaces/transcript.interface";
-import { FetchTranscriptsResult } from "@/services/transcripts";
+import { BackendTranscript } from '@/interfaces/transcript.interface';
+import { FetchTranscriptsResult } from '@/services/transcripts';
 
 export function getPageList(currentPage: number, totalPages: number): number[] {
   return Array.from({ length: totalPages }, (_, i) => i + 1);
 }
 
-export type PageItem = number | "ellipsis";
+export type PageItem = number | 'ellipsis';
 
-export function getPageItems(
-  currentPage: number,
-  totalPages: number,
-  siblingCount = 1
-): PageItem[] {
+export function getPageItems(currentPage: number, totalPages: number, siblingCount = 1): PageItem[] {
   const safeTotal = Math.max(1, totalPages);
   const safeCurrent = Math.min(Math.max(1, currentPage || 1), safeTotal);
 
@@ -30,7 +26,7 @@ export function getPageItems(
   const items: PageItem[] = [1];
 
   if (showLeftEllipsis) {
-    items.push("ellipsis");
+    items.push('ellipsis');
   } else {
     for (let page = 2; page < leftSibling; page++) {
       items.push(page);
@@ -44,7 +40,7 @@ export function getPageItems(
   }
 
   if (showRightEllipsis) {
-    items.push("ellipsis");
+    items.push('ellipsis');
   } else {
     for (let page = rightSibling + 1; page < safeTotal; page++) {
       items.push(page);
@@ -68,26 +64,15 @@ export type PaginationMeta = {
   endIndex: number;
 };
 
-export function getPaginationMeta(
-  total: number,
-  pageSize: number,
-  currentPage: number
-): PaginationMeta {
+export function getPaginationMeta(total: number, pageSize: number, currentPage: number): PaginationMeta {
   const normalizedTotal = Math.max(0, total);
   const normalizedPageSize = Math.max(1, pageSize);
-  const totalPages = Math.max(
-    1,
-    Math.ceil(normalizedTotal / normalizedPageSize)
-  );
+  const totalPages = Math.max(1, Math.ceil(normalizedTotal / normalizedPageSize));
   const safeCurrentPage = Math.max(1, currentPage || 1);
   const safePage = Math.min(safeCurrentPage, totalPages);
 
-  const startIndex =
-    normalizedTotal === 0 ? 0 : (safePage - 1) * normalizedPageSize;
-  const endIndex =
-    normalizedTotal === 0
-      ? 0
-      : Math.min(startIndex + normalizedPageSize, normalizedTotal);
+  const startIndex = normalizedTotal === 0 ? 0 : (safePage - 1) * normalizedPageSize;
+  const endIndex = normalizedTotal === 0 ? 0 : Math.min(startIndex + normalizedPageSize, normalizedTotal);
 
   return {
     total: normalizedTotal,
@@ -108,14 +93,9 @@ export const normalizeTranscriptList = (payload: unknown): FetchTranscriptsResul
     return { items, total: items.length };
   }
 
-  if (typeof payload === "object") {
+  if (typeof payload === 'object') {
     const obj = payload as Record<string, unknown>;
-    const candidates = [
-      obj.items,
-      obj.data,
-      obj.recordings,
-      (obj as { conversations?: unknown[] }).conversations,
-    ];
+    const candidates = [obj.items, obj.data, obj.recordings, (obj as { conversations?: unknown[] }).conversations];
     const items = candidates.find(Array.isArray) as BackendTranscript[] | undefined;
 
     const rawTotal = [
@@ -124,14 +104,12 @@ export const normalizeTranscriptList = (payload: unknown): FetchTranscriptsResul
       (obj as { total_items?: unknown }).total_items,
       (obj as { total_records?: unknown }).total_records,
       (obj as { totalCount?: unknown }).totalCount,
-    ].find((v) => typeof v === "number") as number | undefined;
+    ].find((v) => typeof v === 'number') as number | undefined;
 
     const normalizedItems = items ?? [payload as BackendTranscript];
     return {
       items: normalizedItems,
-      total: typeof rawTotal === "number" && Number.isFinite(rawTotal)
-        ? rawTotal
-        : normalizedItems.length,
+      total: typeof rawTotal === 'number' && Number.isFinite(rawTotal) ? rawTotal : normalizedItems.length,
     };
   }
 

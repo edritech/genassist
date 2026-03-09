@@ -1,11 +1,11 @@
 # File Manager Module
 
 from .config import (
+    AzureStorageConfig,
     FileManagerConfig,
+    GoogleCloudStorageConfig,
     LocalStorageConfig,
     S3StorageConfig,
-    AzureStorageConfig,
-    GoogleCloudStorageConfig,
     SharePointStorageConfig,
 )
 from .providers.base import BaseStorageProvider

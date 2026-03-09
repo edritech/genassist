@@ -1,48 +1,30 @@
-import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { Textarea } from "@/components/textarea";
-import { Switch } from "@/components/switch";
-import { Separator } from "@/components/separator";
-import { Button } from "@/components/button";
-import { toast } from "react-hot-toast";
-import { Copy } from "lucide-react";
-import {
-  Webhook,
-  WebhookCreatePayload,
-  WebhookUpdatePayload,
-  WebhookType,
-} from "@/interfaces/webhook.interface";
-import { createWebhook, updateWebhook } from "@/services/webhook";
-import { getAllAgentConfigs, AgentConfig } from "@/services/api";
-import { getAllAppSettings } from "@/services/appSettings";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { getApiUrl } from "@/config/api";
-import { AgentFormDialog } from "@/views/AIAgents/components/AgentForm";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
-import { AppSettingDialog } from "@/views/AppSettings/components/AppSettingDialog";
+import { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Textarea } from '@/components/textarea';
+import { Switch } from '@/components/switch';
+import { Separator } from '@/components/separator';
+import { Button } from '@/components/button';
+import { toast } from 'react-hot-toast';
+import { Copy } from 'lucide-react';
+import { Webhook, WebhookCreatePayload, WebhookUpdatePayload, WebhookType } from '@/interfaces/webhook.interface';
+import { createWebhook, updateWebhook } from '@/services/webhook';
+import { getAllAgentConfigs, AgentConfig } from '@/services/api';
+import { getAllAppSettings } from '@/services/appSettings';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { getApiUrl } from '@/config/api';
+import { AgentFormDialog } from '@/views/AIAgents/components/AgentForm';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
+import { AppSettingDialog } from '@/views/AppSettings/components/AppSettingDialog';
 
 interface Props {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onWebhookSaved?: () => void;
   onWebhookUpdated?: (webhook: Webhook) => void;
-  mode?: "create" | "edit";
+  mode?: 'create' | 'edit';
   webhookToEdit?: Webhook | null;
 }
 
@@ -51,27 +33,27 @@ export function WebhookDialog({
   onOpenChange,
   onWebhookSaved,
   onWebhookUpdated,
-  mode = "create",
+  mode = 'create',
   webhookToEdit,
 }: Props) {
-  const [name, setName] = useState("");
-  const [url, setUrl] = useState("");
-  const [method, setMethod] = useState<"GET" | "POST">("POST");
-  const [description, setDescription] = useState("");
-  const [secret, setSecret] = useState("");
+  const [name, setName] = useState('');
+  const [url, setUrl] = useState('');
+  const [method, setMethod] = useState<'GET' | 'POST'>('POST');
+  const [description, setDescription] = useState('');
+  const [secret, setSecret] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [headers, setHeaders] = useState<Record<string, string>>({});
-  const [headerKey, setHeaderKey] = useState("");
-  const [headerValue, setHeaderValue] = useState("");
+  const [headerKey, setHeaderKey] = useState('');
+  const [headerValue, setHeaderValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [webhookType, setWebhookType] = useState<WebhookType>("generic");
+  const [webhookType, setWebhookType] = useState<WebhookType>('generic');
   const [isLoadingData, setIsLoadingData] = useState(false);
 
-  const [agentId, setAgentId] = useState<string>("");
+  const [agentId, setAgentId] = useState<string>('');
   const [agents, setAgents] = useState<AgentConfig[]>([]);
   const [isCreateAgentOpen, setIsCreateAgentOpen] = useState(false);
 
-  const [appSettingsId, setAppSettingsId] = useState<string>("");
+  const [appSettingsId, setAppSettingsId] = useState<string>('');
   const [appSettings, setAppSettings] = useState<AppSetting[]>([]);
   const [isCreateSettingOpen, setIsCreateSettingOpen] = useState(false);
 
@@ -80,7 +62,7 @@ export function WebhookDialog({
       const agentsData = await getAllAgentConfigs();
       setAgents(agentsData);
     } catch (error) {
-      toast.error("Failed to refresh agents");
+      toast.error('Failed to refresh agents');
     }
   };
 
@@ -89,14 +71,11 @@ export function WebhookDialog({
       const fetchData = async () => {
         setIsLoadingData(true);
         try {
-          const [agentsData, appSettingsData] = await Promise.all([
-            getAllAgentConfigs(),
-            getAllAppSettings(),
-          ]);
+          const [agentsData, appSettingsData] = await Promise.all([getAllAgentConfigs(), getAllAppSettings()]);
           setAgents(agentsData);
           setAppSettings(appSettingsData);
         } catch (error) {
-          toast.error("Failed to load agents or app settings");
+          toast.error('Failed to load agents or app settings');
         } finally {
           setIsLoadingData(false);
         }
@@ -104,44 +83,43 @@ export function WebhookDialog({
 
       fetchData();
 
-      if (mode === "edit" && webhookToEdit) {
+      if (mode === 'edit' && webhookToEdit) {
         setName(webhookToEdit.name);
         setUrl(webhookToEdit.url);
         setMethod(webhookToEdit.method);
-        setDescription(webhookToEdit.description || "");
-        setSecret(webhookToEdit.secret || "");
+        setDescription(webhookToEdit.description || '');
+        setSecret(webhookToEdit.secret || '');
         setIsActive(webhookToEdit.is_active === 1);
         setHeaders(webhookToEdit.headers || {});
-        setWebhookType(webhookToEdit.webhook_type || "generic");
-        setAgentId(webhookToEdit.agent_id || "");
-        setAppSettingsId(webhookToEdit.app_settings_id || "");
+        setWebhookType(webhookToEdit.webhook_type || 'generic');
+        setAgentId(webhookToEdit.agent_id || '');
+        setAppSettingsId(webhookToEdit.app_settings_id || '');
       } else {
-        setName("");
-        setUrl("");
-        setMethod("POST");
-        setDescription("");
-        setSecret("");
+        setName('');
+        setUrl('');
+        setMethod('POST');
+        setDescription('');
+        setSecret('');
         setIsActive(true);
         setHeaders({});
-        setWebhookType("generic");
-        setAgentId("");
-        setAppSettingsId("");
+        setWebhookType('generic');
+        setAgentId('');
+        setAppSettingsId('');
       }
     }
   }, [isOpen, mode, webhookToEdit]);
 
   const handleSubmit = async () => {
     const missingFields: string[] = [];
-    if (!name.trim()) missingFields.push("Webhook Name");
-    if (!agentId.trim()) missingFields.push("Agent");
-    if (webhookType === "generic" && !secret.trim())
-      missingFields.push("Secret");
+    if (!name.trim()) missingFields.push('Webhook Name');
+    if (!agentId.trim()) missingFields.push('Agent');
+    if (webhookType === 'generic' && !secret.trim()) missingFields.push('Secret');
 
     if (missingFields.length > 0) {
       if (missingFields.length === 1) {
         toast.error(`${missingFields[0]} is required.`);
       } else {
-        toast.error(`Please provide: ${missingFields.join(", ")}.`);
+        toast.error(`Please provide: ${missingFields.join(', ')}.`);
       }
       return;
     }
@@ -152,26 +130,26 @@ export function WebhookDialog({
       // URL is read-only in edit mode, so we don't send it in updates either
       const payload: WebhookCreatePayload | WebhookUpdatePayload = {
         name,
-        method: webhookType === "generic" ? method : undefined,
-        description: mode === "edit" ? description : description || undefined,
+        method: webhookType === 'generic' ? method : undefined,
+        description: mode === 'edit' ? description : description || undefined,
         headers:
-          mode === "edit"
-            ? webhookType === "generic"
+          mode === 'edit'
+            ? webhookType === 'generic'
               ? headers
               : undefined
-            : webhookType === "generic" && Object.keys(headers).length > 0
+            : webhookType === 'generic' && Object.keys(headers).length > 0
               ? headers
               : undefined,
         is_active: isActive ? 1 : 0,
-        secret: webhookType === "generic" ? secret || undefined : undefined,
+        secret: webhookType === 'generic' ? secret || undefined : undefined,
         webhook_type: webhookType,
         agent_id: agentId,
         app_settings_id: appSettingsId || undefined,
       };
 
-      if (mode === "edit" && webhookToEdit) {
+      if (mode === 'edit' && webhookToEdit) {
         await updateWebhook(webhookToEdit.id, payload as WebhookUpdatePayload);
-        toast.success("Webhook updated successfully.");
+        toast.success('Webhook updated successfully.');
 
         if (onWebhookUpdated) {
           const updatedWebhook: Webhook = {
@@ -187,18 +165,14 @@ export function WebhookDialog({
         const body = payload as WebhookCreatePayload;
         body.base_url = baseURL;
         await createWebhook(body);
-        toast.success("Webhook created successfully.");
+        toast.success('Webhook created successfully.');
 
         onWebhookSaved?.();
         onOpenChange(false);
       }
     } catch (error) {
       toast.error(
-        `Failed to ${mode} webhook${
-          error.status === 400
-            ? ": A webhook with this name already exists"
-            : ""
-        }.`,
+        `Failed to ${mode} webhook${error.status === 400 ? ': A webhook with this name already exists' : ''}.`
       );
     } finally {
       setIsSubmitting(false);
@@ -208,8 +182,8 @@ export function WebhookDialog({
   const addHeader = () => {
     if (headerKey && headerValue) {
       setHeaders((prev) => ({ ...prev, [headerKey]: headerValue }));
-      setHeaderKey("");
-      setHeaderValue("");
+      setHeaderKey('');
+      setHeaderValue('');
     }
   };
 
@@ -224,9 +198,7 @@ export function WebhookDialog({
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden">
           <DialogHeader className="p-6 pb-4">
-            <DialogTitle>
-              {mode === "create" ? "Add New Webhook" : "Edit Webhook"}
-            </DialogTitle>
+            <DialogTitle>{mode === 'create' ? 'Add New Webhook' : 'Edit Webhook'}</DialogTitle>
           </DialogHeader>
 
           <div className="grid gap-4 px-6 pb-6 max-h-[90vh] overflow-y-auto overflow-x-hidden">
@@ -239,16 +211,11 @@ export function WebhookDialog({
                 placeholder="Enter name of webhook"
               />
             </div>
-            {mode === "edit" && webhookToEdit?.url && (
+            {mode === 'edit' && webhookToEdit?.url && (
               <div>
                 <Label htmlFor="url">Webhook URL</Label>
                 <div className="relative">
-                  <Input
-                    id="url"
-                    value={url}
-                    readOnly
-                    className="bg-gray-100 cursor-not-allowed pr-20"
-                  />
+                  <Input id="url" value={url} readOnly className="bg-gray-100 cursor-not-allowed pr-20" />
                   <div className="absolute top-1/2 right-2 -translate-y-1/2 flex items-center space-x-1 z-10">
                     <Button
                       type="button"
@@ -257,7 +224,7 @@ export function WebhookDialog({
                       className="h-7 w-7 pointer-events-auto"
                       onClick={() => {
                         navigator.clipboard.writeText(url);
-                        toast.success("Copied to clipboard.");
+                        toast.success('Copied to clipboard.');
                       }}
                       title="Copy to clipboard"
                       disabled={!url}
@@ -271,13 +238,13 @@ export function WebhookDialog({
             <div>
               <Label htmlFor="agent-id">Agent *</Label>
               <Select
-                value={agentId || ""}
+                value={agentId || ''}
                 onValueChange={(value) => {
-                  if (value === "__create__") {
+                  if (value === '__create__') {
                     setIsCreateAgentOpen(true);
                     return;
                   }
-                  setAgentId(value || "");
+                  setAgentId(value || '');
                 }}
                 disabled={isLoadingData}
               >
@@ -303,14 +270,14 @@ export function WebhookDialog({
                   const newType = value as WebhookType;
                   setWebhookType(newType);
                   // Reset app settings ID when type changes (agent stays)
-                  setAppSettingsId("");
+                  setAppSettingsId('');
                   // Clear secret, headers, and method when switching away from generic
-                  if (newType !== "generic") {
-                    setSecret("");
+                  if (newType !== 'generic') {
+                    setSecret('');
                     setHeaders({});
-                    setHeaderKey("");
-                    setHeaderValue("");
-                    setMethod("POST");
+                    setHeaderKey('');
+                    setHeaderValue('');
+                    setMethod('POST');
                   }
                 }}
               >
@@ -324,17 +291,17 @@ export function WebhookDialog({
                 </SelectContent>
               </Select>
             </div>
-            {(webhookType === "slack" || webhookType === "whatsapp") && (
+            {(webhookType === 'slack' || webhookType === 'whatsapp') && (
               <div>
                 <Label htmlFor="app-settings-id">Configuration Variable</Label>
                 <Select
-                  value={appSettingsId || ""}
+                  value={appSettingsId || ''}
                   onValueChange={(value) => {
-                    if (value === "__create__") {
+                    if (value === '__create__') {
                       setIsCreateSettingOpen(true);
                       return;
                     }
-                    setAppSettingsId(value || "");
+                    setAppSettingsId(value || '');
                   }}
                   disabled={isLoadingData}
                 >
@@ -348,10 +315,8 @@ export function WebhookDialog({
                         const webhookTypeLower = webhookType.toLowerCase();
                         // Map webhook types to app setting types
                         const typeMatch =
-                          (webhookTypeLower === "slack" &&
-                            settingTypeLower === "slack") ||
-                          (webhookTypeLower === "whatsapp" &&
-                            settingTypeLower === "whatsapp");
+                          (webhookTypeLower === 'slack' && settingTypeLower === 'slack') ||
+                          (webhookTypeLower === 'whatsapp' && settingTypeLower === 'whatsapp');
                         return typeMatch && setting.is_active === 1;
                       })
                       .map((setting) => (
@@ -364,16 +329,11 @@ export function WebhookDialog({
                 </Select>
               </div>
             )}
-            {webhookType === "generic" && (
+            {webhookType === 'generic' && (
               <>
                 <div>
                   <Label htmlFor="method">HTTP Method</Label>
-                  <Select
-                    value={method}
-                    onValueChange={(value) =>
-                      setMethod(value as "GET" | "POST")
-                    }
-                  >
+                  <Select value={method} onValueChange={(value) => setMethod(value as 'GET' | 'POST')}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select method" />
                     </SelectTrigger>
@@ -396,35 +356,19 @@ export function WebhookDialog({
                 <div>
                   <Label>Headers</Label>
                   <div className="flex gap-2 mb-2">
-                    <Input
-                      placeholder="Key"
-                      value={headerKey}
-                      onChange={(e) => setHeaderKey(e.target.value)}
-                    />
-                    <Input
-                      placeholder="Value"
-                      value={headerValue}
-                      onChange={(e) => setHeaderValue(e.target.value)}
-                    />
+                    <Input placeholder="Key" value={headerKey} onChange={(e) => setHeaderKey(e.target.value)} />
+                    <Input placeholder="Value" value={headerValue} onChange={(e) => setHeaderValue(e.target.value)} />
                     <Button type="button" onClick={addHeader}>
                       Add
                     </Button>
                   </div>
                   <ul className="space-y-1">
                     {Object.entries(headers).map(([key, value]) => (
-                      <li
-                        key={key}
-                        className="flex justify-between items-center text-sm border-b pb-1"
-                      >
+                      <li key={key} className="flex justify-between items-center text-sm border-b pb-1">
                         <span>
                           {key}: {value}
                         </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeHeader(key)}
-                        >
+                        <Button type="button" variant="ghost" size="sm" onClick={() => removeHeader(key)}>
                           Remove
                         </Button>
                       </li>
@@ -446,30 +390,18 @@ export function WebhookDialog({
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch
-                id="is-active"
-                checked={isActive}
-                onCheckedChange={setIsActive}
-              />
+              <Switch id="is-active" checked={isActive} onCheckedChange={setIsActive} />
               <Label htmlFor="is-active">Active</Label>
             </div>
           </div>
 
           <DialogFooter className="px-6 py-4 border-t">
             <div className="flex justify-end gap-3 w-full">
-              <Button
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
+              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button onClick={handleSubmit} disabled={isSubmitting}>
-                {isSubmitting
-                  ? "Saving..."
-                  : mode === "create"
-                    ? "Create Webhook"
-                    : "Update Webhook"}
+                {isSubmitting ? 'Saving...' : mode === 'create' ? 'Create Webhook' : 'Update Webhook'}
               </Button>
             </div>
           </DialogFooter>
@@ -497,7 +429,7 @@ export function WebhookDialog({
         isOpen={isCreateSettingOpen}
         onOpenChange={setIsCreateSettingOpen}
         mode="create"
-        initialType={webhookType === "slack" ? "Slack" : "WhatsApp"}
+        initialType={webhookType === 'slack' ? 'Slack' : 'WhatsApp'}
         disableTypeSelect
         onSettingSaved={async (created) => {
           try {

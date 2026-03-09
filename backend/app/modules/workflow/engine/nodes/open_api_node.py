@@ -2,17 +2,16 @@
 OpenAPI node implementation using the BaseNode class.
 """
 
-from typing import Dict, Any
 import logging
+from typing import Any, Dict
 
 from injector import inject
-from app.modules.workflow.engine.base_node import BaseNode
+
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
-from app.dependencies.injector import injector
-from app.modules.workflow.llm.provider import LLMProvider
 from app.modules.data.utils.file_extractor import FileTextExtractor
-
+from app.modules.workflow.engine.base_node import BaseNode
+from app.modules.workflow.llm.provider import LLMProvider
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class OpenAPINode(BaseNode):
             config.get("query"),
             config.get("serverFilePath"),
             config.get("originalFileName"),
-            config.get("serverFileUrl")
+            config.get("serverFileUrl"),
         )
 
         if not provider_id:
@@ -55,6 +54,7 @@ class OpenAPINode(BaseNode):
             if server_file_url:
                 from app.dependencies.injector import injector
                 from app.services.file_manager import FileManagerService
+
                 file_manager_service = injector.get(FileManagerService)
                 file_content = await file_manager_service.get_file_content_from_url(server_file_url)
 
@@ -67,16 +67,10 @@ class OpenAPINode(BaseNode):
 
             if not spec_content:
                 file_source = server_file_url or server_file_path
-                logger.error(
-                    "Failed to load OpenAPI specification from: %s",
-                    file_source
-                )
+                logger.error("Failed to load OpenAPI specification from: %s", file_source)
                 return {
                     "status": 500,
-                    "error": (
-                        f"Failed to load OpenAPI specification. "
-                        "Please check file path/URL and format."
-                    ),
+                    "error": ("Failed to load OpenAPI specification. Please check file path/URL and format."),
                 }
 
             # Get LLM provider
@@ -84,31 +78,15 @@ class OpenAPINode(BaseNode):
             llm_model = await llm_provider.get_model(provider_id)
 
             # Use LLM to answer the question about the spec
-            answer = await self._answer_query_about_spec(
-                llm_model,
-                query,
-                spec_content
-            )
+            answer = await self._answer_query_about_spec(llm_model, query, spec_content)
 
-            return {
-                "status": 200,
-                "answer": answer,
-                "query": query
-            }
+            return {"status": 200, "answer": answer, "query": query}
 
         except Exception as e:
             logger.error("OpenAPI node execution failed: %s", e, exc_info=True)
-            return {
-                "status": 500,
-                "error": f"OpenAPI node execution failed: {str(e)}"
-            }
+            return {"status": 500, "error": f"OpenAPI node execution failed: {str(e)}"}
 
-    async def _answer_query_about_spec(
-        self,
-        llm_model,
-        query: str,
-        spec_content: str
-    ) -> str:
+    async def _answer_query_about_spec(self, llm_model, query: str, spec_content: str) -> str:
         """
         Use LLM to answer a question about the OpenAPI specification.
 
@@ -137,14 +115,12 @@ Answer:"""
             response = await llm_model.ainvoke(prompt)
 
             # Extract answer from response
-            answer = response.content if hasattr(
-                response, 'content') else str(response)
+            answer = response.content if hasattr(response, "content") else str(response)
 
             logger.info(f"Generated answer for query: {query}")
 
             return answer.strip()
 
         except Exception as e:
-            logger.error(
-                f"Error answering query about spec: {str(e)}", exc_info=True)
+            logger.error(f"Error answering query about spec: {str(e)}", exc_info=True)
             return f"Error processing query: {str(e)}"

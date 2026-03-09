@@ -38,4 +38,3 @@ class AgentResponseLogService:
         Get the stored agent response log for a given transcript message id.
         """
         return await self.repo.get_by_transcript_message_id(transcript_message_id)
-

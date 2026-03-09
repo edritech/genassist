@@ -1,13 +1,7 @@
-import React, {
-  ReactNode,
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-} from "react";
-import { apiRequest } from "@/config/api";
-import { isServerDown } from "@/config/serverStatus";
-import { isAuthenticated } from "@/services/auth";
+import React, { ReactNode, createContext, useContext, useState, useEffect } from 'react';
+import { apiRequest } from '@/config/api';
+import { isServerDown } from '@/config/serverStatus';
+import { isAuthenticated } from '@/services/auth';
 
 interface PermissionContextType {
   permissions: string[];
@@ -19,13 +13,9 @@ interface PermissionProviderProps {
   children: ReactNode;
 }
 
-const PermissionContext = createContext<PermissionContextType | undefined>(
-  undefined
-);
+const PermissionContext = createContext<PermissionContextType | undefined>(undefined);
 
-export const PermissionProvider: React.FC<PermissionProviderProps> = ({
-  children,
-}) => {
+export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children }) => {
   const [permissions, setPermissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -43,9 +33,8 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({
 
     setIsLoading(true);
     try {
-      const response = await apiRequest("GET", "/auth/me");
-      const userPermissions: string[] =
-        (response as { permissions: string[] })?.permissions || [];
+      const response = await apiRequest('GET', '/auth/me');
+      const userPermissions: string[] = (response as { permissions: string[] })?.permissions || [];
       setPermissions(userPermissions);
     } catch (error) {
       // Quiet known down-state errors
@@ -76,7 +65,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({
 export const usePermissions = (): string[] => {
   const context = useContext(PermissionContext);
   if (!context) {
-    throw new Error("usePermissions must be used within a PermissionProvider");
+    throw new Error('usePermissions must be used within a PermissionProvider');
   }
   return context.permissions;
 };
@@ -84,9 +73,7 @@ export const usePermissions = (): string[] => {
 export const useIsLoadingPermissions = (): boolean => {
   const context = useContext(PermissionContext);
   if (!context) {
-    throw new Error(
-      "useIsLoadingPermissions must be used within a PermissionProvider"
-    );
+    throw new Error('useIsLoadingPermissions must be used within a PermissionProvider');
   }
   return context.isLoading;
 };
@@ -94,9 +81,7 @@ export const useIsLoadingPermissions = (): boolean => {
 export const useRefreshPermissions = (): (() => Promise<void>) => {
   const context = useContext(PermissionContext);
   if (!context) {
-    throw new Error(
-      "useRefreshPermissions must be used within a PermissionProvider"
-    );
+    throw new Error('useRefreshPermissions must be used within a PermissionProvider');
   }
   return context.refreshPermissions;
 };

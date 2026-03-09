@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { NodeData } from "../types/nodes";
-import { useReactFlow } from "reactflow";
-import { HandlersRenderer } from "../components/custom/HandleTooltip";
-import { GenericTestDialog } from "../components/GenericTestDialog";
-import NodeHeader from "./nodeHeader";
-import { NODE_WIDTH } from "./nodeConstants";
-import { useWorkflowExecution } from "../context/WorkflowExecutionContext";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import nodeRegistry from "../registry/nodeRegistry";
-import { useNodeValidation } from "../hooks/useNodeValidation";
-import { NodeContent, NodeContentRow } from "./nodeContent";
-import { NodeAlert } from "./nodeAlert";
+import { useState } from 'react';
+import { NodeData } from '../types/nodes';
+import { useReactFlow } from 'reactflow';
+import { HandlersRenderer } from '../components/custom/HandleTooltip';
+import { GenericTestDialog } from '../components/GenericTestDialog';
+import NodeHeader from './nodeHeader';
+import { NODE_WIDTH } from './nodeConstants';
+import { useWorkflowExecution } from '../context/WorkflowExecutionContext';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import nodeRegistry from '../registry/nodeRegistry';
+import { useNodeValidation } from '../hooks/useNodeValidation';
+import { NodeContent, NodeContentRow } from './nodeContent';
+import { NodeAlert } from './nodeAlert';
 
 interface BaseNodeContainerProps<T extends NodeData> {
   id: string;
@@ -46,10 +46,7 @@ const BaseNodeContainer = <T extends NodeData>({
   const [isDeleting, setIsDeleting] = useState(false);
   const { hasNodeBeenExecuted, updateNodeOutput } = useWorkflowExecution();
   const { deleteElements } = useReactFlow();
-  const { hasValidationError, missingFields } = useNodeValidation(
-    nodeType,
-    data
-  );
+  const { hasValidationError, missingFields } = useNodeValidation(nodeType, data);
 
   const handleTest = () => {
     setIsTestDialogOpen(true);
@@ -63,30 +60,25 @@ const BaseNodeContainer = <T extends NodeData>({
 
   // Determine border color based on execution status
   const getBorderColor = () => {
-    if (selected) return "border-blue-500";
-    return "border-transparent";
+    if (selected) return 'border-blue-500';
+    return 'border-transparent';
   };
 
-  const nodeName = data.name || nodeDefinition?.label || "node";
+  const nodeName = data.name || nodeDefinition?.label || 'node';
 
   const hasError = !hasNodeBeenExecuted(id) || hasValidationError;
-  const isSpecialNode =
-    nodeType === "chatInputNode" || nodeType === "chatOutputNode";
-  const isAgentNode = nodeType === "agentNode";
+  const isSpecialNode = nodeType === 'chatInputNode' || nodeType === 'chatOutputNode';
+  const isAgentNode = nodeType === 'agentNode';
 
-  const cardColor = hasError
-    ? "red-200"
-    : isSpecialNode
-    ? "brand-600"
-    : `${color.split("-")[0]}-50`;
-  const iconColor = hasError ? "red-600" : isSpecialNode ? "white" : color;
-  const icon = hasError ? "CircleAlert" : iconName;
+  const cardColor = hasError ? 'red-200' : isSpecialNode ? 'brand-600' : `${color.split('-')[0]}-50`;
+  const iconColor = hasError ? 'red-600' : isSpecialNode ? 'white' : color;
+  const icon = hasError ? 'CircleAlert' : iconName;
 
   const card = (
     <div
-      className={`rounded-[6px] bg-${cardColor} ${NODE_WIDTH} self-stretch ${isAgentNode ? "" : `border-2 ${getBorderColor()}`}`}
+      className={`rounded-[6px] bg-${cardColor} ${NODE_WIDTH} self-stretch ${isAgentNode ? '' : `border-2 ${getBorderColor()}`}`}
       style={{
-        boxShadow: isAgentNode ? undefined : "0 0 10px rgba(0, 0, 0, 0.2)",
+        boxShadow: isAgentNode ? undefined : '0 0 10px rgba(0, 0, 0, 0.2)',
       }}
     >
       {/* Node header */}
@@ -109,13 +101,7 @@ const BaseNodeContainer = <T extends NodeData>({
       {/* Handlers */}
       <HandlersRenderer id={id} data={data} />
 
-      {hasError && (
-        <NodeAlert
-          missingFields={missingFields}
-          onFix={onSettings}
-          onTest={handleTest}
-        />
-      )}
+      {hasError && <NodeAlert missingFields={missingFields} onFix={onSettings} onTest={handleTest} />}
     </div>
   );
 
@@ -123,8 +109,8 @@ const BaseNodeContainer = <T extends NodeData>({
     <>
       {isAgentNode ? (
         <div
-          className={`agent-gradient-border${selected ? " ring-2 ring-blue-500 ring-offset-1" : ""}`}
-          style={{ boxShadow: "0 0 16px rgba(192, 132, 252, 0.4)" }}
+          className={`agent-gradient-border${selected ? ' ring-2 ring-blue-500 ring-offset-1' : ''}`}
+          style={{ boxShadow: '0 0 16px rgba(192, 132, 252, 0.4)' }}
         >
           {card}
         </div>

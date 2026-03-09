@@ -1,25 +1,26 @@
-from uuid import UUID
+import logging
 import os
-import uuid
 import tempfile
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Body, Request
-from fastapi_injector import Injected
+import uuid
 from typing import Optional
+from uuid import UUID
+
+from fastapi import APIRouter, Body, Depends, File, HTTPException, Request, UploadFile
+from fastapi_injector import Injected
 
 from app.auth.dependencies import auth, permissions
-from app.schemas.ml_model import MLModelRead, MLModelCreate, MLModelUpdate
-from app.schemas.file import FileBase, FileUploadResponse
-from app.services.ml_models import MLModelsService
-from app.services.ml_model_manager import get_ml_model_manager
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
+from app.core.permissions.constants import Permissions as P
 from app.core.project_path import DATA_VOLUME
 from app.modules.workflow.engine.nodes.ml import ml_utils
-from app.core.permissions.constants import Permissions as P
-from app.services.file_manager import FileManagerService
+from app.schemas.file import FileBase, FileUploadResponse
+from app.schemas.ml_model import MLModelCreate, MLModelRead, MLModelUpdate
 from app.services.app_settings import AppSettingsService
+from app.services.file_manager import FileManagerService
+from app.services.ml_model_manager import get_ml_model_manager
+from app.services.ml_models import MLModelsService
 
-import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -32,10 +33,7 @@ os.makedirs(ML_MODELS_UPLOAD_DIR, exist_ok=True)
 MAX_PKL_FILE_SIZE = 500 * 1024 * 1024
 
 
-@router.post("", response_model=MLModelRead, dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.CREATE))
-])
+@router.post("", response_model=MLModelRead, dependencies=[Depends(auth), Depends(permissions(P.MlModel.CREATE))])
 async def create_ml_model(
     ml_model: MLModelCreate,
     service: MLModelsService = Injected(MLModelsService),
@@ -44,50 +42,32 @@ async def create_ml_model(
     return await service.create(ml_model)
 
 
-@router.get("/{ml_model_id}", response_model=MLModelRead, dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.READ))
-])
-async def get_ml_model(
-    ml_model_id: UUID,
-    service: MLModelsService = Injected(MLModelsService)
-):
+@router.get(
+    "/{ml_model_id}", response_model=MLModelRead, dependencies=[Depends(auth), Depends(permissions(P.MlModel.READ))]
+)
+async def get_ml_model(ml_model_id: UUID, service: MLModelsService = Injected(MLModelsService)):
     """Get a single ML model by ID."""
     return await service.get_by_id(ml_model_id)
 
 
-@router.get("", response_model=list[MLModelRead], dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.READ))
-])
-async def get_all_ml_models(
-    service: MLModelsService = Injected(MLModelsService)
-):
+@router.get("", response_model=list[MLModelRead], dependencies=[Depends(auth), Depends(permissions(P.MlModel.READ))])
+async def get_all_ml_models(service: MLModelsService = Injected(MLModelsService)):
     """Get all ML models."""
     return await service.get_all()
 
 
-@router.put("/{ml_model_id}", response_model=MLModelRead, dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.UPDATE))
-])
+@router.put(
+    "/{ml_model_id}", response_model=MLModelRead, dependencies=[Depends(auth), Depends(permissions(P.MlModel.UPDATE))]
+)
 async def update_ml_model(
-    ml_model_id: UUID,
-    ml_model_update: MLModelUpdate,
-    service: MLModelsService = Injected(MLModelsService)
+    ml_model_id: UUID, ml_model_update: MLModelUpdate, service: MLModelsService = Injected(MLModelsService)
 ):
     """Update an existing ML model."""
     return await service.update(ml_model_id, ml_model_update)
 
 
-@router.delete("/{ml_model_id}", status_code=204, dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.DELETE))
-])
-async def delete_ml_model(
-    ml_model_id: UUID,
-    service: MLModelsService = Injected(MLModelsService)
-):
+@router.delete("/{ml_model_id}", status_code=204, dependencies=[Depends(auth), Depends(permissions(P.MlModel.DELETE))])
+async def delete_ml_model(ml_model_id: UUID, service: MLModelsService = Injected(MLModelsService)):
     """Delete an ML model and its associated .pkl file."""
     await service.delete(ml_model_id)
 
@@ -98,10 +78,9 @@ async def delete_ml_model(
     return None
 
 
-@router.post("/upload", response_model=FileUploadResponse, dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.CREATE))
-])
+@router.post(
+    "/upload", response_model=FileUploadResponse, dependencies=[Depends(auth), Depends(permissions(P.MlModel.CREATE))]
+)
 async def upload_pkl_file(
     request: Request,
     file: UploadFile = File(...),
@@ -126,11 +105,15 @@ async def upload_pkl_file(
         unique_filename = f"{uuid.uuid4()}.{file_extension}"
 
         # subdir
-        sub_folder = f"ml_models"
+        sub_folder = "ml_models"
 
         # initialize the file manager service
-        app_settings_config = await app_settings_svc.get_by_type_and_name("FileManagerSettings", "File Manager Settings")
-        storage_provider = await file_manager_service.initialize(base_url=str(request.base_url).rstrip('/'), base_path=str(DATA_VOLUME), app_settings = app_settings_config)
+        app_settings_config = await app_settings_svc.get_by_type_and_name(
+            "FileManagerSettings", "File Manager Settings"
+        )
+        storage_provider = await file_manager_service.initialize(
+            base_url=str(request.base_url).rstrip("/"), base_path=str(DATA_VOLUME), app_settings=app_settings_config
+        )
 
         # create file base
         file_base = FileBase(
@@ -139,11 +122,13 @@ async def upload_pkl_file(
             path=sub_folder,
             storage_provider=storage_provider.name,
             storage_path=storage_provider.get_base_path(),
-            file_extension=file_extension
+            file_extension=file_extension,
         )
 
         # create file in file manager service
-        created_file = await file_manager_service.create_file(file, file_base=file_base, allowed_extensions=["pkl"], max_file_size=MAX_PKL_FILE_SIZE)
+        created_file = await file_manager_service.create_file(
+            file, file_base=file_base, allowed_extensions=["pkl"], max_file_size=MAX_PKL_FILE_SIZE
+        )
 
         # get file info
         file_url = await file_manager_service.get_file_source_url(created_file.id)
@@ -168,26 +153,17 @@ async def upload_pkl_file(
         raise
     except Exception as e:
         logger.error(f"Error uploading file: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error uploading file: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}") from e
 
 
-@router.get("/cache/stats", dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.READ))
-])
+@router.get("/cache/stats", dependencies=[Depends(auth), Depends(permissions(P.MlModel.READ))])
 async def get_cache_stats():
     """Get ML model cache statistics."""
     model_manager = get_ml_model_manager()
     return model_manager.get_cache_stats()
 
 
-@router.post("/cache/clear", dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.UPDATE))
-])
+@router.post("/cache/clear", dependencies=[Depends(auth), Depends(permissions(P.MlModel.UPDATE))])
 async def clear_model_cache():
     """Clear all cached ML models."""
     model_manager = get_ml_model_manager()
@@ -195,10 +171,7 @@ async def clear_model_cache():
     return {"message": "Model cache cleared successfully"}
 
 
-@router.post("/cache/invalidate/{ml_model_id}", dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.UPDATE))
-])
+@router.post("/cache/invalidate/{ml_model_id}", dependencies=[Depends(auth), Depends(permissions(P.MlModel.UPDATE))])
 async def invalidate_model_cache(ml_model_id: UUID):
     """Invalidate a specific ML model from cache."""
     model_manager = get_ml_model_manager()
@@ -206,41 +179,36 @@ async def invalidate_model_cache(ml_model_id: UUID):
     return {"message": f"Model {ml_model_id} invalidated from cache"}
 
 
-@router.post("/validate/{ml_model_id}", dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.READ)),
-])
-async def validate_model_file(
-    ml_model_id: UUID,
-    service: MLModelsService = Injected(MLModelsService)
-):
+@router.post(
+    "/validate/{ml_model_id}",
+    dependencies=[
+        Depends(auth),
+        Depends(permissions(P.MlModel.READ)),
+    ],
+)
+async def validate_model_file(ml_model_id: UUID, service: MLModelsService = Injected(MLModelsService)):
     """
     Validate a model's PKL file to check if it can be loaded safely.
     This runs validation in a subprocess to prevent segfaults from crashing the API.
     """
-    from app.core.utils.model_validator import validate_pickle_file_safe, get_model_info
+    from app.core.utils.model_validator import get_model_info
 
     # Get model from database
     ml_model = await service.get_by_id(ml_model_id)
 
     if not ml_model.pkl_file or not ml_model.pkl_file_id:
-        raise HTTPException(
-            status_code=400,
-            detail="Model has no PKL file configured"
-        )
+        raise HTTPException(status_code=400, detail="Model has no PKL file configured")
 
     # if ml_model.pkl_file is none and we have a pkl_file_id, get the file from the file manager service
     if not ml_model.pkl_file and ml_model.pkl_file_id:
         # get the file from the file manager service
         from app.dependencies.injector import injector
         from app.services.file_manager import FileManagerService
+
         file_manager_service = injector.get(FileManagerService)
         file = await file_manager_service.get_file_by_id(ml_model.pkl_file_id)
         if not file:
-            raise HTTPException(
-                status_code=404,
-                detail="PKL file not found"
-            )
+            raise HTTPException(status_code=404, detail="PKL file not found")
 
     # Get model info
     info = get_model_info(ml_model.pkl_file)
@@ -253,22 +221,23 @@ async def validate_model_file(
             "error": info["error"],
             "file_path": info["file_path"],
             "file_size_bytes": info["file_size"],
-            "file_size_mb": round(info["file_size"] / 1024 / 1024, 2)
+            "file_size_mb": round(info["file_size"] / 1024 / 1024, 2),
         },
         "recommendation": (
-            "Model is safe to use" if info["is_valid"]
+            "Model is safe to use"
+            if info["is_valid"]
             else "Model validation failed. Please re-save the model with the current library versions."
-        )
+        ),
     }
 
-@router.post("/analyze-csv", dependencies=[
-    Depends(auth),
-    Depends(permissions(P.MlModel.READ))
-])
+
+@router.post("/analyze-csv", dependencies=[Depends(auth), Depends(permissions(P.MlModel.READ))])
 async def analyze_csv(
     file_url: str = Body(..., embed=True, description="Path or URL to CSV file"),
-    python_code: Optional[str] = Body(None, embed=True, description="Optional Python code to preprocess data before analysis"),
-    file_manager_service: FileManagerService = Injected(FileManagerService)
+    python_code: Optional[str] = Body(
+        None, embed=True, description="Optional Python code to preprocess data before analysis"
+    ),
+    file_manager_service: FileManagerService = Injected(FileManagerService),
 ):
     """
     Analyze a CSV file and return a comprehensive report.
@@ -309,15 +278,9 @@ async def analyze_csv(
         except AppException as e:
             # Convert AppException to HTTPException for API endpoint
             if e.error_key == ErrorKey.FILE_NOT_FOUND:
-                raise HTTPException(
-                    status_code=404,
-                    detail=e.error_detail
-                )
+                raise HTTPException(status_code=404, detail=e.error_detail)
             else:
-                raise HTTPException(
-                    status_code=400,
-                    detail=e.error_detail
-                )
+                raise HTTPException(status_code=400, detail=e.error_detail)
 
         logger.info(f"Analyzing CSV file: {file_path}")
 
@@ -336,8 +299,8 @@ async def analyze_csv(
                 )
 
                 # Save processed data to a temporary CSV file
-                with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False, encoding='utf-8') as tmp_file:
-                    processed_df.to_csv(tmp_file.name, index=False, encoding='utf-8')
+                with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False, encoding="utf-8") as tmp_file:
+                    processed_df.to_csv(tmp_file.name, index=False, encoding="utf-8")
                     temp_file_path = tmp_file.name
 
                 try:
@@ -353,16 +316,10 @@ async def analyze_csv(
 
             except AppException as e:
                 # Convert AppException to HTTPException for API endpoint
-                raise HTTPException(
-                    status_code=400,
-                    detail=e.error_detail
-                )
+                raise HTTPException(status_code=400, detail=e.error_detail)
             except Exception as e:
                 logger.error(f"Error executing preprocessing code: {str(e)}", exc_info=True)
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Error executing preprocessing code: {str(e)}"
-                ) from e
+                raise HTTPException(status_code=500, detail=f"Error executing preprocessing code: {str(e)}") from e
 
         # If no python_code, analyze the original CSV file directly
         analysis = ml_utils.analyze_csv_data(str(file_path))
@@ -374,7 +331,4 @@ async def analyze_csv(
         raise
     except Exception as e:
         logger.error(f"Error analyzing CSV file: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error analyzing CSV file: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Error analyzing CSV file: {str(e)}") from e

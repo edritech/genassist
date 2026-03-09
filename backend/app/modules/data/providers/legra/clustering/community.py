@@ -6,8 +6,8 @@ import leidenalg as la
 from .base import Clusterer
 
 __all__ = [
-    'LeidenClusterer',
-    'LouvainClusterer',
+    "LeidenClusterer",
+    "LouvainClusterer",
 ]
 
 

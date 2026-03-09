@@ -1,7 +1,9 @@
 from typing import Any
-from sqlalchemy import String, Integer, CheckConstraint
+
+from sqlalchemy import CheckConstraint, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.db.base import Base
 
 
@@ -17,6 +19,6 @@ class AppSettingsModel(Base):
     __table_args__ = (
         CheckConstraint(
             "type IN ('Zendesk', 'WhatsApp', 'Gmail', 'Microsoft', 'Slack', 'Jira', 'FileManagerSettings', 'Other')",
-            name='app_settings_type_check'
+            name="app_settings_type_check",
         ),
     )

@@ -1,7 +1,8 @@
 import logging
-import pytest
 import os
 import tempfile
+
+import pytest
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +14,7 @@ def new_knowledge_item_data():
         "description": "A test knowledge base item",
         "type": "text",
         "content": "This is a test knowledge base content",
-        "rag_config": {
-            "vector_db": {"enabled": True},
-            "light_rag": {"enabled": False},
-            "legra": {"enabled": True}
-        }
+        "rag_config": {"vector_db": {"enabled": True}, "light_rag": {"enabled": False}, "legra": {"enabled": True}},
     }
 
 
@@ -29,7 +26,7 @@ def test_file_content():
 @pytest.fixture(scope="module")
 def test_file(test_file_content):
     # Create a temporary file
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as f:
         f.write(test_file_content)
         f.flush()
         yield f.name
@@ -39,8 +36,7 @@ def test_file(test_file_content):
 
 @pytest.mark.asyncio
 async def test_create_knowledge_item(authorized_client, new_knowledge_item_data):
-    response = authorized_client.post(
-        "/api/genagent/knowledge/items", json=new_knowledge_item_data)
+    response = authorized_client.post("/api/genagent/knowledge/items", json=new_knowledge_item_data)
     assert response.status_code == 200
     data = response.json()
     assert "id" in data
@@ -61,8 +57,7 @@ async def test_get_all_knowledge_items(authorized_client):
 @pytest.mark.asyncio
 async def test_get_knowledge_item_by_id(authorized_client, new_knowledge_item_data):
     item_id = new_knowledge_item_data["id"]
-    response = authorized_client.get(
-        f"/api/genagent/knowledge/items/{item_id}")
+    response = authorized_client.get(f"/api/genagent/knowledge/items/{item_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == item_id
@@ -76,8 +71,7 @@ async def test_update_knowledge_item(authorized_client, new_knowledge_item_data)
     updated_data["name"] = "Updated Test Knowledge Base"
     updated_data["description"] = "Updated description"
 
-    response = authorized_client.put(
-        f"/api/genagent/knowledge/items/{item_id}", json=updated_data)
+    response = authorized_client.put(f"/api/genagent/knowledge/items/{item_id}", json=updated_data)
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == item_id
@@ -90,8 +84,7 @@ async def test_update_knowledge_item(authorized_client, new_knowledge_item_data)
 async def test_finalize_legra_knowledge_item(authorized_client, new_knowledge_item_data):
     kb_id = new_knowledge_item_data["id"]
 
-    response = authorized_client.post(
-        f"/api/genagent/knowledge/finalize/{kb_id}")
+    response = authorized_client.post(f"/api/genagent/knowledge/finalize/{kb_id}")
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "Successfully finalized legra knowledge base."
@@ -100,8 +93,7 @@ async def test_finalize_legra_knowledge_item(authorized_client, new_knowledge_it
 @pytest.mark.asyncio
 async def test_delete_knowledge_item(authorized_client, new_knowledge_item_data):
     item_id = new_knowledge_item_data["id"]
-    response = authorized_client.delete(
-        f"/api/genagent/knowledge/items/{item_id}")
+    response = authorized_client.delete(f"/api/genagent/knowledge/items/{item_id}")
     data = response.json()
     logger.info(f"Delete response: {data}")
     assert response.status_code == 200
@@ -111,10 +103,9 @@ async def test_delete_knowledge_item(authorized_client, new_knowledge_item_data)
 
 @pytest.mark.asyncio
 async def test_upload_file(authorized_client, test_file):
-    with open(test_file, 'rb') as f:
+    with open(test_file, "rb") as f:
         response = authorized_client.post(
-            "/api/genagent/knowledge/upload",
-            files=[("files", ("test.txt", f, "text/plain"))]
+            "/api/genagent/knowledge/upload", files=[("files", ("test.txt", f, "text/plain"))]
         )
     assert response.status_code == 200
     data = response.json()
@@ -128,23 +119,20 @@ async def test_upload_file(authorized_client, test_file):
 @pytest.mark.asyncio
 async def test_get_nonexistent_knowledge_item(authorized_client):
     nonexistent_id = "00000000-0000-0000-0000-000000000000"
-    response = authorized_client.get(
-        f"/api/genagent/knowledge/items/{nonexistent_id}")
+    response = authorized_client.get(f"/api/genagent/knowledge/items/{nonexistent_id}")
     assert response.status_code == 404
 
 
 @pytest.mark.asyncio
 async def test_update_nonexistent_knowledge_item(authorized_client, new_knowledge_item_data):
     nonexistent_id = "00000000-0000-0000-0000-000000000000"
-    response = authorized_client.put(
-        f"/api/genagent/knowledge/items/{nonexistent_id}", json=new_knowledge_item_data)
+    response = authorized_client.put(f"/api/genagent/knowledge/items/{nonexistent_id}", json=new_knowledge_item_data)
     assert response.status_code == 404
 
 
 @pytest.mark.asyncio
 async def test_delete_nonexistent_knowledge_item(authorized_client):
     nonexistent_id = "00000000-0000-0000-0000-000000000000"
-    response = authorized_client.delete(
-        f"/api/genagent/knowledge/items/{nonexistent_id}")
+    response = authorized_client.delete(f"/api/genagent/knowledge/items/{nonexistent_id}")
     logger.info(f"Delete nonexistent response: {response.json()}")
     assert response.status_code == 404

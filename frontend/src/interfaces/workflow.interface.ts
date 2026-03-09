@@ -1,5 +1,5 @@
-import { Node, Edge } from "reactflow";
-import { WorkflowExecutionState } from "@/views/AIAgents/Workflows/context/WorkflowExecutionContext";
+import { Node, Edge } from 'reactflow';
+import { WorkflowExecutionState } from '@/views/AIAgents/Workflows/context/WorkflowExecutionContext';
 
 // Workflow interface representing a saved workflow configuration
 export interface Workflow {
@@ -34,7 +34,7 @@ export interface WorkflowUpdatePayload {
   name?: string;
   description?: string;
   nodes?: Node[];
-  edges?: Edge[];  
+  edges?: Edge[];
   testInput?: Record<string, string>;
   version?: string;
   executionState?: WorkflowExecutionState;

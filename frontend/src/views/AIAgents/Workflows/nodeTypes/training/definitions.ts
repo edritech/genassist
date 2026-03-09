@@ -1,69 +1,67 @@
-import { NodeProps } from "reactflow";
+import { NodeProps } from 'reactflow';
 import {
   NodeData,
   NodeTypeDefinition,
   TrainDataSourceNodeData,
   PreprocessingNodeData,
   TrainModelNodeData,
-} from "../../types/nodes";
+} from '../../types/nodes';
 
-import TrainDataSourceNode from "./trainDataSourceNode";
-import PreprocessingNode from "./preprocessingNode";
-import TrainModelNode from "./trainModelNode";
+import TrainDataSourceNode from './trainDataSourceNode';
+import PreprocessingNode from './preprocessingNode';
+import TrainModelNode from './trainModelNode';
 
-export const TRAIN_DATA_SOURCE_NODE_DEFINITION: NodeTypeDefinition<TrainDataSourceNodeData> =
-  {
-    type: "trainDataSourceNode",
-    label: "Train Data Source",
-    description: "Fetch training data from datasources or upload CSV files",
-    category: "training",
-    icon: "Database",
-    defaultData: {
-      name: "Train Data Source",
-      sourceType: "datasource",
-      dataSourceId: "",
-      dataSourceType: "",
-      query: "",
-      csvFile: null,
-      csvFileName: "",
-      csvFilePath: "",
-      handlers: [
-        {
-          id: "input",
-          type: "target",
-          compatibility: "any",
-          position: "left",
-        },
-        {
-          id: "output",
-          type: "source",
-          compatibility: "any",
-          position: "right",
-        },
-      ],
-    } as TrainDataSourceNodeData,
-    component: TrainDataSourceNode as React.ComponentType<NodeProps<NodeData>>,
-    createNode: (id, position, data) => ({
-      id,
-      type: "trainDataSourceNode",
-      position,
-      data: {
-        ...data,
+export const TRAIN_DATA_SOURCE_NODE_DEFINITION: NodeTypeDefinition<TrainDataSourceNodeData> = {
+  type: 'trainDataSourceNode',
+  label: 'Train Data Source',
+  description: 'Fetch training data from datasources or upload CSV files',
+  category: 'training',
+  icon: 'Database',
+  defaultData: {
+    name: 'Train Data Source',
+    sourceType: 'datasource',
+    dataSourceId: '',
+    dataSourceType: '',
+    query: '',
+    csvFile: null,
+    csvFileName: '',
+    csvFilePath: '',
+    handlers: [
+      {
+        id: 'input',
+        type: 'target',
+        compatibility: 'any',
+        position: 'left',
       },
-    }),
-  };
+      {
+        id: 'output',
+        type: 'source',
+        compatibility: 'any',
+        position: 'right',
+      },
+    ],
+  } as TrainDataSourceNodeData,
+  component: TrainDataSourceNode as React.ComponentType<NodeProps<NodeData>>,
+  createNode: (id, position, data) => ({
+    id,
+    type: 'trainDataSourceNode',
+    position,
+    data: {
+      ...data,
+    },
+  }),
+};
 
-export const PREPROCESSING_NODE_DEFINITION: NodeTypeDefinition<PreprocessingNodeData> =
-  {
-    type: "preprocessingNode",
-    label: "Data Preprocessing",
-    description: "Transform and clean training data using Python",
-    category: "training",
-    icon: "Settings",
-    defaultData: {
-      name: "Data Preprocessing",
-      fileUrl: "{{source.data_path}}",
-      pythonCode: `# Generated Python function template
+export const PREPROCESSING_NODE_DEFINITION: NodeTypeDefinition<PreprocessingNodeData> = {
+  type: 'preprocessingNode',
+  label: 'Data Preprocessing',
+  description: 'Transform and clean training data using Python',
+  category: 'training',
+  icon: 'Settings',
+  defaultData: {
+    name: 'Data Preprocessing',
+    fileUrl: '{{source.data_path}}',
+    pythonCode: `# Generated Python function template
 from typing import Optional
 
 # Store your result in the 'result' variable
@@ -89,69 +87,68 @@ def executable_function(params):
     
     return df`,
 
-      handlers: [
-        {
-          id: "input",
-          type: "target",
-          compatibility: "any",
-          position: "left",
-        },
-        {
-          id: "output",
-          type: "source",
-          compatibility: "any",
-          position: "right",
-        },
-      ],
-    } as PreprocessingNodeData,
-    component: PreprocessingNode as React.ComponentType<NodeProps<NodeData>>,
-    createNode: (id, position, data) => ({
-      id,
-      type: "preprocessingNode",
-      position,
-      data: {
-        ...data,
+    handlers: [
+      {
+        id: 'input',
+        type: 'target',
+        compatibility: 'any',
+        position: 'left',
       },
-    }),
-  };
+      {
+        id: 'output',
+        type: 'source',
+        compatibility: 'any',
+        position: 'right',
+      },
+    ],
+  } as PreprocessingNodeData,
+  component: PreprocessingNode as React.ComponentType<NodeProps<NodeData>>,
+  createNode: (id, position, data) => ({
+    id,
+    type: 'preprocessingNode',
+    position,
+    data: {
+      ...data,
+    },
+  }),
+};
 
-export const TRAIN_MODEL_NODE_DEFINITION: NodeTypeDefinition<TrainModelNodeData> =
-  {
-    type: "trainModelNode",
-    label: "Train Model",
-    description: "Train machine learning models on preprocessed data",
-    category: "training",
-    icon: "Brain",
-    defaultData: {
-      name: "Train Model",
-      modelType: "xgboost",
-      fileUrl: "{{source.data_path}}",
-      targetColumn: "",
-      featureColumns: [],
-      modelParameters: {},
-      validationSplit: 0.2,
-      handlers: [
-        {
-          id: "input",
-          type: "target",
-          compatibility: "any",
-          position: "left",
-        },
-        {
-          id: "output",
-          type: "source",
-          compatibility: "any",
-          position: "right",
-        },
-      ],
-    } as TrainModelNodeData,
-    component: TrainModelNode as React.ComponentType<NodeProps<NodeData>>,
-    createNode: (id, position, data) => ({
-      id,
-      type: "trainModelNode",
-      position,
-      data: {
-        ...data,
+export const TRAIN_MODEL_NODE_DEFINITION: NodeTypeDefinition<TrainModelNodeData> = {
+  type: 'trainModelNode',
+  label: 'Train Model',
+  description: 'Train machine learning models on preprocessed data',
+  category: 'training',
+  icon: 'Brain',
+  defaultData: {
+    name: 'Train Model',
+    modelType: 'xgboost',
+    fileUrl: '{{source.data_path}}',
+    targetColumn: '',
+    featureColumns: [],
+    modelParameters: {},
+    validationSplit: 0.2,
+    handlers: [
+      {
+        id: 'input',
+        type: 'target',
+        compatibility: 'any',
+        position: 'left',
       },
-    }),
-  };
+      {
+        id: 'output',
+        type: 'source',
+        compatibility: 'any',
+        position: 'right',
+      },
+    ],
+  } as TrainModelNodeData,
+  component: TrainModelNode as React.ComponentType<NodeProps<NodeData>>,
+  createNode: (id, position, data) => ({
+    id,
+    type: 'trainModelNode',
+    position,
+    data: {
+      ...data,
+    },
+  }),
+};

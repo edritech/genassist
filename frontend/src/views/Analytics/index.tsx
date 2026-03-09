@@ -5,12 +5,6 @@ import { TopicsReport } from './components/TopicsReport';
 import { MetricsSection } from './components/MetricsSection';
 import { useAnalyticsData } from './hooks/useAnalyticsData';
 
-export {
-  KPISection,
-  PerformanceSection,
-  TopicsReport,
-  MetricsSection,
-  useAnalyticsData
-}
+export { KPISection, PerformanceSection, TopicsReport, MetricsSection, useAnalyticsData };
 
-export default Analytics; 
+export default Analytics;

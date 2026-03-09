@@ -1,14 +1,15 @@
 import logging
+import mimetypes
+from pathlib import Path
+from typing import Any, Dict, Optional, Union
+
 import aiofiles
 import httpx
-import mimetypes
-from typing import Any, Dict, Optional, Union
-from pathlib import Path
 from starlette.datastructures import UploadFile
+
 from app.core.config.settings import settings
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
-
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +28,11 @@ def _guess_mime(path: str) -> str:
 
 
 async def _post_with_file(
-        url: str,
-        file_source: Union[str, UploadFile],
-        form_fields: Dict[str, Any],
-        client: httpx.AsyncClient,
-        ) -> httpx.Response:
+    url: str,
+    file_source: Union[str, UploadFile],
+    form_fields: Dict[str, Any],
+    client: httpx.AsyncClient,
+) -> httpx.Response:
     """Post a file to a URL with form fields.
 
     Args:
@@ -87,10 +88,10 @@ async def _post_with_file(
 
 
 async def transcribe_audio_whisper(
-        recording_source: Union[str, UploadFile],
-        whisper_model: Optional[str] = settings.DEFAULT_WHISPER_MODEL,
-        whisper_options: Optional[str] = None,
-        ) -> Dict[str, Any]:
+    recording_source: Union[str, UploadFile],
+    whisper_model: Optional[str] = settings.DEFAULT_WHISPER_MODEL,
+    whisper_options: Optional[str] = None,
+) -> Dict[str, Any]:
     """Transcribe audio using Whisper service.
 
     Args:
@@ -109,23 +110,22 @@ async def transcribe_audio_whisper(
 
     try:
         async with httpx.AsyncClient(
-                timeout=httpx.Timeout(settings.DEFAULT_TIMEOUT, connect=settings.CONNECT_TIMEOUT),
-                limits=httpx.Limits(
-                        max_connections=settings.MAX_CONNECTIONS,
-                        max_keepalive_connections=settings.MAX_KEEPALIVE_CONNECTIONS
-                        ),
-                ) as client:
+            timeout=httpx.Timeout(settings.DEFAULT_TIMEOUT, connect=settings.CONNECT_TIMEOUT),
+            limits=httpx.Limits(
+                max_connections=settings.MAX_CONNECTIONS, max_keepalive_connections=settings.MAX_KEEPALIVE_CONNECTIONS
+            ),
+        ) as client:
             # Normalize options (model, language, etc.)
             form_fields = {"model": whisper_model, "whisper_options": whisper_options}
             logger.debug(f"Request parameters: {form_fields}")
 
             try:
                 resp = await _post_with_file(
-                        settings.WHISPER_TRANSCRIBE_SERVICE,
-                        recording_source,
-                        form_fields,
-                        client,
-                        )
+                    settings.WHISPER_TRANSCRIBE_SERVICE,
+                    recording_source,
+                    form_fields,
+                    client,
+                )
                 resp.raise_for_status()
 
                 # Validate and parse response

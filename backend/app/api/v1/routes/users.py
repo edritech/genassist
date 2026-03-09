@@ -1,12 +1,14 @@
 from uuid import UUID
+
 from fastapi import APIRouter, Depends
 from fastapi_injector import Injected
-from app.core.permissions.constants import Permissions as P
+
 from app.auth.dependencies import auth, permissions
 from app.core.exceptions.error_messages import ErrorKey
 from app.core.exceptions.exception_classes import AppException
+from app.core.permissions.constants import Permissions as P
 from app.schemas.filter import BaseFilterModel
-from app.schemas.user import UserRead, UserCreate, UserUpdate
+from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.services.roles import RolesService
 from app.services.users import UserService
 
@@ -48,9 +50,7 @@ async def get(user_id: UUID, service: UserService = Injected(UserService)):
     response_model=list[UserRead],
     dependencies=[Depends(auth), Depends(permissions(P.User.READ))],
 )
-async def get_all(
-    filter: BaseFilterModel = Depends(), service: UserService = Injected(UserService)
-):
+async def get_all(filter: BaseFilterModel = Depends(), service: UserService = Injected(UserService)):
     filter.limit = 1000 if filter.limit == 20 else filter.limit
     return await service.get_all(filter)
 
@@ -60,7 +60,5 @@ async def get_all(
     response_model=UserRead,
     dependencies=[Depends(auth), Depends(permissions(P.User.UPDATE))],
 )
-async def update(
-    user_id: UUID, user_update: UserUpdate, service: UserService = Injected(UserService)
-):
+async def update(user_id: UUID, user_update: UserUpdate, service: UserService = Injected(UserService)):
     return await service.update(user_id, user_update)

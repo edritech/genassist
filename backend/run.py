@@ -2,6 +2,7 @@
 This is the main file for the FastAPI application.
 It is used to run the application in development mode.
 """
+
 import os
 
 # Prefer HF_HOME over deprecated TRANSFORMERS_CACHE (Transformers v5+).
@@ -12,6 +13,7 @@ if "TRANSFORMERS_CACHE" in os.environ:
     del os.environ["TRANSFORMERS_CACHE"]
 
 import logging
+
 import uvicorn
 
 from app import create_app
@@ -29,6 +31,7 @@ if __name__ == "__main__":
 
     # Run migrations for all active tenant databases
     from migrations import run_migrations_for_all_tenants
+
     run_migrations_for_all_tenants()
 
     port = int(os.environ.get("FASTAPI_RUN_PORT", 8000))
@@ -47,33 +50,34 @@ if __name__ == "__main__":
         )
     workers = min(workers, 4)  # hard cap to avoid runaway worker counts
 
-    logger.debug("SSK KEY path:"+os.environ.get("SSL_KEYFILE_PATH", ""))
-    logger.debug("SSK CRT path:"+os.environ.get("SSL_CERTFILE_PATH", ""))
+    logger.debug("SSK KEY path:" + os.environ.get("SSL_KEYFILE_PATH", ""))
+    logger.debug("SSK CRT path:" + os.environ.get("SSL_CERTFILE_PATH", ""))
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    logger.debug("current dir path:"+dir_path)
-    logger.debug("reload_includes:"+str(["*.py"]))
-    logger.debug("reload_excludes:" +
-                 str([dir_path+"/containers", dir_path+"/.git"]))
-    logger.debug("reload_dirs:"+str([dir_path+"/app"]))
+    logger.debug("current dir path:" + dir_path)
+    logger.debug("reload_includes:" + str(["*.py"]))
+    logger.debug("reload_excludes:" + str([dir_path + "/containers", dir_path + "/.git"]))
+    logger.debug("reload_dirs:" + str([dir_path + "/app"]))
 
     # Start Uvicorn server
-    uvicorn.run("run:app", host="0.0.0.0", port=port, reload=debug_mode,
-                reload_includes=["*.py"],
-                reload_excludes=["./containers", "./.git",
-                                 "./.idea", "./logs", "./alembic"],
-                reload_dirs=["./app"],
-                ssl_keyfile=os.environ.get("SSL_KEYFILE_PATH", "") if os.environ.get(
-                    "USE_SSL", "True").lower() == 'true' else None,
-                ssl_certfile=os.environ.get("SSL_CERTFILE_PATH", "") if os.environ.get(
-                    "USE_SSL", "True").lower() == 'true' else None,
-                log_level=os.environ.get("LOG_LEVEL", "debug").lower(),
-                log_config=None,  # Use default logging configuration
-                workers=workers,
-                access_log=os.environ.get(
-                    "ACCESS_LOG", "False").lower() == "true",
-                use_colors=os.environ.get(
-                    "USE_COLORS", "True").lower() == "true",
-                proxy_headers=os.environ.get(
-                    "PROXY_HEADERS", "False").lower() == "true",
-                )
+    uvicorn.run(
+        "run:app",
+        host="0.0.0.0",
+        port=port,
+        reload=debug_mode,
+        reload_includes=["*.py"],
+        reload_excludes=["./containers", "./.git", "./.idea", "./logs", "./alembic"],
+        reload_dirs=["./app"],
+        ssl_keyfile=os.environ.get("SSL_KEYFILE_PATH", "")
+        if os.environ.get("USE_SSL", "True").lower() == "true"
+        else None,
+        ssl_certfile=os.environ.get("SSL_CERTFILE_PATH", "")
+        if os.environ.get("USE_SSL", "True").lower() == "true"
+        else None,
+        log_level=os.environ.get("LOG_LEVEL", "debug").lower(),
+        log_config=None,  # Use default logging configuration
+        workers=workers,
+        access_log=os.environ.get("ACCESS_LOG", "False").lower() == "true",
+        use_colors=os.environ.get("USE_COLORS", "True").lower() == "true",
+        proxy_headers=os.environ.get("PROXY_HEADERS", "False").lower() == "true",
+    )

@@ -6,10 +6,9 @@ This module provides token counting functionality with provider-specific strateg
 - Other providers: Use character-based approximation (1 token ≈ 3.75 characters)
 """
 
-from typing import Dict, Any, List
 import logging
 from abc import ABC, abstractmethod
-
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -53,15 +52,16 @@ class TiktokenCounter(TokenCounter):
             return self._encoding_cache[self.encoding_name]
 
         import tiktoken
+
         encoding = tiktoken.get_encoding(self.encoding_name)
         self._encoding_cache[self.encoding_name] = encoding
         return encoding
-
 
     @property
     def encoding_name(self) -> str:
         """Get the appropriate encoding name for the model"""
         from app.core.utils.gpt_utils import get_openai_encoding_name
+
         return get_openai_encoding_name(self.model)
 
     def count_tokens(self, text: str) -> int:
@@ -82,9 +82,7 @@ class TiktokenCounter(TokenCounter):
             return len(tokens)
         except Exception as e:
             # Log and fallback to approximation if tiktoken fails
-            logger.warning(
-                f"tiktoken encoding failed for model {self.model}: {e}. Using approximation."
-            )
+            logger.warning(f"tiktoken encoding failed for model {self.model}: {e}. Using approximation.")
             return int(len(text) / 3.75)
 
 
@@ -126,9 +124,7 @@ def get_token_counter(provider: str, model: str) -> TokenCounter:
     return ApproximateTokenCounter()
 
 
-def count_message_tokens(
-    messages: List[Dict[str, Any]], counter: TokenCounter
-) -> int:
+def count_message_tokens(messages: List[Dict[str, Any]], counter: TokenCounter) -> int:
     """
     Count total tokens in a list of messages including formatting overhead.
 
@@ -189,10 +185,11 @@ def estimate_string_tokens(text: str, provider: str, model: str) -> int:
     return counter.count_tokens(text)
 
 
-def calculate_history_tokens(config: dict[str, Any], model: str, provider:str, system_prompt: str,
-                                   user_prompt: str) -> int:
-    TOTAL_TOKEN_DEFAULT = 10000 # declared in frontend component as well
-    TOTAL_CONVERSATION_HISTORY_DEFAULT= 5000 # declared in frontend component as well
+def calculate_history_tokens(
+    config: dict[str, Any], model: str, provider: str, system_prompt: str, user_prompt: str
+) -> int:
+    TOTAL_TOKEN_DEFAULT = 10000  # declared in frontend component as well
+    TOTAL_CONVERSATION_HISTORY_DEFAULT = 5000  # declared in frontend component as well
     # Get token counter
     counter = get_token_counter(provider, model)
 
@@ -212,10 +209,10 @@ def calculate_history_tokens(config: dict[str, Any], model: str, provider:str, s
         actual_history_tokens = total_budget - system_tokens - user_tokens
         actual_history_tokens = max(0, actual_history_tokens)  # Ensure non-negative
         logger.warning(
-                f"Token budget exceeded. Requested history: {requested_history_tokens}, "
-                f"reduced to: {actual_history_tokens} (Total: {total_budget}, "
-                f"System: {system_tokens}, User: {user_tokens})"
-                )
+            f"Token budget exceeded. Requested history: {requested_history_tokens}, "
+            f"reduced to: {actual_history_tokens} (Total: {total_budget}, "
+            f"System: {system_tokens}, User: {user_tokens})"
+        )
     else:
         # Within budget, use requested allocation
         actual_history_tokens = requested_history_tokens

@@ -1,16 +1,19 @@
 import sys
 from pathlib import Path
+
 import pytest
-from starlette.testclient import TestClient
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+from starlette.testclient import TestClient
+
 from app.core.config.settings import settings
 from app.db.seed.seed_data_config import seed_test_data
 
 
 @pytest.fixture(scope="session")
 def anyio_backend():
-    return 'asyncio'
+    return "asyncio"
+
 
 # Add the project root directory to the Python path
 project_root = Path(__file__).parent.parent
@@ -18,9 +21,11 @@ sys.path.insert(0, str(project_root))
 
 from app import create_app
 
+
 @pytest.fixture(scope="session")
 def app_def():
     return create_app()
+
 
 @pytest.fixture(scope="session")
 def client(app_def):
@@ -33,15 +38,9 @@ def token(client, request):
     role = getattr(request, "param", "admin")  # default role
 
     if role == "admin":
-        credentials = {
-            "username": seed_test_data.admin_username,
-            "password": seed_test_data.admin_password
-            }
+        credentials = {"username": seed_test_data.admin_username, "password": seed_test_data.admin_password}
     else:
-        credentials = {
-            "username": seed_test_data.supervisor_username,
-            "password": seed_test_data.supervisor_password
-            }
+        credentials = {"username": seed_test_data.supervisor_username, "password": seed_test_data.supervisor_password}
 
     # Use form data instead of JSON
     response = client.post("/api/auth/token", data=credentials)
@@ -62,6 +61,7 @@ def authorized_client(client, token):
     client.headers.update({"Authorization": f"Bearer {token}"})
 
     return client
+
 
 @pytest.fixture(scope="session")
 def authorized_client_agent(client, token):
@@ -84,13 +84,14 @@ engine = create_async_engine(settings.DATABASE_URL)
 # Create a session factory
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
+
 @pytest.fixture(scope="session")
 async def async_engine():
     try:
         yield engine
     finally:
         print("Disposing engine")
-        #await engine.dispose()
+        # await engine.dispose()
 
 
 @pytest.fixture(scope="session")

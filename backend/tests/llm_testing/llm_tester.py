@@ -1,24 +1,27 @@
 import os
+
 from dotenv import load_dotenv
+
 load_dotenv()
+import argparse
 import asyncio
 import json
 import re
+import time
 import uuid
+from dataclasses import dataclass
+from enum import Enum
 from json import JSONDecodeError
 from logging import getLogger
 from pathlib import Path
-import requests
+from typing import Any, Dict, List, Optional
+
 import pandas as pd
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
-from enum import Enum
-import time
-import argparse
+import requests
 from fastapi_injector import RequestScopeFactory
+
 from app.dependencies.injector import injector
 from app.services.auth import AuthService
-
 
 logger = getLogger(__name__)
 
@@ -31,6 +34,7 @@ class ValidationResult(Enum):
 
 class TestDataSource(Enum):
     """Enum to specify the test data source type"""
+
     CSV = "csv"
     JSON = "json"
     MANUAL = "manual"
@@ -75,7 +79,7 @@ class EndpointTester:
         import os
 
         # Reject path traversal patterns
-        if '..' in user_input:
+        if ".." in user_input:
             raise ValueError(f"Path traversal pattern detected: {user_input}")
 
         # Normalize and split into components
@@ -84,7 +88,7 @@ class EndpointTester:
         filename = os.path.basename(normalized)
 
         # Validate filename doesn't contain traversal
-        if not filename or '..' in filename:
+        if not filename or ".." in filename:
             raise ValueError(f"Invalid filename: {user_input}")
 
         return (directory, filename)
@@ -138,20 +142,21 @@ class EndpointTester:
 
         for _, row in df.iterrows():
             # Parse comma-separated tool calls and keywords
-            tool_calls = [tc.strip() for tc in str(row['expected_tool_calls']).split(',')]
-            keywords = [kw.strip() for kw in str(row['expected_keywords']).split(',')]
+            tool_calls = [tc.strip() for tc in str(row["expected_tool_calls"]).split(",")]
+            keywords = [kw.strip() for kw in str(row["expected_keywords"]).split(",")]
 
-            test_cases.append(TestCase(
-                    prompt=row['prompt'],
-                    workflow_id=row['workflow_id'],
+            test_cases.append(
+                TestCase(
+                    prompt=row["prompt"],
+                    workflow_id=row["workflow_id"],
                     expected_tool_calls=tool_calls,
                     expected_keywords=keywords,
-                    expected_output=row.get('expected_output', None),
-                    thread_id=row.get('thread_id', None)
-                    ))
+                    expected_output=row.get("expected_output", None),
+                    thread_id=row.get("thread_id", None),
+                )
+            )
 
         return test_cases
-
 
     def load_dataset_from_json(self, json_path: str) -> List[TestCase]:
         """
@@ -173,21 +178,22 @@ class EndpointTester:
         # and ensures the path is within allowed directories
         validated_path = self._validate_file_path(json_path)
         # Use Path.read_text() for safe file reading after validation
-        data = json.loads(validated_path.read_text(encoding='utf-8'))
+        data = json.loads(validated_path.read_text(encoding="utf-8"))
 
         test_cases = []
         for item in data:
-            test_cases.append(TestCase(
-                    prompt=item['prompt'],
-                    workflow_id=item['workflow_id'],
-                    expected_tool_calls=item['expected_tool_calls'],
-                    expected_keywords=item['expected_keywords'],
-                    expected_output=item.get('expected_output', None),
-                    thread_id=item.get('thread_id', None)
-                    ))
+            test_cases.append(
+                TestCase(
+                    prompt=item["prompt"],
+                    workflow_id=item["workflow_id"],
+                    expected_tool_calls=item["expected_tool_calls"],
+                    expected_keywords=item["expected_keywords"],
+                    expected_output=item.get("expected_output", None),
+                    thread_id=item.get("thread_id", None),
+                )
+            )
 
         return test_cases
-
 
     def get_manual_test_cases(self, workflow_id: str) -> List[TestCase]:
         """
@@ -196,51 +202,38 @@ class EndpointTester:
         """
         return [
             TestCase(
-                    prompt="Give me the product documentation?",
-                    expected_tool_calls=["get_product"],
-                    expected_keywords=["ram"],
-                    workflow_id=workflow_id
-                    ),
+                prompt="Give me the product documentation?",
+                expected_tool_calls=["get_product"],
+                expected_keywords=["ram"],
+                workflow_id=workflow_id,
+            ),
             TestCase(
-                    prompt="Send an email to john@example.com",
-                    expected_tool_calls=["send_email"],
-                    expected_keywords=["email", "sent"],
-                    workflow_id=workflow_id
-                    ),
+                prompt="Send an email to john@example.com",
+                expected_tool_calls=["send_email"],
+                expected_keywords=["email", "sent"],
+                workflow_id=workflow_id,
+            ),
             TestCase(
-                    prompt="Calculate 15% of 250",
-                    expected_tool_calls=["calculator"],
-                    expected_keywords=["37.5", "result"],
-                    workflow_id=workflow_id
-                    )
-            ]
-
+                prompt="Calculate 15% of 250",
+                expected_tool_calls=["calculator"],
+                expected_keywords=["37.5", "result"],
+                workflow_id=workflow_id,
+            ),
+        ]
 
     def call_endpoint(self, test_case: TestCase) -> tuple[str, Any]:
         """
         Make API call to  endpoint.
         """
-        payload = {
-            "input_data": {
-                "message": test_case.prompt,
-                "thread_id": test_case.thread_id or str(uuid.uuid4())
-                }
-            }
+        payload = {"input_data": {"message": test_case.prompt, "thread_id": test_case.thread_id or str(uuid.uuid4())}}
         params = {"workflow_id": test_case.workflow_id}
 
         start_time = time.time()
-        response = requests.post(
-                self.endpoint_url,
-                json=payload,
-                params=params,
-                headers=self.headers,
-                timeout=30
-                )
+        response = requests.post(self.endpoint_url, json=payload, params=params, headers=self.headers, timeout=30)
         response_time = time.time() - start_time
 
         response.raise_for_status()
         return response.json(), response_time
-
 
     def extract_tool_calls(self, response: Dict[str, Any]) -> List[str]:
         """
@@ -250,18 +243,18 @@ class EndpointTester:
         tool_calls = []
 
         # Check if output and steps exist
-        if 'output' not in response:
+        if "output" not in response:
             return tool_calls
 
-        if 'steps' not in response['output']:
+        if "steps" not in response["output"]:
             return tool_calls
 
-        for step in response['output']['steps']:
+        for step in response["output"]["steps"]:
             # Ensure step is a dict and has 'response' key
-            if not isinstance(step, dict) or 'response' not in step:
+            if not isinstance(step, dict) or "response" not in step:
                 continue
 
-            step_response = step['response']
+            step_response = step["response"]
 
             # Handle both string and dict responses
             if isinstance(step_response, str):
@@ -276,25 +269,25 @@ class EndpointTester:
                 continue
 
             # Check if it's a tool call and has tool_name
-            if (isinstance(parsed_response, dict) and
-                    parsed_response.get('action') == 'tool_call' and
-                    'tool_name' in parsed_response):
-                tool_calls.append(parsed_response['tool_name'])
+            if (
+                isinstance(parsed_response, dict)
+                and parsed_response.get("action") == "tool_call"
+                and "tool_name" in parsed_response
+            ):
+                tool_calls.append(parsed_response["tool_name"])
 
         return tool_calls
-
 
     def extract_output_text(self, response: Dict[str, Any]) -> str:
         """
         Extract the output text from the API response.
         """
         # Common response formats:
-        if 'output' in response:
-            return str(response['output']['message'])
+        if "output" in response:
+            return str(response["output"]["message"])
         else:
             # Return the entire response as string if structure is unknown
             return str(response)
-
 
     def validate_tool_calls(self, actual: List[str], expected: List[str]) -> ValidationResult:
         """Check if actual tool calls match expected ones."""
@@ -315,7 +308,6 @@ class EndpointTester:
         else:
             return ValidationResult.FAIL
 
-
     def validate_keywords(self, output: str, expected_keywords: List[str]) -> ValidationResult:
         """Check if output contains expected keywords."""
         if not expected_keywords:
@@ -330,7 +322,6 @@ class EndpointTester:
             return ValidationResult.PARTIAL
         else:
             return ValidationResult.FAIL
-
 
     def run_single_test(self, test_case: TestCase, test_id: int) -> TestResult:
         """Run a single test case."""
@@ -355,33 +346,32 @@ class EndpointTester:
                 overall_result = ValidationResult.PARTIAL
 
             return TestResult(
-                    test_id=test_id,
-                    prompt=test_case.prompt,
-                    actual_output=actual_output,
-                    actual_tool_calls=actual_tool_calls,
-                    expected_tool_calls=test_case.expected_tool_calls,
-                    expected_keywords=test_case.expected_keywords,
-                    tool_calls_result=tool_calls_result,
-                    keywords_result=keywords_result,
-                    overall_result=overall_result,
-                    response_time=response_time
-                    )
+                test_id=test_id,
+                prompt=test_case.prompt,
+                actual_output=actual_output,
+                actual_tool_calls=actual_tool_calls,
+                expected_tool_calls=test_case.expected_tool_calls,
+                expected_keywords=test_case.expected_keywords,
+                tool_calls_result=tool_calls_result,
+                keywords_result=keywords_result,
+                overall_result=overall_result,
+                response_time=response_time,
+            )
 
         except Exception as e:
             return TestResult(
-                    test_id=test_id,
-                    prompt=test_case.prompt,
-                    actual_output="",
-                    actual_tool_calls=[],
-                    expected_tool_calls=test_case.expected_tool_calls,
-                    expected_keywords=test_case.expected_keywords,
-                    tool_calls_result=ValidationResult.FAIL,
-                    keywords_result=ValidationResult.FAIL,
-                    overall_result=ValidationResult.FAIL,
-                    error_message=str(e),
-                    response_time=0.0
-                    )
-
+                test_id=test_id,
+                prompt=test_case.prompt,
+                actual_output="",
+                actual_tool_calls=[],
+                expected_tool_calls=test_case.expected_tool_calls,
+                expected_keywords=test_case.expected_keywords,
+                tool_calls_result=ValidationResult.FAIL,
+                keywords_result=ValidationResult.FAIL,
+                overall_result=ValidationResult.FAIL,
+                error_message=str(e),
+                response_time=0.0,
+            )
 
     def run_tests(self, test_cases: List[TestCase], verbose: bool = True) -> List[TestResult]:
         """Run all test cases."""
@@ -401,7 +391,6 @@ class EndpointTester:
                     print(f"error occurred: {result.error_message}")
 
         return self.test_results
-
 
     def generate_report(self) -> Dict[str, Any]:
         """Generate a summary report of test results."""
@@ -424,33 +413,34 @@ class EndpointTester:
                 "passed": passed,
                 "failed": failed,
                 "partial": partial,
-                "pass_rate": f"{(passed / total_tests) * 100:.1f}%"
-                },
+                "pass_rate": f"{(passed / total_tests) * 100:.1f}%",
+            },
             "detailed_metrics": {
                 "tool_calls_accuracy": f"{(tool_calls_passed / total_tests) * 100:.1f}%",
                 "keywords_accuracy": f"{(keywords_passed / total_tests) * 100:.1f}%",
-                "average_response_time": f"{avg_response_time:.2f}s"
-                }
-            }
-
+                "average_response_time": f"{avg_response_time:.2f}s",
+            },
+        }
 
     def save_results_to_csv(self, filename: str):
         """Save test results to CSV file."""
         data = []
         for result in self.test_results:
-            data.append({
-                "test_id": result.test_id,
-                "prompt": result.prompt,
-                "expected_tool_calls": ",".join(result.expected_tool_calls),
-                "actual_tool_calls": ",".join(result.actual_tool_calls),
-                "expected_keywords": ",".join(result.expected_keywords),
-                "tool_calls_result": result.tool_calls_result.value,
-                "keywords_result": result.keywords_result.value,
-                "overall_result": result.overall_result.value,
-                "response_time": result.response_time,
-                "error_message": result.error_message or "",
-                "actual_output": result.actual_output
-                })
+            data.append(
+                {
+                    "test_id": result.test_id,
+                    "prompt": result.prompt,
+                    "expected_tool_calls": ",".join(result.expected_tool_calls),
+                    "actual_tool_calls": ",".join(result.actual_tool_calls),
+                    "expected_keywords": ",".join(result.expected_keywords),
+                    "tool_calls_result": result.tool_calls_result.value,
+                    "keywords_result": result.keywords_result.value,
+                    "overall_result": result.overall_result.value,
+                    "response_time": result.response_time,
+                    "error_message": result.error_message or "",
+                    "actual_output": result.actual_output,
+                }
+            )
 
         df = pd.DataFrame(data)
         df.to_csv(filename, index=False)
@@ -458,10 +448,10 @@ class EndpointTester:
 
 
 async def run_test(
-        source_type: TestDataSource = TestDataSource.MANUAL,
-        source_path: Optional[str] = None,
-        workflow_id: Optional[str] = None
-        ):
+    source_type: TestDataSource = TestDataSource.MANUAL,
+    source_path: Optional[str] = None,
+    workflow_id: Optional[str] = None,
+):
     """
     Run tests with specified data source.
 
@@ -482,9 +472,9 @@ async def run_test(
 
     # Initialize the tester
     tester = EndpointTester(
-            endpoint_url="http://localhost:8000/api/genagent/workflow/test",
-            headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
-            )
+        endpoint_url="http://localhost:8000/api/genagent/workflow/test",
+        headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
+    )
 
     # Load test cases based on source type
     print(f"\n{'=' * 50}")
@@ -513,7 +503,7 @@ async def run_test(
         raise ValueError(f"Unknown source type: {source_type}")
 
     # Run tests
-    results = tester.run_tests(test_cases, verbose=True)
+    tester.run_tests(test_cases, verbose=True)
 
     # Generate and print report
     report = tester.generate_report()
@@ -536,10 +526,10 @@ def load_json_string(json_str):
     json_str = json_str.strip()
 
     # Check if wrapped in Markdown code blocks
-    if json_str.startswith('```'):
+    if json_str.startswith("```"):
         # Remove code fence markers (```json or ``` at start and ``` at end)
-        json_str = re.sub(r'^```(?:json)?\s*\n?', '', json_str)
-        json_str = re.sub(r'\n?```\s*$', '', json_str)
+        json_str = re.sub(r"^```(?:json)?\s*\n?", "", json_str)
+        json_str = re.sub(r"\n?```\s*$", "", json_str)
         json_str = json_str.strip()
 
     # Parse the JSON
@@ -548,25 +538,21 @@ def load_json_string(json_str):
 
 def main():
     """Main function with argument parsing"""
-    parser = argparse.ArgumentParser(description='Run endpoint tests with various data sources')
+    parser = argparse.ArgumentParser(description="Run endpoint tests with various data sources")
     parser.add_argument(
-            '--source',
-            type=str,
-            choices=['csv', 'json', 'manual'],
-            default='manual',
-            help='Test data source type (default: manual)'
-            )
+        "--source",
+        type=str,
+        choices=["csv", "json", "manual"],
+        default="manual",
+        help="Test data source type (default: manual)",
+    )
+    parser.add_argument("--path", type=str, help="Path to CSV or JSON file (required for csv/json source types)")
     parser.add_argument(
-            '--path',
-            type=str,
-            help='Path to CSV or JSON file (required for csv/json source types)'
-            )
-    parser.add_argument(
-            '--workflow-id',
-            type=str,
-            default='019932f0-9b11-7058-8726-893193265cf6',
-            help='Workflow ID (required for manual source type)'
-            )
+        "--workflow-id",
+        type=str,
+        default="019932f0-9b11-7058-8726-893193265cf6",
+        help="Workflow ID (required for manual source type)",
+    )
 
     args = parser.parse_args()
 
@@ -575,11 +561,7 @@ def main():
 
     # Run tests
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(run_test(
-            source_type=source_type,
-            source_path=args.path,
-            workflow_id=args.workflow_id
-            ))
+    loop.run_until_complete(run_test(source_type=source_type, source_path=args.path, workflow_id=args.workflow_id))
 
 
 if __name__ == "__main__":

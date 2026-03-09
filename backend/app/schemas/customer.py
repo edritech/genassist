@@ -1,6 +1,7 @@
 from typing import Optional
 from uuid import UUID
-from pydantic import BaseModel, Field, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CustomerBase(BaseModel):
@@ -10,9 +11,7 @@ class CustomerBase(BaseModel):
     is_active: Optional[int] = Field(1, description="Is the customer active (0/1)")
     source_ref: Optional[str] = Field(None, max_length=255, description="Source reference")
 
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CustomerCreate(CustomerBase):

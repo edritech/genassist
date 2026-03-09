@@ -1,2 +1,2 @@
-import AppSettings from "./pages/AppSettings";
-export default AppSettings; 
+import AppSettings from './pages/AppSettings';
+export default AppSettings;

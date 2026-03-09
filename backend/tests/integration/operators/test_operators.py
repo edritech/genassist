@@ -1,7 +1,9 @@
-import pytest
 import logging
 
+import pytest
+
 logger = logging.getLogger(__name__)
+
 
 @pytest.mark.asyncio
 async def test_list_operators(client):

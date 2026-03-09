@@ -1,11 +1,13 @@
 from typing import Optional
-from sqlalchemy import String, Boolean
+
+from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.db.base import Base
 
 
 class TenantModel(Base):
-    __tablename__ = 'tenants'
+    __tablename__ = "tenants"
 
     # Tenant identification
     name: Mapped[str] = mapped_column(String(255), nullable=False)

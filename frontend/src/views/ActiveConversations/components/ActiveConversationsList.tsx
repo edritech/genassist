@@ -1,8 +1,8 @@
-import { Button } from "@/components/button";
-import { Skeleton } from "@/components/skeleton";
-import { MessageSquare } from "lucide-react";
-import type { NormalizedConversation } from "../helpers/activeConversations.types";
-import ConversationRow from "./ConversationRow";
+import { Button } from '@/components/button';
+import { Skeleton } from '@/components/skeleton';
+import { MessageSquare } from 'lucide-react';
+import type { NormalizedConversation } from '../helpers/activeConversations.types';
+import ConversationRow from './ConversationRow';
 
 interface ListProps {
   items: NormalizedConversation[];
@@ -19,7 +19,9 @@ export function ActiveConversationsList({ items, isLoading, error, onRetry, onCl
       <div className="p-6 text-red-600 flex items-center justify-between">
         <span>Failed to load conversations.</span>
         {onRetry && (
-          <Button variant="outline" onClick={onRetry}>Retry</Button>
+          <Button variant="outline" onClick={onRetry}>
+            Retry
+          </Button>
         )}
       </div>
     );
@@ -58,7 +60,7 @@ export function ActiveConversationsList({ items, isLoading, error, onRetry, onCl
         <ConversationRow
           key={item.id}
           item={item}
-          reason={item.effectiveSentiment === "negative" ? (item.negative_reason || "") : ""}
+          reason={item.effectiveSentiment === 'negative' ? item.negative_reason || '' : ''}
           onClick={onClickRow}
         />
       ))}

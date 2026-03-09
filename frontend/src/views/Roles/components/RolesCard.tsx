@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
-import { DataTable } from "@/components/DataTable";
-import { ActionButtons } from "@/components/ActionButtons";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { TableCell, TableRow } from "@/components/table";
-import { Badge } from "@/components/badge";
-import { getAllRoles, deleteRole } from "@/services/roles";
-import { formatDate } from "@/helpers/utils";
-import { Role } from "@/interfaces/role.interface";
-import { toast } from "react-hot-toast";
-import { getPaginationMeta } from "@/helpers/pagination";
-import { PaginationBar } from "@/components/PaginationBar";
+import { useEffect, useState } from 'react';
+import { DataTable } from '@/components/DataTable';
+import { ActionButtons } from '@/components/ActionButtons';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { TableCell, TableRow } from '@/components/table';
+import { Badge } from '@/components/badge';
+import { getAllRoles, deleteRole } from '@/services/roles';
+import { formatDate } from '@/helpers/utils';
+import { Role } from '@/interfaces/role.interface';
+import { toast } from 'react-hot-toast';
+import { getPaginationMeta } from '@/helpers/pagination';
+import { PaginationBar } from '@/components/PaginationBar';
 
 interface RolesCardProps {
   searchQuery: string;
@@ -18,12 +18,7 @@ interface RolesCardProps {
   updatedRole?: Role | null;
 }
 
-export function RolesCard({
-  searchQuery,
-  refreshKey = 0,
-  onEditRole,
-  updatedRole = null,
-}: RolesCardProps) {
+export function RolesCard({ searchQuery, refreshKey = 0, onEditRole, updatedRole = null }: RolesCardProps) {
   const PAGE_SIZE = 10;
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,11 +34,7 @@ export function RolesCard({
 
   useEffect(() => {
     if (updatedRole) {
-      setRoles((prevRoles) =>
-        prevRoles.map((role) =>
-          role.id === updatedRole.id ? updatedRole : role
-        )
-      );
+      setRoles((prevRoles) => prevRoles.map((role) => (role.id === updatedRole.id ? updatedRole : role)));
     }
   }, [updatedRole]);
 
@@ -58,8 +49,8 @@ export function RolesCard({
       setRoles(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch roles");
-      toast.error("Failed to fetch roles.");
+      setError(err instanceof Error ? err.message : 'Failed to fetch roles');
+      toast.error('Failed to fetch roles.');
     } finally {
       setLoading(false);
     }
@@ -76,10 +67,10 @@ export function RolesCard({
     try {
       setIsDeleting(true);
       await deleteRole(roleToDelete.id);
-      toast.success("Role deleted successfully.");
+      toast.success('Role deleted successfully.');
       setRoles((prev) => prev.filter((s) => s.id !== roleToDelete.id));
     } catch (error) {
-      toast.error("Failed to delete role.");
+      toast.error('Failed to delete role.');
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
@@ -87,30 +78,21 @@ export function RolesCard({
     }
   };
 
-  const filteredRoles = roles.filter((role) =>
-    role.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRoles = roles.filter((role) => role.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const pagination = getPaginationMeta(filteredRoles.length, PAGE_SIZE, currentPage);
   const paginatedRoles = filteredRoles.slice(pagination.startIndex, pagination.endIndex);
   const pageItemCount = paginatedRoles.length;
 
-  const headers = [
-    "ID",
-    "Name",
-    "Status",
-    "Created At",
-    "Updated At",
-    "Actions",
-  ];
+  const headers = ['ID', 'Name', 'Status', 'Created At', 'Updated At', 'Actions'];
 
   const renderRow = (role: Role, index: number) => (
     <TableRow key={role.id}>
       <TableCell>{pagination.startIndex + index + 1}</TableCell>
       <TableCell className="font-medium break-all">{role.name}</TableCell>
       <TableCell className="overflow-hidden whitespace-nowrap text-clip">
-        <Badge variant={role.is_active === 1 ? "default" : "secondary"}>
-          {role.is_active === 1 ? "Active" : "Inactive"}
+        <Badge variant={role.is_active === 1 ? 'default' : 'secondary'}>
+          {role.is_active === 1 ? 'Active' : 'Inactive'}
         </Badge>
       </TableCell>
       <TableCell className="truncate">{formatDate(role.created_at)}</TableCell>
@@ -152,7 +134,7 @@ export function RolesCard({
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
         isInProgress={isDeleting}
-        itemName={roleToDelete?.name || ""}
+        itemName={roleToDelete?.name || ''}
         description={`This action cannot be undone. This will permanently delete the role "${roleToDelete?.name}".`}
       />
     </>

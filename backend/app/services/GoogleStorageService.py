@@ -1,8 +1,9 @@
-import os
 import json
+import os
+from typing import List, Optional
+
 from google.cloud import storage
 from google.oauth2 import service_account
-from typing import Optional, List
 
 
 class GoogleStorageService:
@@ -99,7 +100,7 @@ class GoogleStorageService:
         except Exception as e:
             print(f"XX - Upload failed: {e} LocalPath: {local_file_path} Bucker: {bucket_name}")
             raise
-    
+
     def file_upload_content(
         self,
         local_file_content: bytes,
@@ -156,7 +157,7 @@ class GoogleStorageService:
             raise FileNotFoundError(f"Source blob {src_blob_name} does not exist.")
 
         # Copy the blob to the new destination
-        new_blob = bucket.copy_blob(src_blob, bucket, dst_blob_name)
+        bucket.copy_blob(src_blob, bucket, dst_blob_name)
 
         # Delete the old blob
         src_blob.delete()

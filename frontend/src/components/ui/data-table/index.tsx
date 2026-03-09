@@ -1,14 +1,7 @@
-import React, { ReactNode } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/table";
-import { Card } from "@/components/card";
-import { Loader2 } from "lucide-react";
+import React, { ReactNode } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/table';
+import { Card } from '@/components/card';
+import { Loader2 } from 'lucide-react';
 
 export interface Column<T> {
   header: string;
@@ -32,10 +25,10 @@ export function DataTable<T extends { id?: string | number }>({
   columns,
   loading = false,
   error = null,
-  searchQuery = "",
-  emptyMessage = "No data available",
-  notFoundMessage = "No results found",
-  keyExtractor = (item: T) => item.id as string | number
+  searchQuery = '',
+  emptyMessage = 'No data available',
+  notFoundMessage = 'No results found',
+  keyExtractor = (item: T) => item.id as string | number,
 }: DataTableProps<T>) {
   if (loading) {
     return (
@@ -56,9 +49,7 @@ export function DataTable<T extends { id?: string | number }>({
   if (data.length === 0) {
     return (
       <Card className="p-8">
-        <div className="text-center text-muted-foreground">
-          {searchQuery ? notFoundMessage : emptyMessage}
-        </div>
+        <div className="text-center text-muted-foreground">{searchQuery ? notFoundMessage : emptyMessage}</div>
       </Card>
     );
   }
@@ -77,9 +68,7 @@ export function DataTable<T extends { id?: string | number }>({
           {data.map((item, index) => (
             <TableRow key={keyExtractor(item)}>
               {columns.map((column) => (
-                <TableCell key={`${keyExtractor(item)}-${column.key}`}>
-                  {column.cell(item, index)}
-                </TableCell>
+                <TableCell key={`${keyExtractor(item)}-${column.key}`}>{column.cell(item, index)}</TableCell>
               ))}
             </TableRow>
           ))}
@@ -87,4 +76,4 @@ export function DataTable<T extends { id?: string | number }>({
       </Table>
     </Card>
   );
-} 
+}

@@ -44,19 +44,20 @@ class Legra:
         docs = load_folder(self.doc_path, self.extension)
         docs_chunked = {k: self.chunker(v) for k, v in tqdm(docs, desc="Chunking documents")}
         docs_embedded = {
-            k: self.model.encode(chunks, convert_to_numpy=True)
-            for k, chunks in tqdm(docs_chunked.items())
+            k: self.model.encode(chunks, convert_to_numpy=True) for k, chunks in tqdm(docs_chunked.items())
         }
         self.docs_meta: List[Dict[str, Any]] = []
         for doc_id, chunks in docs_chunked.items():
             embs = docs_embedded[doc_id]
             for idx, (chunk, emb) in enumerate(zip(chunks, embs)):
-                self.docs_meta.append({
-                    "doc_id": doc_id,
-                    "chunk_ix": idx,
-                    "text": chunk,
-                    "embedding": emb,
-                })
+                self.docs_meta.append(
+                    {
+                        "doc_id": doc_id,
+                        "chunk_ix": idx,
+                        "text": chunk,
+                        "embedding": emb,
+                    }
+                )
 
         dim = self.docs_meta[0]["embedding"].shape[0]
         self.index = faiss.IndexFlatIP(dim)
@@ -81,12 +82,7 @@ class Legra:
                     edges.append((i, j))
 
         vertex_names = [f"{meta['doc_id']}_{meta['chunk_ix']}" for meta in docs_meta]
-        graph = ig.Graph(
-            n=len(docs_meta),
-            vertex_attrs={"name": vertex_names},
-            edges=edges,
-            directed=False
-        )
+        graph = ig.Graph(n=len(docs_meta), vertex_attrs={"name": vertex_names}, edges=edges, directed=False)
         partition = la.find_partition(
             graph,
             la.RBConfigurationVertexPartition,

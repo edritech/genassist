@@ -3,13 +3,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi_injector import Injected
 
+from app.auth.dependencies import auth, permissions
 from app.cache.redis_cache import invalidate_llm_provider_cache
 from app.core.permissions.constants import Permissions as P
-from app.auth.dependencies import auth, permissions
 from app.modules.workflow.llm.provider import LLMProvider
 from app.schemas.llm import LlmProviderCreate, LlmProviderRead, LlmProviderUpdate
 from app.services.llm_providers import LlmProviderService
-
 
 router = APIRouter()
 
@@ -38,9 +37,7 @@ async def get_form_schemas(llm_provider: LLMProvider = Injected(LLMProvider)):
     response_model=LlmProviderRead,
     dependencies=[Depends(auth), Depends(permissions(P.LlmProvider.READ))],
 )
-async def get(
-    llm_provider_id: UUID, service: LlmProviderService = Injected(LlmProviderService)
-):
+async def get(llm_provider_id: UUID, service: LlmProviderService = Injected(LlmProviderService)):
     return await service.get_by_id(llm_provider_id)
 
 

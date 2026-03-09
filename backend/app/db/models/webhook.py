@@ -1,9 +1,8 @@
 # app/db/models/webhook.py
-from sqlalchemy import Column, String, Integer
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.dialects.postgresql import UUID
 from enum import Enum
-from sqlalchemy import ForeignKey
+
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 
 # Base class for declarative models
@@ -38,13 +37,9 @@ class WebhookModel(Base):
     is_deleted = Column(Integer, nullable=False, default=0)
     is_active = Column(Integer, nullable=False, default=1)
     description = Column(String, nullable=True)
-    webhook_type = Column(
-        String, nullable=False, default="generic"
-    )  # slack, whatsapp, generic
+    webhook_type = Column(String, nullable=False, default="generic")  # slack, whatsapp, generic
     agent_id = Column(UUID(as_uuid=True), ForeignKey("agents.id"), nullable=True)
-    app_settings_id = Column(
-        UUID(as_uuid=True), ForeignKey("app_settings.id"), nullable=True
-    )
+    app_settings_id = Column(UUID(as_uuid=True), ForeignKey("app_settings.id"), nullable=True)
 
     agent = relationship("AgentModel", uselist=False)
     app_settings = relationship("AppSettingsModel", uselist=False)

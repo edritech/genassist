@@ -1,57 +1,43 @@
-import React, { useEffect, useState } from "react";
-import { OpenApiNodeData } from "../types/nodes";
-import { BaseNodeDialogProps } from "./base";
-import { useToast } from "@/hooks/useToast";
-import { getAllLLMProviders } from "@/services/llmProviders";
-import { LLMProvider } from "@/interfaces/llmProvider.interface";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { Button } from "@/components/button";
-import { Save } from "lucide-react";
-import { Label } from "@/components/label";
-import { Input } from "@/components/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
-import { LLMProviderDialog } from "@/views/LlmProviders/components/LLMProviderDialog";
-import { DraggableTextArea } from "../components/custom/DraggableTextArea";
-import { FileUploader } from "@/components/FileUploader";
+import React, { useEffect, useState } from 'react';
+import { OpenApiNodeData } from '../types/nodes';
+import { BaseNodeDialogProps } from './base';
+import { useToast } from '@/hooks/useToast';
+import { getAllLLMProviders } from '@/services/llmProviders';
+import { LLMProvider } from '@/interfaces/llmProvider.interface';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { Button } from '@/components/button';
+import { Save } from 'lucide-react';
+import { Label } from '@/components/label';
+import { Input } from '@/components/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
+import { LLMProviderDialog } from '@/views/LlmProviders/components/LLMProviderDialog';
+import { DraggableTextArea } from '../components/custom/DraggableTextArea';
+import { FileUploader } from '@/components/FileUploader';
 
 type OpenApiDialogProps = BaseNodeDialogProps<OpenApiNodeData, OpenApiNodeData>;
 
 export const OpenApiDialog: React.FC<OpenApiDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
 
-  const [name, setName] = useState(data.name || "");
-  const [providerId, setProviderId] = useState(data.providerId || "");
-  const [query, setQuery] = useState(data.query || "");
-  const [originalFileName, setOriginalFileName] = useState(
-    data.originalFileName || "",
-  );
-  const [serverFilePath, setServerFilePath] = useState<string | undefined>(
-    data.serverFilePath,
-  );
-  const [serverFileUrl, setServerFileUrl] = useState<string | undefined>(
-    data.serverFileUrl,
-  );
-  const [availableProviders, setAvailableProviders] = useState<LLMProvider[]>(
-    [],
-  );
+  const [name, setName] = useState(data.name || '');
+  const [providerId, setProviderId] = useState(data.providerId || '');
+  const [query, setQuery] = useState(data.query || '');
+  const [originalFileName, setOriginalFileName] = useState(data.originalFileName || '');
+  const [serverFilePath, setServerFilePath] = useState<string | undefined>(data.serverFilePath);
+  const [serverFileUrl, setServerFileUrl] = useState<string | undefined>(data.serverFileUrl);
+  const [availableProviders, setAvailableProviders] = useState<LLMProvider[]>([]);
   const { toast } = useToast();
   const [isCreateProviderOpen, setIsCreateProviderOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setName(data.name || "");
-      setProviderId(data.providerId || "");
-      setQuery(data.query || "");
-      setOriginalFileName(data.originalFileName || "");
-      setServerFilePath(data.serverFilePath || "");
-      setServerFileUrl(data.serverFileUrl || "");
+      setName(data.name || '');
+      setProviderId(data.providerId || '');
+      setQuery(data.query || '');
+      setOriginalFileName(data.originalFileName || '');
+      setServerFilePath(data.serverFilePath || '');
+      setServerFileUrl(data.serverFileUrl || '');
 
       loadProviders();
     }
@@ -63,9 +49,9 @@ export const OpenApiDialog: React.FC<OpenApiDialogProps> = (props) => {
       setAvailableProviders(providers.filter((p) => p.is_active === 1));
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Failed to load LLM providers",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load LLM providers',
+        variant: 'destructive',
       });
     }
   };
@@ -119,9 +105,9 @@ export const OpenApiDialog: React.FC<OpenApiDialogProps> = (props) => {
           <div className="space-y-2">
             <Label htmlFor="provider">LLM Provider</Label>
             <Select
-              value={providerId || ""}
+              value={providerId || ''}
               onValueChange={(value) => {
-                if (value === "__create__") {
+                if (value === '__create__') {
                   setIsCreateProviderOpen(true);
                   return;
                 }
@@ -145,7 +131,7 @@ export const OpenApiDialog: React.FC<OpenApiDialogProps> = (props) => {
           {/* Specification File */}
           <FileUploader
             label="Specification File"
-            acceptedFileTypes={[".json", ".yaml", ".yml"]}
+            acceptedFileTypes={['.json', '.yaml', '.yml']}
             initialServerFilePath={serverFilePath}
             initialServerFileUrl={serverFileUrl}
             initialOriginalFileName={originalFileName}
@@ -155,7 +141,7 @@ export const OpenApiDialog: React.FC<OpenApiDialogProps> = (props) => {
               setServerFileUrl(result.file_url);
             }}
             onRemove={() => {
-              setOriginalFileName("");
+              setOriginalFileName('');
               setServerFilePath(undefined);
               setServerFileUrl(undefined);
             }}

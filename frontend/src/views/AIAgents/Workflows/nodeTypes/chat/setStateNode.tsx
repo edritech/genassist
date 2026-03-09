@@ -1,22 +1,18 @@
-import React, { useState } from "react";
-import { NodeProps } from "reactflow";
-import { getNodeColor } from "../../utils/nodeColors";
-import { SetStateDialog } from "../../nodeDialogs/SetStateDialog";
-import { SetStateNodeData } from "../../types/nodes";
-import BaseNodeContainer from "../BaseNodeContainer";
-import nodeRegistry from "../../registry/nodeRegistry";
-import { NodeContentRow } from "../nodeContent";
-import { extractDynamicVariablesAsRecord } from "../../utils/helpers";
+import React, { useState } from 'react';
+import { NodeProps } from 'reactflow';
+import { getNodeColor } from '../../utils/nodeColors';
+import { SetStateDialog } from '../../nodeDialogs/SetStateDialog';
+import { SetStateNodeData } from '../../types/nodes';
+import BaseNodeContainer from '../BaseNodeContainer';
+import nodeRegistry from '../../registry/nodeRegistry';
+import { NodeContentRow } from '../nodeContent';
+import { extractDynamicVariablesAsRecord } from '../../utils/helpers';
 
-export const SET_STATE_NODE_TYPE = "setStateNode";
+export const SET_STATE_NODE_TYPE = 'setStateNode';
 
-const SetStateNode: React.FC<NodeProps<SetStateNodeData>> = ({
-  id,
-  data,
-  selected,
-}) => {
+const SetStateNode: React.FC<NodeProps<SetStateNodeData>> = ({ id, data, selected }) => {
   const nodeDefinition = nodeRegistry.getNodeType(SET_STATE_NODE_TYPE);
-  const color = getNodeColor(nodeDefinition?.category || "io");
+  const color = getNodeColor(nodeDefinition?.category || 'io');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const onUpdate = (updatedData: Partial<SetStateNodeData>) => {
@@ -37,13 +33,13 @@ const SetStateNode: React.FC<NodeProps<SetStateNodeData>> = ({
       if (state.key) {
         content.push({
           label: `State ${index + 1}: ${state.key}`,
-          value: state.value || "",
+          value: state.value || '',
         });
       }
     });
 
     content.push({
-      label: "Variables",
+      label: 'Variables',
       value: extractDynamicVariablesAsRecord(JSON.stringify(data)),
       areDynamicVars: true,
     });
@@ -59,11 +55,9 @@ const SetStateNode: React.FC<NodeProps<SetStateNodeData>> = ({
         id={id}
         data={data}
         selected={selected}
-        iconName={nodeDefinition?.icon || "Database"}
-        title={data.name || nodeDefinition?.label || "Set State"}
-        subtitle={
-          nodeDefinition?.shortDescription || "Set stateful parameter value"
-        }
+        iconName={nodeDefinition?.icon || 'Database'}
+        title={data.name || nodeDefinition?.label || 'Set State'}
+        subtitle={nodeDefinition?.shortDescription || 'Set stateful parameter value'}
         color={color}
         nodeType={SET_STATE_NODE_TYPE}
         nodeContent={nodeContent}

@@ -4,80 +4,78 @@ Base embedding interface
 
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from pydantic import BaseModel, Field, field_validator
+
 import numpy as np
+from pydantic import BaseModel, Field, field_validator
+
+from app.constants.embedding_models import ALLOWED_MODEL_NAMES
 
 from ....schema_utils import VECTOR_DEFAULTS
-from app.constants.embedding_models import ALLOWED_MODEL_NAMES
 
 
 class EmbeddingConfig(BaseModel):
     """Configuration for embedding provider"""
-    type: str = Field(default="bedrock",
-                      description="Type of embedding provider")
-    model_name: str = Field(default=VECTOR_DEFAULTS["embedding_model_name"],
-                            description="Name of the embedding model")
-    batch_size: int = Field(
-        default=VECTOR_DEFAULTS["embedding_batch_size"], description="Batch size for processing texts")
-    max_length: Optional[int] = Field(
-        default=None, description="Maximum sequence length")
-    normalize_embeddings: bool = Field(
-        default=VECTOR_DEFAULTS["embedding_normalize_embeddings"], description="Whether to normalize embeddings")
-    device: str = Field(
-        default=VECTOR_DEFAULTS["embedding_device_type"], description="Device to run the model on")
-    api_key: Optional[str] = Field(
-        default=None, description="API key for external services")
-    base_url: Optional[str] = Field(
-        default=None, description="Base URL for API endpoints")
-    model_id: Optional[str] = Field(
-        default=None, description="Model ID for AWS Bedrock")
-    region_name: Optional[str] = Field(
-        default=None, description="AWS region for Bedrock service")
-    connect_timeout: Optional[int] = Field(
-        default=None, description="Bedrock connect timeout in seconds")
-    read_timeout: Optional[int] = Field(
-        default=None, description="Bedrock read timeout in seconds")
 
-    @field_validator('model_name')
+    type: str = Field(default="bedrock", description="Type of embedding provider")
+    model_name: str = Field(default=VECTOR_DEFAULTS["embedding_model_name"], description="Name of the embedding model")
+    batch_size: int = Field(
+        default=VECTOR_DEFAULTS["embedding_batch_size"], description="Batch size for processing texts"
+    )
+    max_length: Optional[int] = Field(default=None, description="Maximum sequence length")
+    normalize_embeddings: bool = Field(
+        default=VECTOR_DEFAULTS["embedding_normalize_embeddings"], description="Whether to normalize embeddings"
+    )
+    device: str = Field(default=VECTOR_DEFAULTS["embedding_device_type"], description="Device to run the model on")
+    api_key: Optional[str] = Field(default=None, description="API key for external services")
+    base_url: Optional[str] = Field(default=None, description="Base URL for API endpoints")
+    model_id: Optional[str] = Field(default=None, description="Model ID for AWS Bedrock")
+    region_name: Optional[str] = Field(default=None, description="AWS region for Bedrock service")
+    connect_timeout: Optional[int] = Field(default=None, description="Bedrock connect timeout in seconds")
+    read_timeout: Optional[int] = Field(default=None, description="Bedrock read timeout in seconds")
+
+    @field_validator("model_name")
     @classmethod
     def validate_model_name(cls, v, info):
         # Only validate HuggingFace model names
-        if info.data.get('type') == 'huggingface':
+        if info.data.get("type") == "huggingface":
             if v not in ALLOWED_MODEL_NAMES:
-                raise ValueError(f'model_name must be one of {ALLOWED_MODEL_NAMES}')
+                raise ValueError(f"model_name must be one of {ALLOWED_MODEL_NAMES}")
         return v
 
-    @field_validator('batch_size')
+    @field_validator("batch_size")
     @classmethod
     def validate_batch_size(cls, v):
         if v < 1:
-            raise ValueError('batch_size must be at least 1')
+            raise ValueError("batch_size must be at least 1")
         return v
 
-    @field_validator('max_length')
+    @field_validator("max_length")
     @classmethod
     def validate_max_length(cls, v):
         if v is not None and v < 1:
-            raise ValueError('max_length must be at least 1')
+            raise ValueError("max_length must be at least 1")
         return v
 
-    @field_validator('device')
+    @field_validator("device")
     @classmethod
     def validate_device(cls, v):
-        allowed_devices = ['cpu', 'cuda', 'mps']
+        allowed_devices = ["cpu", "cuda", "mps"]
         if v not in allowed_devices:
-            raise ValueError(f'device must be one of {allowed_devices}')
+            raise ValueError(f"device must be one of {allowed_devices}")
         return v
 
     def get(self):
         if self.type == "bedrock":
             from .bedrock import BedrockEmbedder
+
             return BedrockEmbedder(self.model_copy())
         elif self.type == "huggingface":
             from .huggingface import HuggingFaceEmbedder
+
             return HuggingFaceEmbedder(self.model_copy())
         elif self.type == "openai":
             from .openai import OpenAIEmbedder
+
             return OpenAIEmbedder(self.model_copy())
         else:
             raise ValueError(f"Invalid embedding type: {self.type}")
@@ -154,4 +152,4 @@ class BaseEmbedder(ABC):
     def _batch_texts(self, texts: List[str]) -> List[List[str]]:
         """Split texts into batches for processing"""
         batch_size = self.config.batch_size
-        return [texts[i:i + batch_size] for i in range(0, len(texts), batch_size)]
+        return [texts[i : i + batch_size] for i in range(0, len(texts), batch_size)]

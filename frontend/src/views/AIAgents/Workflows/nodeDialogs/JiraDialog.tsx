@@ -1,38 +1,28 @@
-import { useEffect, useState } from "react";
-import { JiraNodeData } from "../types/nodes";
-import { BaseNodeDialogProps } from "./base";
-import { NodeConfigPanel } from "../components/NodeConfigPanel";
-import { Button } from "@/components/button";
-import { Input } from "@/components/input";
-import { Label } from "@/components/label";
-import { Save } from "lucide-react";
-import { DraggableInput } from "../components/custom/DraggableInput";
-import { DraggableTextArea } from "../components/custom/DraggableTextArea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/select";
-import { getAllAppSettings } from "@/services/appSettings";
-import { AppSetting } from "@/interfaces/app-setting.interface";
-import { AppSettingDialog } from "@/views/AppSettings/components/AppSettingDialog";
-import { CreateNewSelectItem } from "@/components/CreateNewSelectItem";
+import { useEffect, useState } from 'react';
+import { JiraNodeData } from '../types/nodes';
+import { BaseNodeDialogProps } from './base';
+import { NodeConfigPanel } from '../components/NodeConfigPanel';
+import { Button } from '@/components/button';
+import { Input } from '@/components/input';
+import { Label } from '@/components/label';
+import { Save } from 'lucide-react';
+import { DraggableInput } from '../components/custom/DraggableInput';
+import { DraggableTextArea } from '../components/custom/DraggableTextArea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/select';
+import { getAllAppSettings } from '@/services/appSettings';
+import { AppSetting } from '@/interfaces/app-setting.interface';
+import { AppSettingDialog } from '@/views/AppSettings/components/AppSettingDialog';
+import { CreateNewSelectItem } from '@/components/CreateNewSelectItem';
 
 type JiraDialogProps = BaseNodeDialogProps<JiraNodeData, JiraNodeData>;
 
 export const JiraDialog: React.FC<JiraDialogProps> = (props) => {
   const { isOpen, onClose, data, onUpdate } = props;
   const [name, setName] = useState(data.name);
-  const [spaceKey, setSpaceKey] = useState(data.spaceKey || "");
-  const [taskName, setTaskName] = useState(data.taskName || "");
-  const [taskDescription, setTaskDescription] = useState(
-    data.taskDescription || ""
-  );
-  const [appSettingsId, setAppSettingsId] = useState(
-    data.app_settings_id || ""
-  );
+  const [spaceKey, setSpaceKey] = useState(data.spaceKey || '');
+  const [taskName, setTaskName] = useState(data.taskName || '');
+  const [taskDescription, setTaskDescription] = useState(data.taskDescription || '');
+  const [appSettingsId, setAppSettingsId] = useState(data.app_settings_id || '');
   const [appSettings, setAppSettings] = useState<AppSetting[]>([]);
   const [isLoadingAppSettings, setIsLoadingAppSettings] = useState(false);
   const [isCreateSettingOpen, setIsCreateSettingOpen] = useState(false);
@@ -40,11 +30,11 @@ export const JiraDialog: React.FC<JiraDialogProps> = (props) => {
   useEffect(() => {
     if (isOpen) {
       setName(data.name);
-      setSpaceKey(data.spaceKey || "");
-      setTaskName(data.taskName || "");
-      setTaskDescription(data.taskDescription || "");
+      setSpaceKey(data.spaceKey || '');
+      setTaskName(data.taskName || '');
+      setTaskDescription(data.taskDescription || '');
 
-      setAppSettingsId(data.app_settings_id || "");
+      setAppSettingsId(data.app_settings_id || '');
 
       const fetchAppSettings = async () => {
         setIsLoadingAppSettings(true);
@@ -111,13 +101,13 @@ export const JiraDialog: React.FC<JiraDialogProps> = (props) => {
         <div className="space-y-2">
           <Label htmlFor="app-settings-id">Configuration Vars (Optional)</Label>
           <Select
-            value={appSettingsId || ""}
+            value={appSettingsId || ''}
             onValueChange={(value) => {
-              if (value === "__create__") {
+              if (value === '__create__') {
                 setIsCreateSettingOpen(true);
                 return;
               }
-              setAppSettingsId(value || "");
+              setAppSettingsId(value || '');
             }}
             disabled={isLoadingAppSettings}
           >
@@ -128,7 +118,7 @@ export const JiraDialog: React.FC<JiraDialogProps> = (props) => {
               {appSettings
                 .filter((setting) => {
                   const settingTypeLower = setting.type.toLowerCase();
-                  return settingTypeLower === "jira" && setting.is_active === 1;
+                  return settingTypeLower === 'jira' && setting.is_active === 1;
                 })
                 .map((setting) => (
                   <SelectItem key={setting.id} value={setting.id}>
