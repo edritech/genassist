@@ -159,7 +159,7 @@ Pygments==2.19.1
 pylint==3.3.6
 pylint-fail-under==0.3.0
 pylint_junit==0.3.5
-pypdf==6.6.2
+pypdf==6.8.0
 PyPika==0.48.9
 pyproject_hooks==1.2.0
 pytest==8.3.5
@@ -168,7 +168,7 @@ pytest-cov==6.0.0
 pytest-env==1.1.5
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
-PyJWT[crypto]==2.10.1
+PyJWT==2.12.0
 python-multipart==0.0.22
 python-pptx==1.0.2
 pytz==2025.1
@@ -204,7 +204,7 @@ tiktoken==0.12.0
 tokenizers==0.21.1
 tomli==2.2.1
 tomlkit==0.13.2
-tornado==6.5.3
+tornado==6.5.5
 tqdm==4.67.1
 typer==0.16.0
 types-PyYAML==6.0.12.20250516
