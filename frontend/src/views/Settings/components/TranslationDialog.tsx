@@ -45,15 +45,24 @@ function findDefaultLangCode(
   defaultValue: string | null | undefined,
   rows: TranslationRow[]
 ): string | null {
-  if (!defaultValue) return null;
-  const match = rows.find((r) => r.value === defaultValue);
-  return match?.langCode ?? null;
+  if (rows.length === 0) return null;
+  if (rows.length === 1) return rows[0].langCode;
+
+  if (defaultValue) {
+    const match = rows.find((r) => r.value === defaultValue);
+    if (match) return match.langCode;
+    const t = defaultValue.trim();
+    const matchTrim = rows.find((r) => r.value.trim() === t);
+    if (matchTrim) return matchTrim.langCode;
+  }
+  return null;
 }
 
 interface TranslationDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onTranslationSaved: () => void;
+  /** Called with the canonical default string (value of the row marked as default). */
+  onTranslationSaved?: (savedDefault?: string | null) => void;
   translationToEdit?: Translation | null;
   mode?: "create" | "edit";
   initialKey?: string;
@@ -267,7 +276,7 @@ export function TranslationDialog({
         toast.success("Translation updated successfully.");
       }
 
-      onTranslationSaved();
+      onTranslationSaved?.(defaultValue);
       onOpenChange(false);
       resetForm();
     } catch (err) {
